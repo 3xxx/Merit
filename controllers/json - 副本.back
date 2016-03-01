@@ -1,0 +1,412 @@
+// 注意：在Go的标准库encoding/json包中，允许使用
+// map[string]interface{}和[]interface{} 类型的值来分别存放未知结构的JSON对象或数组
+package controllers
+
+import (
+	json "encoding/json"
+	"fmt"
+	"github.com/astaxie/beego"
+	"github.com/bitly/go-simplejson"
+	"io/ioutil"
+	"strconv"
+)
+
+type JsonStruct struct {
+}
+
+type JsonController struct {
+	beego.Controller
+}
+
+type List1 struct { //大型、中型……
+	Choose string `json:"chose"`
+	Parent string `json:"parent"` //父级
+	Grand  string `json:"grand"`  //爷爷级
+	// Source string
+	// State  string
+}
+
+type List2 struct { //项目负责人、奖励……
+	Category string `json:"category"`
+	// Source string
+	// State  string
+}
+
+// type Listimage struct {
+// State string `json:"state"` //这些第一个字母要大写，否则不出结果
+// List  []List `json:"list"`
+// Start int    `json:"start"`
+// Total int    `json:"total"`
+// Name        string
+// Age         int
+// Slices      []string //slice
+// Mapstring   map[string]string
+// StructArray []List            //结构体的切片型
+// MapStruct   map[string][]List //map:key类型是string或struct，value类型是切片，切片的类型是string或struct
+//	Desks  List
+// }
+
+type Table struct {
+	Father string  `json:"father"` //水工、施工
+	Name   []List2 `json:"name"`   //orm:"unique",
+	List   []List1 `json:"list"`
+}
+
+// type rule struct {
+// 	itemname    string `json:"status"` //字段名
+// 	datatype    string `json:"status"` // 类型
+// 	length      int    `json:"status"` // 长度
+// 	tail        int    `json:"status"` // 小数点位数
+// 	chinesename string `json:"status"` // 中文名字
+// }
+
+func (c *JsonController) Get() {
+	// 	{
+	// "ValueTestA":{
+	// 	"StringValue": "127.1.1.1",
+	// 	"NumericalValue":1233,
+	// 	"BoolValue":false
+	// 	},
+	// "ValueTestB":{
+	// 	"FloatValue":123.456
+	// 	}
+	// }
+	// JsonParse := NewJsonStruct()
+	// v := testdata{}
+	// JsonParse.Load("./conf/json.json", &v)
+	// fmt.Println(v)
+	// fmt.Println(v.ValueTestA.StringValue)
+	// []byte(
+	contents, _ := ioutil.ReadFile("./conf/json.json")
+	js, err := simplejson.NewJson([]byte(contents))
+	//simplejson test参考
+	// js, err := simplejson.NewJson([]byte(`{
+	// 	"test": {
+	// 		"string_array": ["asdf", "ghjk", "zxcv"],
+	// 		"array": [1, "2", 3],
+	// 		"arraywithsubs": [
+	// 						{"subkeyone": 1},
+	// 						{"subkeytwo": 2, "subkeythree": 3}],
+	// 		"int": 10,
+	// 		"float": 5.150,
+	// 		"bignum": 9223372036854775807,
+	// 		"string": "simplejson",
+	// 		"bool": true
+	// 	}
+	// }`))
+	if err != nil {
+		panic("json format error")
+	}
+	// s, err := js.Get("text").String()
+	// if err != nil {
+	// 	fmt.Println("decode error: get int failed!")
+	// 	beego.Info("decode error: get int failed!")
+	// 	// return
+	// }
+	// // fmt.Println(s)
+	// beego.Info(s)
+	// // 检查key是否存在
+	// _, ok := js.CheckGet("missing_key")
+	// if ok {
+	// 	fmt.Println("key missing_key exists")
+	// 	beego.Info("key missing_key exists")
+	// } else {
+	// 	fmt.Println("key missing_key not exists")
+	// 	beego.Info("key missing_key not exists")
+	// }
+
+	arr, err := js.Get("nodes").Array()
+	if err != nil {
+		fmt.Println("decode error: get array failed!")
+		beego.Info("decode error: get array failed!")
+		// return
+	}
+	// var input2 []Table
+	// var input2 Table
+	// var input []*Table
+	input := make([]Table, 0)
+	// input3 := make([]Table, 0)
+	// aa := make([]List, 10)
+	slice1 := make([]List1, 0)
+	slice2 := make([]List2, 0)
+	input2 := make([]Table, 1)
+
+	// input4 := make([]Table, 1)
+	aws := js.Get("nodes")
+	for i, _ := range arr {
+		awsval, _ := aws.GetIndex(i).Get("text").String()
+		// beego.Info(awsval) //水工室
+		arr1, _ := js.Get("nodes").GetIndex(i).Get("nodes").Array()
+		for j, _ := range arr1 {
+			awsval1, _ := aws.GetIndex(i).Get("nodes").GetIndex(j).Get("text").String()
+			// beego.Info(awsval1) //项目负责人
+			arr2, _ := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(j).Get("nodes").Array()
+			for k, _ := range arr2 {
+				awsval2, _ := aws.GetIndex(i).Get("nodes").GetIndex(j).Get("nodes").GetIndex(k).Get("text").String()
+				// beego.Info(awsval2)
+				// var aa []List
+				aa := make([]List1, 1)
+				aa[0].Choose = awsval2
+				aa[0].Parent = awsval1
+				aa[0].Grand = awsval
+				slice1 = append(slice1, aa...)
+				// slice[0].Choose = awsval2
+				// input1[i].List[k].Chose = awsval2
+				// input2.List[k].Chose = awsval2
+				// input2[0].List = append(input2[0].List, slice...)
+			}
+			bb := make([]List2, 1)
+			bb[0].Category = awsval1
+			slice2 = append(slice2, bb...)
+			// input4[0].List = slice
+			// input3 = append(input3, input4...)
+			// input = append(input, input2...)
+		}
+		// input4[0].Name = awsval1
+		// input4[0].List = slice
+		input2[0].List = slice1
+		input2[0].Name = slice2
+		slice1 = make([]List1, 0)
+		slice2 = make([]List2, 0)
+		input2[0].Father = awsval
+		input = append(input, input2...)
+		// input = append(input, input2...)
+	}
+	beego.Info(input)
+	c.Data["Input"] = input
+	// aws1 := js.Get("nodes").GetIndex(0).Get("nodes").GetIndex(0).Get("nodes")
+	// awsval1, _ := aws1.GetIndex(1).Get("text").String() //Int()
+	// beego.Info(awsval1)                                 //施工室
+
+	for _, v := range arr {
+		var iv int
+		switch v.(type) {
+		case float64:
+			iv = int(v.(float64))
+			fmt.Println(iv)
+		case string:
+			iv, _ = strconv.Atoi(v.(string)) //string to int
+			beego.Info(iv)
+			fmt.Println(iv)
+		}
+		// beego.Info(v)
+		// for _, w := range v {
+		// }
+	}
+	// beego.Info(contents)二进制的东西
+	// beego.Info(js)
+
+	// &{
+	// 	map[
+	// 		href:#parent1
+	// 		tags:[4]
+	// 		nodes:
+	// 			[map[
+	// 				tags:[2]
+	// 				nodes:
+	// 					[map[
+	// 						nodes:[
+	// 							map[
+	// 								href:#grandchild1
+	// 								tags:[0]
+	// 								text:大型项目
+	// 								]
+	// 							map[
+	// 								text:中型项目
+	// 								href:#grandchild1
+	// 								tags:[0]
+	// 								]
+	// 							map[
+	// 								tags:[0]
+	// 								text:小型项目
+	// 								href:#grandchild1
+	// 							]
+	// 							]
+	// ext:项目负责人 href:#grandchild1 tags:[0]] map[nodes:[map[text:注册咨询 href:
+	// #grandchild1 tags:[0]] map[text:注册水工 href:#grandchild1 tags:[0]] map[href:#g
+	// randchild1 tags:[0] text:注册岩土]] text:注册证 href:#grandchild2 tags:[0]] map[
+	// tags:[0] nodes:[map[text:国家级 href:#grandchild1 tags:[0]] map[href:#grandchild
+	// 1 tags:[0] text:省级] map[tags:[0] text:院级 href:#grandchild1]] text:获奖 href:
+	// #grandchild2] map[nodes:[map[href:#grandchild1 tags:[0] text:MS三维] map[tags:[0
+	// ] text:PMPK href:#grandchild1] map[text:Midas href:#grandchild1 tags:[0]]] text:
+	// 软件技能 href:#grandchild2 tags:[0]] map[text:建筑物类型 href:#grandchild2 tags:
+	// [0] nodes:[map[text:土石坝 href:#grandchild1 tags:[0]] map[href:#grandchild1 tag
+	// s:[0] text:水闸] map[text:供水 href:#grandchild1 tags:[0]]]] map[tags:[0] nodes:
+	// [map[text:讲座 href:#grandchild1 tags:[0]] map[text:模板 href:#grandchild1 tags:
+	// [0]] map[href:#grandchild1 tags:[0] text:二次开发]] text:贡献 href:#grandchild2]
+	//  map[tags:[0] nodes:[map[text:博士 href:#grandchild1 tags:[0]] map[text:研究生 h
+	// ref:#grandchild1 tags:[0]] map[text:本科 href:#grandchild1 tags:[0]]] text:学历
+	// href:#grandchild2]] text:水工室 href:#child1] map[text:施工室 href:#child2 tags:
+	// [0]]] text:施工预算分院]
+	// }
+
+	//要访问解码后的数据结构，需要先判断目标结构是否为预期的数据类型
+	// book, ok := inter.(map[string]interface{})
+	//然后通过for循环一一访问解码后的目标数据
+	// if ok {
+	// for k, v := range book {
+	// 	switch vt := v.(type) {
+	// 	case float64:
+	// 		fmt.Println(k, " is float64 ", vt)
+	// 	case string:
+	// 		fmt.Println(k, " is string ", vt)
+	// 	case []interface{}:
+	// 		fmt.Println(k, " is an array:")
+	// 		for i, iv := range vt {
+	// 			fmt.Println(i, iv)
+	// 		}
+	// 	default:
+	// 		fmt.Println("illegle type")
+	// 	}
+	// }
+	// }
+
+	// tt := []byte(&v)
+	// var r interface{}
+	// json.Unmarshal(tt, &r) //这个byte要解码
+
+	c.Data["json"] = js //r
+	// c.ServeJSON()
+	c.TplName = "user_show.tpl"
+}
+
+func NewJsonStruct() *JsonStruct {
+	return &JsonStruct{}
+}
+
+func (self *JsonStruct) Load(filename string, v interface{}) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return
+	}
+	datajson := []byte(data)
+	err = json.Unmarshal(datajson, v)
+	if err != nil {
+		return
+	}
+}
+
+type ValueTestAtmp struct {
+	StringValue    string
+	NumericalValue int
+	BoolValue      bool
+}
+
+type testdata struct {
+	ValueTestA ValueTestAtmp
+}
+
+// package main
+// import (
+//     "encoding/json"
+//     "fmt"
+// )
+func test() {
+	b := []byte(`{  
+    "Title":"go programming language",  
+    "Author":["john","ada","alice"],  
+    "Publisher":"qinghua",  
+    "IsPublished":true,  
+    "Price":99  
+  }`)
+	//先创建一个目标类型的实例对象，用于存放解码后的值
+	var inter interface{}
+	err := json.Unmarshal(b, &inter)
+	if err != nil {
+		fmt.Println("error in translating,", err.Error())
+		return
+	}
+	//要访问解码后的数据结构，需要先判断目标结构是否为预期的数据类型
+	book, ok := inter.(map[string]interface{})
+	//然后通过for循环一一访问解码后的目标数据
+	if ok {
+		for k, v := range book {
+			switch vt := v.(type) {
+			case float64:
+				fmt.Println(k, " is float64 ", vt)
+			case string:
+				fmt.Println(k, " is string ", vt)
+			case []interface{}:
+				fmt.Println(k, " is an array:")
+				for i, iv := range vt {
+					fmt.Println(i, iv)
+				}
+			default:
+				fmt.Println("illegle type")
+			}
+		}
+	}
+}
+
+// 今天遇到个接口需要处理一个json的map类型的数组，开始想法是用simple—json里的Array读取数组，然后遍历数组取出每个map，然后读取对应的值，在进行后续操作，貌似很简单的工作，却遇到了一个陷阱。
+// Json格式类似下边：
+// {"code":0
+// ,"request_id": xxxx
+// ,"code_msg":""
+// ,"body":[{
+//         "device_id": "xxxx"
+//         ,"device_hid": "xxxx"
+// }]
+// , "count":0}
+//     很快按上述想法写好了带码，但是以外发生了，编译不过，看一看代码逻辑没有问题，问题出在哪里呢？
+//     原来是interface{} Array方法返回的是一个interface{}类型的，我们都在golang里interface是一个万能的接受者可以保存任意类型的参数，但是却忽略了一点，它是不可以想当然的当任意类型来用，在使用之前一定要对interface类型进行判断。我开始就忽略了这点，想当然的使用interface变量造成了错误。
+//     下面写了个小例子
+
+// package main
+
+// import (
+// 	"encoding/json"
+// 	"fmt"
+// 	"github.com/bitly/go-simplejson"
+// )
+
+func test2() {
+	//拼凑json   body为map数组
+	var rbody []map[string]interface{}
+	t := make(map[string]interface{})
+	t["device_id"] = "dddddd"
+	t["device_hid"] = "ddddddd"
+
+	rbody = append(rbody, t)
+	t1 := make(map[string]interface{})
+	t1["device_id"] = "aaaaa"
+	t1["device_hid"] = "aaaaa"
+
+	rbody = append(rbody, t1)
+
+	cnnJson := make(map[string]interface{})
+	cnnJson["code"] = 0
+	cnnJson["request_id"] = 123
+	cnnJson["code_msg"] = ""
+	cnnJson["body"] = rbody
+	cnnJson["page"] = 0
+	cnnJson["page_size"] = 0
+
+	b, _ := json.Marshal(cnnJson)
+	cnnn := string(b)
+	fmt.Println("cnnn:%s", cnnn)
+	cn_json, _ := simplejson.NewJson([]byte(cnnn))
+	cn_body, _ := cn_json.Get("body").Array()
+
+	for _, di := range cn_body {
+		//就在这里对di进行类型判断
+		newdi, _ := di.(map[string]interface{})
+		device_id := newdi["device_id"]
+		device_hid := newdi["device_hid"]
+		fmt.Println(device_hid, device_id)
+	}
+
+}
+
+// 第一步，得到json的内容
+// contents, _ := ioutil.ReadAll(res.Body)
+// js, js_err := simplejson.NewJson(contents)
+
+// 第二部，根据json的格式，选择使用array或者map储存数据
+// var nodes = make(map[string]interface{})
+// nodes, _ = js.Map()
+
+// 第三步，将nodes当作map处理即可，如果map的value仍是一个json机构，回到第二步。
+// for key,_ := range nodes {
+// ...
+// }

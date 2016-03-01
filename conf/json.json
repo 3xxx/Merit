@@ -1,0 +1,155 @@
+{
+  "text": "施工预算分院",
+  "nodes": [
+      {
+          "text": "水工室",
+          "nodes": [
+            {
+                "text": "项目管理类",
+                "nodes": [
+                {
+                  "text": "项目负责人",
+                  "href": "#grandchild2",
+                  "nodes": [
+                    {
+                    "text": "大型"
+                    },
+                    {
+                    "text": "中型"
+                    },
+                    {
+                    "text": "小型"
+                    }
+                  ]
+                },
+                {
+                  "text": "课题研究",
+                  "href": "#grandchild2",
+                  "nodes": [
+                    {
+                    "text": "重大"
+                    },
+                    {
+                     "text": "重点"
+                    },
+                    {
+                    "text": "一般"
+                    }
+                  ]
+                }
+              ]
+            },
+        {
+                "text": "贡献类",
+                "nodes": [
+                {
+                  "text": "获奖",
+                  "href": "#grandchild2",
+                  "nodes": [
+                    {
+                      "text": "国家级"
+                    },
+                    {
+                      "text": "省部级"
+                    },
+                    {
+                      "text": "院级"
+                    }
+                  ]
+                },
+                {
+                  "text": "开发",
+                  "href": "#grandchild2",
+                  "nodes": [
+                    {
+                      "text": "系统级"
+                    },
+                    {
+                      "text": "工具集"
+                    },
+                    {
+                      "text": "标准"
+                    }
+                  ]
+                }
+              ]
+            }
+      ]
+    },
+    {
+          "text": "施工室",
+          "nodes": [
+            {
+                "text": "项目管理类",
+                "nodes": [
+                {
+                  "text": "施工负责人",
+                  "href": "#grandchild2",
+                  "nodes": [
+                    {
+                    "text": "大型a"
+                    },
+                    {
+                    "text": "中型a"
+                    },
+                    {
+                    "text": "小型a"
+                    }
+                  ]
+                },
+                {
+                  "text": "课题a",
+                  "href": "#grandchild2",
+                  "nodes": [
+                    {
+                    "text": "重大a"
+                    },
+                    {
+                     "text": "重点a"
+                    },
+                    {
+                    "text": "一般a"
+                    }
+                  ]
+                }
+              ]
+            },
+        {
+                "text": "贡献类a",
+                "nodes": [
+                {
+                  "text": "获奖a",
+                  "href": "#grandchild2",
+                  "nodes": [
+                    {
+                      "text": "国家级a"
+                    },
+                    {
+                      "text": "省部级a"
+                    },
+                    {
+                      "text": "院级a"
+                    }
+                  ]
+                },
+                {
+                  "text": "开发a",
+                  "href": "#grandchild2",
+                  "nodes": [
+                    {
+                      "text": "系统级a"
+                    },
+                    {
+                      "text": "工具集a"
+                    },
+                    {
+                      "text": "标准a"
+                    }
+                  ]
+                }
+              ]
+            }
+      ]
+    }
+  ]
+}
