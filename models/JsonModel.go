@@ -59,12 +59,39 @@ func GetPids(pid int64) ([]*Category, error) {
 	return cates, err
 }
 
+//由id取得分类
 func GetCategory(id int64) (*Category, error) {
 	o := orm.NewOrm()
 	// cate := &Category{Id: id}
 	category := new(Category)
 	qs := o.QueryTable("category")
 	err := qs.Filter("id", id).One(category)
+	if err != nil {
+		return nil, err
+	}
+	return category, err
+}
+
+//由分院名称取得分院
+func GetCategorybyname(title string) (*Category, error) {
+	o := orm.NewOrm()
+	// cate := &Category{Id: id}
+	category := new(Category)
+	qs := o.QueryTable("category")
+	err := qs.Filter("title", title).One(category)
+	if err != nil {
+		return nil, err
+	}
+	return category, err
+}
+
+//由分院id和科室 名称取得科室
+func GetCategorybyidtitle(id int64, title string) (*Category, error) {
+	o := orm.NewOrm()
+	// cate := &Category{Id: id}
+	category := new(Category)
+	qs := o.QueryTable("category")
+	err := qs.Filter("parentid", id).Filter("title", title).One(category)
 	if err != nil {
 		return nil, err
 	}

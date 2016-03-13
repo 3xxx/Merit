@@ -1,3 +1,4 @@
+<!-- 用户添加价值内容界面 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -39,7 +40,6 @@
                    <th>{{.Content}}</th>  
       </tr>
       {{end}}
-
     </tbody>
   </table>
 

@@ -4,7 +4,7 @@ import (
 	// "github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/mattn/go-sqlite3"
-	// "strconv"
+	"strconv"
 	// "strings"
 	"time"
 )
@@ -12,11 +12,11 @@ import (
 type MeritTopic struct {
 	Id       int64     `form:"-"`
 	ParentId int64     `orm:"null"`
+	UserId   int64     `orm:"null"`
 	Title    string    `form:"title;text;title:",valid:"MinSize(1);MaxSize(20)"` //orm:"unique",
 	Choose   string    `orm:"null"`
 	Content  string    `orm:"null"`
 	Mark     string    `orm:"null"` //设置分数
-	Url      string    `orm:"null"`
 	Created  time.Time `orm:"index","auto_now_add;type(datetime)"`
 	Updated  time.Time `orm:"index","auto_now_add;type(datetime)"`
 }
@@ -27,10 +27,15 @@ func init() {
 	// orm.RegisterDataBase("default", "sqlite3", "database/merit.db", 10)
 }
 
-func AddMeritTopic(pid int64, title, choose, content, mark string) (id int64, err error) {
+//用户添加价值
+func AddMeritTopic(pid int64, uname, title, choose, content, mark string) (id int64, err error) {
+	//先由uname取得uid
+	user := GetUserByUsername(uname)
+
 	o := orm.NewOrm()
 	topic := &MeritTopic{
 		ParentId: pid,
+		UserId:   user.Id,
 		Title:    title,
 		Choose:   choose,
 		Content:  content,
@@ -46,14 +51,38 @@ func AddMeritTopic(pid int64, title, choose, content, mark string) (id int64, er
 	return id, nil
 }
 
-func GetMeritTopic(pid int64) ([]*MeritTopic, error) {
+//根据父级价值id和用户id取得所有价值——返回数量和分值
+func GetMeritTopic(pid, uid int64) (topics []*MeritTopic, numbers, marks int, err error) {
+	o := orm.NewOrm()
+	topics = make([]*MeritTopic, 0)
+	// category := new(MeritTopic)
+	qs := o.QueryTable("merit_topic")                                      //这个表名MeritTopic需要用驼峰式，
+	_, err = qs.Filter("parentid", pid).Filter("userid", uid).All(&topics) //而这个字段parentid为何又不用呢
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	for _, v := range topics {
+		mark, err := strconv.Atoi(v.Mark)
+		if err != nil {
+			return nil, 0, 0, err
+		}
+		marks = marks + mark
+	}
+	numbers = len(topics)
+	return topics, numbers, marks, err
+}
+
+//取得用户id的所有价值
+func GetAllMeritTopic(uid int64) ([]*MeritTopic, error) {
 	o := orm.NewOrm()
 	topics := make([]*MeritTopic, 0)
 	// category := new(MeritTopic)
-	qs := o.QueryTable("merit_topic")                 //这个表名MeritTopic需要用驼峰式，
-	_, err := qs.Filter("parentid", pid).All(&topics) //而这个字段parentid为何又不用呢
+	qs := o.QueryTable("merit_topic")               //这个表名MeritTopic需要用驼峰式，
+	_, err := qs.Filter("userid", uid).All(&topics) //而这个字段userid为何又不用呢
 	if err != nil {
 		return nil, err
 	}
 	return topics, err
 }
+
+//管理员取得所有价值

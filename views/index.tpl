@@ -1,5 +1,5 @@
+<!-- 首页界面 -->
 <!DOCTYPE html>
-
 <html>
 <head>
   <title>Beego</title>
@@ -25,11 +25,27 @@
 </div>
 <div>
   <button type="button" class="btn btn-default" id="import">初始化评测结构数据</button>
+</div>
+<div>
+    <a href="/login">
+    <button type="button" class="btn btn-primary" style="text-shadow: black 5px 3px 3px;">
+      <!--  btn-lg -->
+      <span class="glyphicon glyphicon-user"></span>
+      用户登录
+    </button>
+  </a>
   <a href="/json">
     <button type="button" class="btn btn-primary" style="text-shadow: black 5px 3px 3px;">
       <!--  btn-lg -->
       <span class="glyphicon glyphicon-user"></span>
-      查看
+      查看所有
+    </button>
+  </a>
+    <a href="/user">
+    <button type="button" class="btn btn-primary" style="text-shadow: black 5px 3px 3px;">
+      <!--  btn-lg -->
+      <span class="glyphicon glyphicon-user"></span>
+      查看个人
     </button>
   </a>
 </div>  

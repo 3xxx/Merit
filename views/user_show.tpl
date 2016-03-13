@@ -1,5 +1,5 @@
+<!-- 测试页面 -->
 <!DOCTYPE html>
-
 <html>
 <head>
  <meta charset="UTF-8">
@@ -124,24 +124,26 @@
 $(function() {
         var defaultData = [
           {
-            text: 'Parent 1',
+            "text": 'Parent 1',
+            "selectable":false,
             // icon: "glyphicon glyphicon-stop",
             // selectedIcon: "glyphicon glyphicon-heart",
             href: '#parent1',
             tags: ['4'],
-            state: {
-            checked: true,
-            disabled: false,
-            expanded: false,
-            selected: true
-            },
-            tags: ['available'],
+            // state: {
+            // checked: true,
+            // disabled: false,
+            // expanded: false,
+            // selected: true
+            // },
+            // tags: ['available'],
             nodes: [
               {
                 text: 'Child 1',
+                selectable:false,
                 // icon: "glyphicon glyphicon-stop",
                 // selectedIcon: "glyphicon glyphicon-heart",                
-                href: '#child1',
+                // href: '#child1',
                 tags: [2,3],
                 nodes: [
                   {
@@ -213,6 +215,12 @@ $(function() {
           {
             text: 'Parent 1',
             tags: ['2'],
+             state: {
+            checked: true,
+            disabled: false,
+            expanded: false,
+            selected: true
+            },           
             nodes: [
               {
                 text: 'Child 1',
@@ -260,9 +268,204 @@ $(function() {
             tags: ['available','0']
           }
         ];
+
+        var json=[
+        {
+  "text": "省水利设计分院",
+  "selectable": false,
+  "nodes": [
+    {
+      "text": "施工预算分院",
+      "selectable": false,
+             state: {
+            checked: false,
+            disabled: false,
+            expanded: false,
+            selected: false
+            },      
+      "nodes": [
+        {
+          "text": "水工室",
+          "selectable": false,
+          "nodes": [
+            {
+              "text": "项目管理类",
+              "selectable": false,
+              "tags": [
+                4,
+                2
+              ],
+              "nodes": [
+                {
+                  "text": "项目负责人",
+                  "href": "/add?id=165",
+                  "tags": [
+                    3,
+                    1
+                  ],
+                  "Mark2": "",
+                  "Xuanze": ",大型,中型,小型",
+                  "Mark1": ",4,3,2"
+                },
+                {
+                  "text": "课题研究",
+                  "href": "/add?id=166",
+                  "tags": [
+                    3,
+                    1
+                  ],
+                  "Mark2": "4",
+                  "Xuanze": "",
+                  "Mark1": ""
+                }
+              ],
+              "Parent2": ""
+            },
+            {
+              "text": "贡献类",
+              "tags": [
+                4,
+                2
+              ],
+              "nodes": [
+                {
+                  "text": "获奖",
+                  "href": "/add?id=168",
+                  "tags": [
+                    3,
+                    1
+                  ],
+                  "Mark2": "",
+                  "Xuanze": ",国家级,省级,院级",
+                  "Mark1": ",4,3,2"
+                },
+                {
+                  "text": "开发",
+                  "href": "/add?id=169",
+                  "tags": [
+                    3,
+                    1
+                  ],
+                  "Mark2": "",
+                  "Xuanze": ",系统级,标准",
+                  "Mark1": ",5,2"
+                }
+              ],
+              "Parent2": ""
+            }
+          ]
+        },
+        {
+          "text": "施工室",
+          "selectable": false,
+          "nodes": [
+            {
+              "text": "项目管理类",
+              "tags": [
+                4,
+                2
+              ],
+              "nodes": [
+                {
+                  "text": "施工负责人",
+                  "href": "/add?id=172",
+                  "tags": [
+                    3,
+                    1
+                  ],
+                  "Mark2": "4",
+                  "Xuanze": "",
+                  "Mark1": ""
+                },
+                {
+                  "text": "课题a",
+                  "href": "/add?id=173",
+                  "tags": [
+                    3,
+                    1
+                  ],
+                  "Mark2": "2",
+                  "Xuanze": "",
+                  "Mark1": ""
+                }
+              ],
+              "Parent2": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "水工分院",
+      "selectable": false,
+      "nodes": [
+        {
+          "text": "水工室",
+          "selectable": false,
+          "nodes": [
+            {
+              "text": "项目管理类",
+              "tags": [
+                4,
+                2
+              ],
+              "nodes": [
+                {
+                  "text": "项目负责人",
+                  "href": "/add?id=177",
+                  "tags": [
+                    3,
+                    1
+                  ],
+                  "Mark2": "",
+                  "Xuanze": ",大型,中型,小型",
+                  "Mark1": ",6,4,2"
+                }
+              ],
+              "Parent2": ""
+            },
+            {
+              "text": "贡献类",
+              "tags": [
+                4,
+                2
+              ],
+              "nodes": [
+                {
+                  "text": "获奖",
+                  "href": "/add?id=179",
+                  "tags": [
+                    3,
+                    1
+                  ],
+                  "Mark2": "",
+                  "Xuanze": ",国家级,省级,院级",
+                  "Mark1": ",4,3,2"
+                },
+                {
+                  "text": "开发",
+                  "href": "/add?id=180",
+                  "tags": [
+                    3,
+                    1
+                  ],
+                  "Mark2": "",
+                  "Xuanze": ",系统级,标准",
+                  "Mark1": ",5,2"
+                }
+              ],
+              "Parent2": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+        ];
           // $('#treeview').treeview('collapseAll', { silent: true });
           $('#treeview').treeview({
-          data: defaultData,
+          data: json,//defaultData,
           // data:alternateData,
           enableLinks:true,
           showTags:true,

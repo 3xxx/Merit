@@ -13,6 +13,10 @@ func init() {
 	beego.Router("/json", &controllers.JsonController{})
 	beego.Router("/importjson", &controllers.JsonController{}, "post:ImportJson")
 	beego.Router("/add", &controllers.JsonController{}, "get:Add")
+	beego.Router("/user", &controllers.JsonController{}, "get:GetMeritUser")
 
 	beego.Router("/AddMeritTopic", &controllers.MeritTopicController{}, "post:AddMeritTopic")
+
+	beego.Router("/login", &controllers.LoginController{})
+
 }

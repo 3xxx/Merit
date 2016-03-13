@@ -20,10 +20,12 @@ type List11 struct {
 	Mark1  string //打分1
 }
 
+//取得所有价值
 func (c *MeritTopicController) GetMeritTopic() {
-
+	// topics, err := models.GetMeritTopic(idNum)
 }
 
+//用户进行价值添加
 func (c *MeritTopicController) AddMeritTopic() {
 	id := c.Input().Get("id")
 	idNum, err := strconv.ParseInt(id, 10, 64)
@@ -55,10 +57,20 @@ func (c *MeritTopicController) AddMeritTopic() {
 	} else {
 		ff = category.Mark
 	}
+	//2.取得客户端用户名
+	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
+	defer sess.SessionRelease(c.Ctx.ResponseWriter)
+	v := sess.Get("uname")
+	var uname string
+	if v != nil {
+		uname = v.(string)
+		c.Data["Uname"] = v.(string)
+	}
 
-	_, err = models.AddMeritTopic(idNum, name, choose, content, ff)
-
-	topics, err := models.GetMeritTopic(idNum)
+	_, err = models.AddMeritTopic(idNum, uname, name, choose, content, ff)
+	//先由uname取得uid
+	user := models.GetUserByUsername(uname)
+	topics, _, _, err := models.GetMeritTopic(idNum, user.Id)
 	// c.Data["category"] = category
 	// c.Data["list"] = slice1
 	// // c.ServeJSON()
