@@ -8,6 +8,8 @@
  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
  <script src="/static/js/bootstrap-treeview.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
+ <script type="text/javascript" src="/static/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap-select.min.css"/>
 
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
     <script type="text/javascript" charset="utf-8" src="/static/ueditor/ueditor.config.js"></script>
@@ -34,10 +36,10 @@
       {{range $k,$v :=.topics}}
       <tr>
         <th>{{$k}}</th>
-        <th>{{.Title}}</th>
-                   <th>{{.Choose}}</th>
-                   <th>{{.Mark}}</th>
-                   <th>{{.Content}}</th>  
+        <th><a href="/view?id={{.Id}}">{{.Title}}</a></th>
+        <th>{{.Choose}}</th>
+        <th>{{.Mark}}</th>
+        <th>{{.Content}}</th>  
       </tr>
       {{end}}
     </tbody>
@@ -50,6 +52,19 @@
     <div class="form-group">
       <label>{{.category.Title}}-名称：</label>
       <input id="name" class="form-control"  placeholder="输入名称" name="name"></div> 
+
+    <div class="form-group">
+    {{if gt (.list|len) 1}}
+      <label>选项：</label>
+        <th>
+          <div class="form-group">
+            <select id="list" class="selectpicker" name="choose">
+            <option></option></select>
+          </div>
+        </th>
+    {{end}}
+    </div>
+<!-- 
     <div class="form-group">
     {{if gt (.list|len) 1}}
       <label>选项：</label>
@@ -61,8 +76,8 @@
             <datalist id="cars" name="cars"></datalist>
           </div>
         </th>
-        {{end}}
-    </div>
+    {{end}}
+    </div> -->
     <label>简介:</label>
 <div>
     <!-- <h1>项目简介:</h1> -->
@@ -90,7 +105,6 @@
       }
     return true;  //这个return必须放最后，前面的值才能传到后台
    }
-
     //实例化编辑器
     //议使用工厂方法getEditor创建和引用编辑器实例，如果在某个闭包下引用该编辑器，直接调用UE.getEditor('editor')就能拿到相关的实例
     var ue = UE.getEditor('editor');
@@ -105,18 +119,16 @@
         });
       });
     });
-
 // fireEvent("startUpload")
-
 </script>
 <script type="text/javascript">
 $(document).ready(function(){
   var data={{.list}};
      for ( var i = 0; i<data.length; i++) {  
-       $("#cars").append('<option value="' + data[i].text + '"></option>');
+       $("#list").append('<option>' + data[i].choose + '</option>');
+       // alert(data[i].text)
      }
-    })           
-
+    }) 
 </script>
 
 </body>

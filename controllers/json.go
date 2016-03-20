@@ -1,5 +1,6 @@
 // 注意：在Go的标准库encoding/json包中，允许使用
 // map[string]interface{}和[]interface{} 类型的值来分别存放未知结构的JSON对象或数组
+//本控制器用于侧栏的显示和修改等
 package controllers
 
 import (
@@ -21,8 +22,8 @@ type JsonController struct {
 }
 
 type List1 struct {
-	Choose string `json:"text"`
-	Mark1  string //打分1
+	Choose string `json:"choose"`
+	Mark1  string `json:"mark1"` //打分1
 }
 
 // type List2 struct { //项目负责人——链接——大、中、小
@@ -32,14 +33,18 @@ type List1 struct {
 // 	Xuanze  []List1 `json:"nodes"` //大型、中型……
 // }
 type List2 struct { //项目负责人——链接——大、中、小
+	Id      int64  `form:"-"`
+	Pid     int64  `form:"-"`
 	Project string `json:"text"`
 	Href    string `json:"href"`
 	Tags    [2]int `json:"tags"`
-	Mark2   string //打分2
+	Mark2   string `json:"mark2"` //打分2
 	Xuanze  string //大型、中型……
 	Mark1   string //对应列表打分
 }
 type List3 struct { //项目管理类：项目负责人、课题……
+	Id         int64   `form:"-"`
+	Pid        int64   `form:"-"`
 	Category   string  `json:"text"`
 	Selectable bool    `json:"selectable"`
 	Tags       [2]int  `json:"tags"`
@@ -48,23 +53,30 @@ type List3 struct { //项目管理类：项目负责人、课题……
 }
 
 type List4 struct { //专业室：水工、施工……
+	Id         int64   `form:"-"`
+	Pid        int64   `form:"-"`
 	Keshi      string  `json:"text"`
 	Selectable bool    `json:"selectable"`
 	Kaohe      []List3 `json:"nodes"`
 }
 
 type List5 struct { //分院：施工预算、水工分院……
+	Id         int64   `form:"-"`
+	Pid        int64   `form:"-"`
 	Department string  `json:"text"` //这个后面json仅仅对于encode解析有用
 	Selectable bool    `json:"selectable"`
 	Bumen      []List4 `json:"nodes"`
 }
 
 type List6 struct { //总院：水利设计院……
+	Id         int64   `form:"-"`
+	Pid        int64   `form:"-"`
 	Danwei     string  `json:"text"` //这个后面json仅仅对于encode解析有用
 	Selectable bool    `json:"selectable"`
 	Fenyuan    []List5 `json:"nodes"`
 }
 
+//管理员登录显示所有价值结构，方便后面操作
 func (c *JsonController) Get() {
 	// contents, _ := ioutil.ReadFile("./conf/json.json")
 	// var r List6
@@ -105,6 +117,7 @@ func (c *JsonController) Get() {
 		beego.Error(err)
 	}
 	var List7 List6
+	List7.Id = category[0].Id
 	List7.Danwei = category[0].Title //单位名称
 	List7.Selectable = false
 	category1, err := models.GetPids(category[0].Id) //得到多个分院
@@ -114,6 +127,8 @@ func (c *JsonController) Get() {
 	}
 	for i1, _ := range category1 {
 		aa := make([]List5, 1)
+		aa[0].Id = category1[i1].Id
+		aa[0].Pid = category[0].Id
 		aa[0].Department = category1[i1].Title //分院名称
 		aa[0].Selectable = false
 		category2, err := models.GetPids(category1[i1].Id) //得到多个科室
@@ -123,6 +138,8 @@ func (c *JsonController) Get() {
 		}
 		for i2, _ := range category2 {
 			bb := make([]List4, 1)
+			bb[0].Id = category2[i2].Id
+			bb[0].Pid = category1[i1].Id
 			bb[0].Keshi = category2[i2].Title //科室名称
 			bb[0].Selectable = false
 			category3, err := models.GetPids(category2[i2].Id) //得到多个价值分类
@@ -132,10 +149,12 @@ func (c *JsonController) Get() {
 			}
 			for i3, _ := range category3 {
 				cc := make([]List3, 1)
+				cc[0].Id = category3[i3].Id
+				cc[0].Pid = category2[i2].Id
 				cc[0].Category = category3[i3].Title //价值分类名称
 				cc[0].Selectable = false
-				cc[0].Tags[0] = 4
-				cc[0].Tags[1] = 2
+				cc[0].Tags[0] = 0
+				cc[0].Tags[1] = 0
 				category4, err := models.GetPids(category3[i3].Id) //得到多个价值
 				// beego.Info(category3[i3].Id)
 				if err != nil {
@@ -143,14 +162,16 @@ func (c *JsonController) Get() {
 				}
 				for i4, _ := range category4 {
 					dd := make([]List2, 1)
+					dd[0].Id = category4[i4].Id
+					dd[0].Pid = category3[i3].Id
 					dd[0].Project = category4[i4].Title //得到价值名称
-					dd[0].Tags[0] = 3
-					dd[0].Tags[1] = 1
+					dd[0].Tags[0] = 0
+					dd[0].Tags[1] = 0
 					dd[0].Mark2 = category4[i4].Mark                                  //得到价值得分
 					dd[0].Xuanze = category4[i4].List                                 //得到选择列表
 					dd[0].Mark1 = category4[i4].ListMark                              //得到选择列表得分
 					dd[0].Href = "/add?id=" + strconv.FormatInt(category4[i4].Id, 10) //得到Id用于添加成果 + " target='_blank'"
-					beego.Info(dd[0].Href)
+					// beego.Info(dd[0].Href)
 					//进行选择列表拆分
 					// array1 := strings.Split(category4[i4].List, ",")
 					// for _, v := range array1 {
@@ -183,18 +204,19 @@ func (c *JsonController) Get() {
 	}
 	List7.Fenyuan = slice5
 	slice5 = make([]List5, 0) //再把slice置0
-	beego.Info(List7)
+	// beego.Info(List7)
 	// beego.Info(contents)二进制的东西
-	// c.Data["Input"] = r
-	b, err := json.Marshal(List7) //不需要转成json格式
-	beego.Info(string(b))
+
+	// b, err := json.Marshal(List7) //不需要转成json格式
+	c.Data["Input"] = List7
+	// beego.Info(string(b))
 	// fmt.Println(string(b))
 	if err != nil {
 		beego.Error(err)
 	}
 	c.Data["json"] = List7
 	// c.ServeJSON()
-	c.TplName = "json_show.tpl"
+	c.TplName = "admin_json_show.tpl"
 }
 
 //用户登录后获得自己所在的分院和科室，然后显示对应的菜单
@@ -350,48 +372,169 @@ func (c *JsonController) GetMeritUser() {
 	//前提是价值资料里要带用户id
 	topics, err := models.GetAllMeritTopic(user.Id)
 	c.Data["topics"] = topics
+
+	// for i5, _ := range topics {
+	// 	ee := make([]List2, 1)
+	// 	cagegory5, err := models.GetCategory(topics[i5].ParentId)
+	// 	if err != nil {
+	// 		beego.Error(err)
+	// 	}
+	// 	ee[0].Project = cagegory5.Title
+	// 	ee[0].Id = cagegory5.Id
+	// 	slice2 = append(slice2, ee...)
+	// }
+	category5, _ := models.GetAllCategory()
+	if err != nil {
+		beego.Error(err)
+	}
+	c.Data["category"] = category5
+	beego.Info(slice2)
 }
 
-//显示添加界面
-func (c *JsonController) Add() {
+//添加价值结构中的项目
+func (c *JsonController) Addjson() {
+	id := c.Input().Get("pid")
+	text1 := c.Input().Get("title")
+	idNum, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		beego.Error(err)
+	}
+	//存入数据库——分院
+	_, err = models.AddCategory(idNum, text1, "", "", "", "")
+	if err != nil {
+		beego.Error(err)
+	} else {
+		// c.Data["json"] = map[string]interface{}{
+		// 	"state":    "SUCCESS",
+		// 	"data":     "111",
+		// 	"original": "demo.jpg",
+		// }
+		// c.ServeJSON()
+		//返回值给ajax的data
+		data := text1
+		c.Ctx.WriteString(data)
+	}
+}
+
+//显示——修改价值结构中的项目
+func (c *JsonController) Modifyjson() {
+	//1.首先判断是否注册
+	if !checkAccount(c.Ctx) {
+		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/login?url="+route, 302)
+		// c.Redirect("/login", 302)
+		return
+	}
+	//2.取得文章的作者
+	//3.由用户id取得用户名
+	//4.取得客户端用户名
+	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
+	defer sess.SessionRelease(c.Ctx.ResponseWriter)
+	v := sess.Get("uname")
+	if v != nil {
+		c.Data["Uname"] = v.(string)
+	}
+	// uname := v.(string) //ck.Value
+	//4.取出用户的权限等级
+	role, _ := checkRole(c.Ctx) //login里的
+	// beego.Info(role)
+	//5.进行逻辑分析：
+	rolename, _ := strconv.ParseInt(role, 10, 64)
+	if rolename > 2 { //
+		// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/roleerr?url="+route, 302)
+		// c.Redirect("/roleerr", 302)
+		return
+	}
+
+	//4.取得价值列表choose和mark
 	id := c.Input().Get("id")
 	idNum, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		beego.Error(err)
 	}
-	category, err := models.GetCategory(idNum) //得到价值
+	category, err := models.GetCategory(idNum)
 	if err != nil {
 		beego.Error(err)
 	}
+	// beego.Info(category)
+	// var ff string
+	//如果mark为空，则寻找选择列表的分值
 	//进行选择列表拆分
 	array1 := strings.Split(category.List, ",")
+	array2 := strings.Split(category.ListMark, ",")
+	// beego.Info(category.ListMark)
+	// if category.Mark == "" {
+	// 	for i, v := range array1 {
+	// 		if v == choose {
+	// 			ff = array2[i]
+	// 		}
+	// 	}
+	// } else {
+	// 	ff = category.Mark
+	// }
+	//进行选择列表拆分
+	// array1 := strings.Split(category.List, ",")
 	slice1 := make([]List1, 0)
-	for _, v := range array1 {
+	for i, v := range array1 {
 		ee := make([]List1, 1)
 		ee[0].Choose = v
+		ee[0].Mark1 = array2[i]
 		slice1 = append(slice1, ee...)
 	}
+
+	slice2 := make([]List1, 0)
+	for _, w := range array2 {
+		ff := make([]List1, 1)
+		ff[0].Mark1 = w
+		slice2 = append(slice2, ff...)
+	}
+	c.TplName = "admin_json_modify.tpl"
+	c.Data["IsLogin"] = checkAccount(c.Ctx)
 	c.Data["category"] = category
 	c.Data["list"] = slice1
-
-	//2.取得客户端用户名
-	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
-	defer sess.SessionRelease(c.Ctx.ResponseWriter)
-	v := sess.Get("uname")
-	var uname string
-	if v != nil {
-		uname = v.(string)
-		c.Data["Uname"] = v.(string)
-	}
-	//先由uname取得uid
-	user := models.GetUserByUsername(uname)
-	//取得父级id和用户id下的价值
-	topics, _, _, err := models.GetMeritTopic(idNum, user.Id)
-	c.Data["topics"] = topics
-	// c.ServeJSON()
-	c.TplName = "add.tpl"
+	c.Data["mark"] = slice2
+	// beego.Info(slice2)
+	c.Data["Cid"] = id
+	c.Data["IsCategory"] = true
 }
 
+//提交修改—修改价值结构中的项目
+func (c *JsonController) ModifyjsonPost() {
+	title := c.Input().Get("title")
+	mark := c.Input().Get("mark")
+	list := c.Input().Get("list")
+	listmark := c.Input().Get("listmark")
+	//4.取得价值列表choose和mark
+	id := c.Input().Get("id")
+	idNum, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		beego.Error(err)
+	}
+	err = models.Modifyjson(idNum, title, mark, "", list, listmark)
+	if err != nil {
+		beego.Error(err)
+	}
+	// c.Redirect("/view?id="+tid, 302) //回到修改后的文章
+	c.Redirect("/json", 301)
+}
+
+//删除价值结构中的项目
+func (c *JsonController) Deletejson() {
+	id := c.Input().Get("id")
+	idNum, err := strconv.ParseInt(id, 10, 64)
+	err = models.Deletejson(idNum)
+	if err != nil {
+		beego.Error(err)
+	}
+	c.Redirect("/json", 301)
+}
+
+//导入json数据，初始化价值结构
 func (c *JsonController) ImportJson() {
 	contents, _ := ioutil.ReadFile("./conf/json.json")
 	var r List6

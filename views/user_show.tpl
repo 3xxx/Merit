@@ -99,16 +99,12 @@
                         <th>{{.Choose}}</th>
                         <th></th>
                         </tr>
-
                       {{end}}
-
                     {{end}}
-
                 {{end}}
             {{end}}    
         {{end}}
       </tr>
-
     </tbody>
   </table>
 </div>

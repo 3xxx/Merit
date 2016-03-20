@@ -361,21 +361,22 @@ func (this *UserController) ImportExcel() {
 	}
 	for _, sheet := range xlFile.Sheets {
 		for _, row := range sheet.Rows {
-			// for j := 2; j < 7; j += 5 {
+			// 这里要判断单元格列数，如果超过单元格使用范围的列数，则出错for j := 2; j < 7; j += 5 {
 			j := 1
-			user.Username = row.Cells[j].String()
-			Pwd1 := row.Cells[j+1].String()
+			user.Username, err = row.Cells[j].String()
+			Pwd1, err := row.Cells[j+1].String()
 			md5Ctx := md5.New()
 			md5Ctx.Write([]byte(Pwd1))
 			cipherStr := md5Ctx.Sum(nil)
 			user.Password = hex.EncodeToString(cipherStr)
-			user.Email = row.Cells[j+2].String()
-			user.Nickname = row.Cells[j+3].String()
-			user.Department = row.Cells[j+5].String()
-			user.Secoffice = row.Cells[j+6].String()
+			user.Email, err = row.Cells[j+2].String()
+			user.Nickname, err = row.Cells[j+3].String()
+			user.Department, err = row.Cells[j+5].String()
+			user.Secoffice, err = row.Cells[j+6].String()
 			user.Lastlogintime = time.Now()
 			uid, err := m.SaveUser(user)
-			roleid, _ := strconv.ParseInt(row.Cells[j+4].String(), 10, 64)
+			role, err := row.Cells[j+4].String()
+			roleid, _ := strconv.ParseInt(role, 10, 64)
 			_, err = m.AddRoleUser(roleid, uid)
 			if err != nil {
 				beego.Error(err)

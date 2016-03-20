@@ -1,0 +1,58 @@
+<!-- 用户添加价值内容界面 -->
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="UTF-8">
+  <title>技术人员价值评测系统</title>
+<script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
+ <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+ <script src="/static/js/bootstrap-treeview.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
+
+    <script src="/static/ueditor/ueditor.parse.min.js"></script>
+</head>
+
+<div class="col-lg-12">
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <!-- <th>#</th> -->
+        <th>Title</th>
+        <th>choose</th>
+        <th>mark</th>
+        <th>content</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <th>{{.Topic.Title}}</th>
+        <th>{{.Topic.Choose}}</th>
+        <th>{{.Topic.Mark}}</th>
+        <th>{{.Topic.Content}}</th>  
+      </tr>
+    </tbody>
+  </table>
+
+    <label>简介:</label>
+  <div class="content">
+{{str2html .Topic.Content}}
+  <!-- 项目简介如何截取html呢？ -->
+  </div>
+<hr>
+<br />
+<br />
+</div>
+
+<script type="text/javascript">
+// fireEvent("startUpload")
+        uParse('.content',{
+            rootPath : '/static/ueditor/'
+        })
+</script>
+
+</body>
+</html>
+
+
+

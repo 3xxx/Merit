@@ -30,3 +30,9 @@ func (c *MainController) Test() {
 	c.Data["Email"] = "astaxie@gmail.com"
 	c.TplName = "user_show.tpl"
 }
+
+func (c *MainController) Test1() {
+	c.Data["Website"] = "beego.me"
+	c.Data["Email"] = "astaxie@gmail.com"
+	c.TplName = "test.tpl"
+}

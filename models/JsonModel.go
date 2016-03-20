@@ -59,6 +59,21 @@ func GetPids(pid int64) ([]*Category, error) {
 	return cates, err
 }
 
+//取到所有的价值结构
+func GetAllCategory() ([]*Category, error) {
+	o := orm.NewOrm()
+	category := make([]*Category, 0)
+	// cate := &Category{Id: id}
+	// category := new(Category)
+	qs := o.QueryTable("category")
+	// err := qs.All(category)
+	_, err := qs.All(&category)
+	if err != nil {
+		return nil, err
+	}
+	return category, err
+}
+
 //由id取得分类
 func GetCategory(id int64) (*Category, error) {
 	o := orm.NewOrm()
@@ -96,4 +111,81 @@ func GetCategorybyidtitle(id int64, title string) (*Category, error) {
 		return nil, err
 	}
 	return category, err
+}
+
+//修改category
+func Modifyjson(id int64, title, mark, url, list, listmark string) error {
+	o := orm.NewOrm()
+	meritcategory := &Category{Id: id}
+	var err error
+	if o.Read(meritcategory) == nil {
+		meritcategory.Title = title
+		meritcategory.Mark = mark
+		meritcategory.List = list
+		meritcategory.ListMark = listmark
+		meritcategory.Updated = time.Now()
+		_, err = o.Update(meritcategory)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+//删除价值结构
+func Deletejson(id int64) error { //应该在controllers中显示警告
+	o := orm.NewOrm()
+	// Read 默认通过查询主键赋值，可以使用指定的字段进行查询：
+	// user := User{Name: "slene"}
+	// err = o.Read(&user, "Name")
+	meritcategory := Category{Id: id}
+	if o.Read(&meritcategory) == nil {
+		_, err := o.Delete(&meritcategory) //删除分院
+		if err != nil {
+			return err
+		}
+	}
+	//查询下级
+	var categories []Category
+	_, err := o.QueryTable("Category").Filter("parentid", id).All(&categories, "Id")
+	if err != nil {
+		return err
+	} else {
+		_, err = o.QueryTable("Category").Filter("parentid", id).Delete() //删除科室
+		// _, err := o.Delete(&categories)
+		if err != nil {
+			return err
+		}
+		for _, v := range categories {
+			var categories1 []Category
+			_, err = o.QueryTable("Category").Filter("parentid", v.Id).All(&categories1, "Id")
+			if err != nil {
+				return err
+			} else {
+				_, err = o.QueryTable("Category").Filter("parentid", v.Id).Delete() //删除价值分类
+				// _, err := o.Delete(&categories1)
+				if err != nil {
+					return err
+				}
+				for _, w := range categories1 {
+					var categories2 []Category
+					_, err = o.QueryTable("Category").Filter("parentid", w.Id).All(&categories2, "Id")
+					if err != nil {
+						return err
+					} else {
+						_, err = o.QueryTable("Category").Filter("parentid", w.Id).Delete() //删除价值内容
+						// _, err := o.Delete(&categories2)
+						if err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
+	}
+	// 依据当前查询条件，进行批量删除操作
+	// num, err := o.QueryTable("user").Filter("name", "slene").Delete()
+	// fmt.Printf("Affected Num: %s, %s", num, err)
+	// // DELETE FROM user WHERE name = "slene"
+	return err
 }

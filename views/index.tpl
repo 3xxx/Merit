@@ -41,6 +41,13 @@
       查看所有
     </button>
   </a>
+    <a href="/jsonview">
+    <button type="button" class="btn btn-primary" style="text-shadow: black 5px 3px 3px;">
+      <!--  btn-lg -->
+      <span class="glyphicon glyphicon-user"></span>
+      修改侧栏
+    </button>
+  </a>  
     <a href="/user">
     <button type="button" class="btn btn-primary" style="text-shadow: black 5px 3px 3px;">
       <!--  btn-lg -->

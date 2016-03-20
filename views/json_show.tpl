@@ -11,12 +11,17 @@
 <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
 <style type="text/css">
 a:active{text:expression(target="_blank");}
+i#delete
+{
+color:#DC143C;
+}
 </style>
 <script type="text/javascript">
   var allLinks=document.getElementsByTagName("a");
 for(var i=0;i!=allLinks.length; i++){
 allLinks[i].target="_blank";
 }
+
 </script>
 </head>
 
@@ -31,7 +36,7 @@ allLinks[i].target="_blank";
         <th>Title</th>
         <th>choose</th>
         <th>mark</th>
-        <th>content</th>
+        <th>ParentTitle</th>
         <th>操作</th>
       </tr>
     </thead>
@@ -40,17 +45,22 @@ allLinks[i].target="_blank";
       <tr>
         <th>{{$k}}</th>
         <th>{{.Title}}</th>
-                   <th>{{.Choose}}</th>
-                   <th>{{.Mark}}</th>
-                   <th>{{.Content}}</th>
-                    <th>
-                  <a href="/">显示成果</a>
-                  <a href="/">修改</a>
-                  <a href="/">删除</a>
-                  </th>  
+        <th>{{.Choose}}</th>
+        <th>{{.Mark}}</th>
+        {{range $k1,$v1 :=$.category}}
+        {{if eq $v.ParentId $v1.Id}}
+        <th>{{.Title}}</th>
+        {{end}}
+        {{end}}
+        <th>
+         <a href="/view?id={{.Id}}"><i class="glyphicon glyphicon-open"></i>详细</a>
+          <a href="/modify?id={{.Id}}"><i class="glyphicon glyphicon-edit"></i>修改</a>
+          <a href="/delete?id={{.Id}}"><i id="delete" class="glyphicon glyphicon-remove-sign"></i>删除</a>
+        </th>  
       </tr>
       {{end}}
     </tbody>
+
   </table>
 </div>
 

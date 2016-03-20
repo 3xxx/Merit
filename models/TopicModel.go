@@ -85,4 +85,64 @@ func GetAllMeritTopic(uid int64) ([]*MeritTopic, error) {
 	return topics, err
 }
 
+//根据topicid取得topic
+func GetMeritTopicbyId(tid string) (*MeritTopic, error) {
+	tidNum, err := strconv.ParseInt(tid, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	o := orm.NewOrm()
+	merittopic := new(MeritTopic)
+	qs := o.QueryTable("merit_topic")
+	err = qs.Filter("id", tidNum).One(merittopic)
+	if err != nil {
+		return nil, err
+	}
+	return merittopic, err
+}
+
+//删除merittopic
+func DeletMeritTopic(id string) error { //应该在controllers中显示警告
+	tidNum, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return err
+	}
+	o := orm.NewOrm()
+	// Read 默认通过查询主键赋值，可以使用指定的字段进行查询：
+	// user := User{Name: "slene"}
+	// err = o.Read(&user, "Name")
+	merittopic := MeritTopic{Id: tidNum}
+	if o.Read(&merittopic) == nil {
+		_, err = o.Delete(&merittopic)
+		if err != nil {
+			return err
+		}
+	}
+	// _, err = o.Delete(&topic) //这句为何重复？
+	return err
+}
+
+//修改merittopic
+func ModifyMeritTopic(tid, title, choose, content, mark string) error {
+	tidNum, err := strconv.ParseInt(tid, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	o := orm.NewOrm()
+	merittopic := &MeritTopic{Id: tidNum}
+	if o.Read(merittopic) == nil {
+		merittopic.Title = title
+		merittopic.Choose = choose
+		merittopic.Content = content
+		merittopic.Mark = mark
+		merittopic.Updated = time.Now()
+		_, err = o.Update(merittopic)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
 //管理员取得所有价值
