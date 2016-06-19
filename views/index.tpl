@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Beego</title>
+  <title>技术人员价值管理系统</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script> 
  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
@@ -11,21 +11,14 @@
 
 <body>
 <div class="col-lg-12">
-<div>
-  <form method="post" action="/importjson" enctype="multipart/form-data">
-    <div class="input-group">
-      <label>
-        选择json数据文件：
-        <input type="file" name="json" id="json" />
-      </label>
-      <br/>
-    </div>
-    <button type="submit" class="btn btn-default" >导入自定义评测结构数据</button>
-  </form>
-</div>
-<div>
-  <button type="button" class="btn btn-default" id="import">初始化评测结构数据</button>
-</div>
+<h1>
+  &nbsp;&nbsp;&nbsp;&nbsp;序言:</h1>
+  <h2>
+  &nbsp;&nbsp;&nbsp;&nbsp;技术人员价值管理系统旨在揭示技术范们的价值，区别于其他群体独特的地方<br/><br/>
+  &nbsp;&nbsp;&nbsp;&nbsp;除了业绩，他们更加拥有价值，借此展示价值：敏锐地获取、积累、提升价值<br/><br/>
+  &nbsp;&nbsp;&nbsp;&nbsp;为价值奋斗，更为价值自豪；为价值珍惜生命，为共同的价值珍惜彼此友谊！<br/><br/>
+</h2>
+
 <div>
     <a href="/login">
     <button type="button" class="btn btn-primary" style="text-shadow: black 5px 3px 3px;">
@@ -34,20 +27,7 @@
       用户登录
     </button>
   </a>
-  <a href="/json">
-    <button type="button" class="btn btn-primary" style="text-shadow: black 5px 3px 3px;">
-      <!--  btn-lg -->
-      <span class="glyphicon glyphicon-user"></span>
-      查看所有
-    </button>
-  </a>
-    <a href="/jsonview">
-    <button type="button" class="btn btn-primary" style="text-shadow: black 5px 3px 3px;">
-      <!--  btn-lg -->
-      <span class="glyphicon glyphicon-user"></span>
-      修改侧栏
-    </button>
-  </a>  
+ 
     <a href="/user">
     <button type="button" class="btn btn-primary" style="text-shadow: black 5px 3px 3px;">
       <!--  btn-lg -->
@@ -57,22 +37,6 @@
   </a>
 </div>  
 </div>
-  <script>
-$(document).ready(function(){
-$("#import").click(function(){//这里应该用button的id来区分按钮的哪一个,因为本页有好几个button
-            $.ajax({
-                type:"POST",
-                url:"/importjson",
-                success:function(data){//数据提交成功时返回数据
-                    alert("导入成功！")
-                }
-            });
-            return true;//这里true和false结果都一样。不刷新页面的意思？
- });
-});
-  </script>
+
 </body>
 </html>
-<!-- <button type="button" class="btn btn-primary btn-lg" style="color: rgb(212, 106, 64);">
-<span class="glyphicon glyphicon-user"></span> User
-</button> -->

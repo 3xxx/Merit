@@ -297,7 +297,7 @@ func (c *MeritTopicController) ModifyPost() { //这个post属于topic_modify.htm
 	c.Redirect("/view?id="+tid, 302) //回到修改后的文章
 }
 
-//删除文章
+//删除价值
 func (c *MeritTopicController) DeleteMeritTopic() { //应该显示警告
 	//1.首先判断是否注册
 	if !checkAccount(c.Ctx) {

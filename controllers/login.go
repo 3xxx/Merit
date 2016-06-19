@@ -27,7 +27,7 @@ func (c *LoginController) Get() {
 	}
 
 	c.Data["Url"] = url
-	beego.Info(isExit)
+	// beego.Info(isExit)
 	// logout user
 	// func LogoutUser(ctx *context.Context) {
 	// 	DeleteRememberCookie(ctx)

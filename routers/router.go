@@ -7,12 +7,18 @@ import (
 
 func init() {
 	beego.Router("/", &controllers.MainController{})
+	beego.Router("/admin", &controllers.MainController{}, "get:Admin")
+	beego.Router("/jsoneditor", &controllers.MainController{}, "get:Jsoneditor")
+
 	beego.Router("/test", &controllers.MainController{}, "get:Test")
 	beego.Router("/test1", &controllers.MainController{}, "get:Test1")
 
 	beego.Router("/controller", &controllers.UeditorController{}, "*:ControllerUE")
 
-	beego.Router("/json", &controllers.JsonController{})
+	beego.Router("/getperson", &controllers.JsonController{}, "get:GetPerson")
+
+	beego.Router("/get", &controllers.JsonController{})
+	beego.Router("/json", &controllers.JsonController{}) //这个和上面等价
 	beego.Router("/importjson", &controllers.JsonController{}, "post:ImportJson")
 	beego.Router("/user", &controllers.JsonController{}, "get:GetMeritUser")
 	beego.Router("/addjson", &controllers.JsonController{}, "post:Addjson")
@@ -28,5 +34,8 @@ func init() {
 	beego.Router("/delete", &controllers.MeritTopicController{}, "get:DeleteMeritTopic")
 
 	beego.Router("/login", &controllers.LoginController{})
-
+	beego.Router("/regist", &controllers.RegistController{})
+	// beego.Router("/registerr", &controllers.RegistController{}, "get:RegistErr")
+	beego.Router("/regist/checkuname", &controllers.RegistController{}, "post:CheckUname")
+	beego.Router("/regist/getuname", &controllers.RegistController{}, "post:GetUname")
 }

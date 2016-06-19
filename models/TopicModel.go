@@ -56,20 +56,36 @@ func GetMeritTopic(pid, uid int64) (topics []*MeritTopic, numbers, marks int, er
 	o := orm.NewOrm()
 	topics = make([]*MeritTopic, 0)
 	// category := new(MeritTopic)
-	qs := o.QueryTable("merit_topic")                                      //这个表名MeritTopic需要用驼峰式，
-	_, err = qs.Filter("parentid", pid).Filter("userid", uid).All(&topics) //而这个字段parentid为何又不用呢
-	if err != nil {
-		return nil, 0, 0, err
-	}
-	for _, v := range topics {
-		mark, err := strconv.Atoi(v.Mark)
+	qs := o.QueryTable("merit_topic") //这个表名MeritTopic需要用驼峰式，
+	if pid != 0 {                     //如果给定父id则进行过滤
+		_, err = qs.Filter("parentid", pid).Filter("userid", uid).All(&topics) //而这个字段parentid为何又不用呢
 		if err != nil {
 			return nil, 0, 0, err
 		}
-		marks = marks + mark
+		for _, v := range topics {
+			mark, err := strconv.Atoi(v.Mark)
+			if err != nil {
+				return nil, 0, 0, err
+			}
+			marks = marks + mark
+		}
+		numbers = len(topics)
+		return topics, numbers, marks, err
+	} else { //如果不给定父id（PID=0），则取所有
+		_, err = qs.Filter("userid", uid).All(&topics) //而这个字段parentid为何又不用呢
+		if err != nil {
+			return nil, 0, 0, err
+		}
+		for _, v := range topics {
+			mark, err := strconv.Atoi(v.Mark)
+			if err != nil {
+				return nil, 0, 0, err
+			}
+			marks = marks + mark
+		}
+		numbers = len(topics)
+		return topics, numbers, marks, err
 	}
-	numbers = len(topics)
-	return topics, numbers, marks, err
 }
 
 //取得用户id的所有价值

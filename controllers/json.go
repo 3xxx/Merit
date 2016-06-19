@@ -76,6 +76,80 @@ type List6 struct { //总院：水利设计院……
 	Fenyuan    []List5 `json:"nodes"`
 }
 
+type Person struct { //总院：水利设计院……
+	Id         int64  `form:"-"`
+	Name       string `json:"Name"`
+	Department string `json:"Department"`
+	Keshi      string `json:"Keshi"` //当controller返回json给view的时候，必须用text作为字段
+	Numbers    int    //分值
+	Marks      int    //记录个数
+}
+
+//管理员进行人员价值排序查看
+//排序第一排序为部门，第二排序为科室，第三排序为分值
+func (c *JsonController) GetPerson() {
+	//1.首先判断是否注册
+	if !checkAccount(c.Ctx) {
+		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/login?url="+route, 302)
+		// c.Redirect("/login", 302)
+		return
+	}
+	//2.取得文章的作者
+	//3.由用户id取得用户名
+	//4.取得客户端用户名
+	// var uname string
+	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
+	defer sess.SessionRelease(c.Ctx.ResponseWriter)
+	v := sess.Get("uname")
+	if v != nil {
+		// uname = v.(string)
+		c.Data["Uname"] = v.(string)
+	}
+	// uname := v.(string) //ck.Value
+	//4.取出用户的权限等级
+	role, _ := checkRole(c.Ctx) //login里的
+	// beego.Info(role)
+	//5.进行逻辑分析：
+	rolename, _ := strconv.ParseInt(role, 10, 64)
+	if rolename > 2 { //
+		// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/roleerr?url="+route, 302)
+		// c.Redirect("/roleerr", 302)
+		return
+	}
+
+	var numbers1, marks1 int
+	slice1 := make([]Person, 0)
+	users, _ := models.GetAllusers(1, 2000, "Id")
+	for i1, _ := range users {
+		//根据价值id和用户id，得到成果，统计数量和分值
+		//取得用户的价值数量和分值
+		_, numbers, marks, err := models.GetMeritTopic(0, users[i1].Id)
+		if err != nil {
+			beego.Error(err)
+		}
+		marks1 = marks1 + marks
+		numbers1 = numbers1 + numbers
+		aa := make([]Person, 1)
+		aa[0].Id = users[i1].Id //这里用for i1,v1,然后用v1.Id一样的意思
+		aa[0].Name = users[i1].Nickname
+		aa[0].Department = users[i1].Department
+		aa[0].Keshi = users[i1].Secoffice
+		aa[0].Numbers = numbers1
+		aa[0].Marks = marks1
+		slice1 = append(slice1, aa...)
+		marks1 = 0
+		numbers1 = 0
+	}
+	c.Data["person"] = slice1
+	c.TplName = "admin_person.tpl"
+}
+
 //管理员登录显示所有价值结构，方便后面操作
 func (c *JsonController) Get() {
 	// contents, _ := ioutil.ReadFile("./conf/json.json")
@@ -232,17 +306,57 @@ func (c *JsonController) GetMeritUser() {
 	//查询所有pid为价值id——得到选择项和分值——进行字符串分割
 	//构造struct——
 	//这个不用：转json数据b, err := json.Marshal(group) fmt.Println(string(b))
-	var numbers1, marks1 int
-	//2.取得客户端用户名
-	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
-	defer sess.SessionRelease(c.Ctx.ResponseWriter)
-	v := sess.Get("uname")
-	var uname string
-	if v != nil {
-		uname = v.(string)
-		c.Data["Uname"] = v.(string)
+	var user models.User
+	//管理员可以查看
+	Uid := c.Input().Get("uid")
+	if Uid == "" { //如果是技术人员自己进行查看，则Uid为空
+		//1.首先判断是否注册
+		if !checkAccount(c.Ctx) {
+			// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
+			route := c.Ctx.Request.URL.String()
+			c.Data["Url"] = route
+			c.Redirect("/login?url="+route, 302)
+			// c.Redirect("/login", 302)
+			return
+		}
+		//2.取得文章的作者
+		//3.由用户id取得用户名
+		//4.取得客户端用户名
+		var uname string
+		sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
+		defer sess.SessionRelease(c.Ctx.ResponseWriter)
+		v := sess.Get("uname")
+		if v != nil {
+			uname = v.(string)
+			c.Data["Uname"] = v.(string)
+		}
+		// uname := v.(string) //ck.Value
+		//4.取出用户的权限等级
+		role, _ := checkRole(c.Ctx) //login里的
+		// beego.Info(role)
+		//5.进行逻辑分析：
+		rolename, err := strconv.ParseInt(role, 10, 64)
+		if err != nil {
+			beego.Error(err)
+		}
+		if rolename > 5 { //
+			// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
+			route := c.Ctx.Request.URL.String()
+			c.Data["Url"] = route
+			c.Redirect("/roleerr?url="+route, 302)
+			// c.Redirect("/roleerr", 302)
+			return
+		}
+		user = models.GetUserByUsername(uname) //得到用户的id、分院和科室等
+	} else { //如果是管理员进行查看，则uid是用户名
+		userid, err := strconv.ParseInt(Uid, 10, 64)
+		if err != nil {
+			beego.Error(err)
+		}
+		user = models.GetUserByUserId(userid)
 	}
-	// beego.Info(uname)
+
+	var numbers1, marks1 int
 	// slice1 := make([]List1, 0)
 	slice2 := make([]List2, 0)
 	slice3 := make([]List3, 0)
@@ -256,9 +370,7 @@ func (c *JsonController) GetMeritUser() {
 	var List7 List6
 	List7.Danwei = category[0].Title //单位名称
 	List7.Selectable = false
-
 	// category1, err := models.GetPids(category[0].Id) //得到多个分院
-	user := models.GetUserByUsername(uname) //得到用户的id、分院和科室等
 	//查出分院id——再由分院id作为parentid和科室名称，得到科室id
 	department, err := models.GetCategorybyname(user.Department)
 	if err != nil {
@@ -367,12 +479,10 @@ func (c *JsonController) GetMeritUser() {
 	c.Data["json"] = List7
 	// c.ServeJSON()
 	c.TplName = "json_show.tpl"
-
 	//查出所有用户的价值资料
 	//前提是价值资料里要带用户id
 	topics, err := models.GetAllMeritTopic(user.Id)
 	c.Data["topics"] = topics
-
 	// for i5, _ := range topics {
 	// 	ee := make([]List2, 1)
 	// 	cagegory5, err := models.GetCategory(topics[i5].ParentId)
@@ -388,7 +498,7 @@ func (c *JsonController) GetMeritUser() {
 		beego.Error(err)
 	}
 	c.Data["category"] = category5
-	beego.Info(slice2)
+	// beego.Info(slice2)
 }
 
 //添加价值结构中的项目
@@ -600,8 +710,20 @@ func (c *JsonController) ImportJson() {
 					for i4, _ := range arr4 {
 						text6, _ := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(i1).Get("nodes").GetIndex(i2).Get("nodes").GetIndex(i3).Get("nodes").GetIndex(i4).Get("text").String()
 						text7, _ := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(i1).Get("nodes").GetIndex(i2).Get("nodes").GetIndex(i3).Get("nodes").GetIndex(i4).Get("mark").String()
-						text8 = text8 + "," + text6
-						text9 = text9 + "," + text7
+						if i == 0 {
+							text8 = text6
+							text9 = text7
+						} else {
+							text8 = text8 + "," + text6
+							text9 = text9 + "," + text7
+						}
+						// for i, label2 := range label {
+						// 		if i == 0 {
+						// 			label1 = label2.Title
+						// 		} else {
+						// 			label1 = label1 + "," + label2.Title
+						// 		}
+						// 	}
 					}
 					//存入数据库——项目负责人
 					// url:="/"+"add?id="+
@@ -684,7 +806,9 @@ func (c *JsonController) ImportJson() {
 // 	}
 // }
 
-// 今天遇到个接口需要处理一个json的map类型的数组，开始想法是用simple—json里的Array读取数组，然后遍历数组取出每个map，然后读取对应的值，在进行后续操作，貌似很简单的工作，却遇到了一个陷阱。
+// 今天遇到个接口需要处理一个json的map类型的数组，开始想法是用simple—json
+// 里的Array读取数组，然后遍历数组取出每个map，然后读取对应的值，在进行后续操作，
+// 貌似很简单的工作，却遇到了一个陷阱。
 // Json格式类似下边：
 // {"code":0
 // ,"request_id": xxxx
@@ -694,8 +818,12 @@ func (c *JsonController) ImportJson() {
 //         ,"device_hid": "xxxx"
 // }]
 // , "count":0}
-//     很快按上述想法写好了带码，但是以外发生了，编译不过，看一看代码逻辑没有问题，问题出在哪里呢？
-//     原来是interface{} Array方法返回的是一个interface{}类型的，我们都在golang里interface是一个万能的接受者可以保存任意类型的参数，但是却忽略了一点，它是不可以想当然的当任意类型来用，在使用之前一定要对interface类型进行判断。我开始就忽略了这点，想当然的使用interface变量造成了错误。
+//     很快按上述想法写好了带码，但是以外发生了，编译不过，看一看代码逻辑没有
+// 问题，问题出在哪里呢？
+//     原来是interface{} Array方法返回的是一个interface{}类型的，我们都在golang
+// 里interface是一个万能的接受者可以保存任意类型的参数，但是却忽略了一点，它是
+// 不可以想当然的当任意类型来用，在使用之前一定要对interface类型进行判断。我开始
+// 就忽略了这点，想当然的使用interface变量造成了错误。
 //     下面写了个小例子
 
 // package main
@@ -752,7 +880,7 @@ func (c *JsonController) ImportJson() {
 // var nodes = make(map[string]interface{})
 // nodes, _ = js.Map()
 
-// 第三步，将nodes当作map处理即可，如果map的value仍是一个json机构，回到第二步。
+// 第三步，将nodes当作map处理即可，如果map的value仍是一个json结构，回到第二步。
 // for key,_ := range nodes {
 // ...
 // }

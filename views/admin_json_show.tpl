@@ -51,9 +51,9 @@ allLinks[i].target="_blank";
         <th></th>
         
         <th>
-          <input type="hidden" id="{{.Id}}" value="{{.Pid}}"/>
-          <a href="" onclick="prom('{{.Id}}')">添加同级</a><!-- href="/addjson?pid=0" -->
-          <a href="" onclick="prom1('{{.Id}}')">添加下级</a>
+          <!-- <input type="hidden" id="{{.Id}}" value="{{.Pid}}"/> -->
+          <a href="" onclick="prom('{{.Pid}}')">添加同级</a><!-- href="/addjson?pid=0" -->
+          <a href="" onclick="prom('{{.Id}}')">添加下级</a>
           <a href="/modifyjson?id={{.Id}}">修改</a>
           <a href="/deletejson?id={{.Id}}">删除</a>
         </th>
@@ -68,9 +68,9 @@ allLinks[i].target="_blank";
                  <th></th>
                  
                  <th>
-                  <input type="hidden" id="{{.Id}}" value="{{$v.Id}}"/>
-                   <a href="" onclick="prom('{{.Id}}')">添加同级</a>
-                   <a href="" onclick="prom1('{{.Id}}')">添加下级</a>
+                  <!-- <input type="hidden" id="{{.Id}}" value="{{$v.Id}}"/> -->
+                   <a href="" onclick="prom('{{$v.Id}}')">添加同级</a>
+                   <a href="" onclick="prom('{{.Id}}')">添加下级</a>
                   <a href="/modifyjson?id={{.Id}}">修改</a>
                   <a href="/deletejson?id={{.Id}}">删除</a>
                  </th>
@@ -88,9 +88,9 @@ allLinks[i].target="_blank";
                   <th></th>
                                   
                   <th>
-                  <input type="hidden" id="{{.Id}}" value="{{$v2.Id}}"/>
-                  <a href="" onclick="prom('{{.Id}}')">添加同级</a>
-                  <a href="" onclick="prom1('{{.Id}}')">添加下级</a>
+                  <!-- <input type="hidden" id="{{.Id}}" value="{{$v2.Id}}"/> -->
+                  <a href="" onclick="prom('{{$v2.Id}}')">添加同级</a>
+                  <a href="" onclick="prom('{{.Id}}')">添加下级</a>
                   <a href="/modifyjson?id={{.Id}}">修改</a>
                   <a href="/deletejson?id={{.Id}}">删除</a>
                   </th>
@@ -149,28 +149,8 @@ $(function() {
 
 
 //弹出一个输入框，输入一段文字，可以提交 
-//添加同级 
+//添加同级/下级，通过id来区分统计或下级
     function prom(id) {  
-        var name = prompt("请输入名称", ""); //将输入的内容赋给变量 name ，  
-        //这里需要注意的是，prompt有两个参数，前面是提示的话，后面是当对话框出来后，在对话框里的默认值  
-        if (name)//如果返回的有内容  
-        {  
-          var pid = $('#'+id).val();
-            // alert("欢迎您：" + name) 
-            $.ajax({
-                type:"post",//这里是否一定要用post？？？
-                url:"/addjson",
-                data: {pid:pid,title:name},
-                success:function(data,status){//数据提交成功时返回数据
-                  alert("添加“"+data+"”成功！(status:"+status+".)");
-                 }
-            });  
-        }  
-  
-    } 
- //弹出一个输入框，输入一段文字，可以提交
- //添加下级  
-    function prom1(id) {  
         var name = prompt("请输入名称", ""); //将输入的内容赋给变量 name ，  
         //这里需要注意的是，prompt有两个参数，前面是提示的话，后面是当对话框出来后，在对话框里的默认值  
         if (name)//如果返回的有内容  
@@ -186,9 +166,28 @@ $(function() {
                  }
             });  
         }  
+    } 
+ //弹出一个输入框，输入一段文字，可以提交
+ //添加下级  
+    // function prom1(id) {  
+        // var name = prompt("请输入名称", ""); //将输入的内容赋给变量 name ，  
+        //这里需要注意的是，prompt有两个参数，前面是提示的话，后面是当对话框出来后，在对话框里的默认值  
+        // if (name)//如果返回的有内容  
+        // {  
+          // var pid = $('#'+id).val();
+            // alert("欢迎您：" + name) 
+            // $.ajax({
+                // type:"post",//这里是否一定要用post？？？
+                // url:"/addjson",
+                // data: {pid:id,title:name},
+                // success:function(data,status){//数据提交成功时返回数据
+                  // alert("添加“"+data+"”成功！(status:"+status+".)");
+                 // }
+            // });  
+        // }  
   
-    }   
-$(document).ready(function(){
+    // }   
+$(document).ready(function(){//这个没有用到吧
   // var roletitle1=document.getElementsByName("roletitle");
   // $("#uname").focus(function(){获得焦点
      $("input").blur(function(){//其失去焦点
