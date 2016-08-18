@@ -21,7 +21,7 @@ type User struct {
 	Nickname      string    //`orm:"unique;size(32)" form:"Nickname" valid:"Required;MaxSize(20);MinSize(2)"`
 	Email         string    `orm:"size(32)" form:"Email" valid:"Email"`
 	Department    string    //分院
-	Secoffice     string    //科室
+	Secoffice     string    //科室,这里应该用科室id，才能保证即时重名也不怕
 	Remark        string    `orm:"null;size(200)" form:"Remark" valid:"MaxSize(200)"`
 	Status        int       `orm:"default(2)" form:"Status" valid:"Range(1,2)"`
 	Lastlogintime time.Time `orm:"null;type(datetime)" form:"-"`
@@ -171,6 +171,7 @@ func Getuserlist(page int64, page_size int64, sort string) (users []orm.Params, 
 	count, _ = qs.Count()
 	return users, count
 }
+
 func GetAllusers(page int64, page_size int64, sort string) (users []*User, count int64) {
 	o := orm.NewOrm()
 	user := new(User)
@@ -184,6 +185,50 @@ func GetAllusers(page int64, page_size int64, sort string) (users []*User, count
 	qs.Limit(page_size, offset).OrderBy(sort).All(&users)
 	count, _ = qs.Count()
 	return users, count
+}
+
+//根据分院和科室查所有用户
+func GetUsersbySec(department, secoffice string) (users []*User, count int, err error) {
+	o := orm.NewOrm()
+	// cates := make([]*Category, 0)
+	qs := o.QueryTable("user")
+	//这里进行过滤
+	_, err = qs.Filter("Department", department).Filter("Secoffice", secoffice).All(&users)
+	if err != nil {
+		return nil, 0, err
+	}
+	// _, err = qs.OrderBy("-created").All(&cates)
+	// _, err := qs.All(&cates)
+	count = len(users)
+	return users, count, err
+}
+
+//根据科室id查所有用户
+func GetUsersbySecId(secofficeid string) (users []*User, count int, err error) {
+	o := orm.NewOrm()
+	// cates := make([]*Category, 0)
+	qs := o.QueryTable("user")
+	//这里进行过滤
+	secid, _ := strconv.ParseInt(secofficeid, 10, 64)
+	//由secid查自身科室名称
+	secoffice, err := GetCategory(secid)
+	if err != nil {
+		return nil, 0, err
+	}
+	//由secoffice的pid查分院名称
+	department, err := GetCategory(secoffice.ParentId)
+	if err != nil {
+		return nil, 0, err
+	}
+	//由分院名称和科室名称查所有用户
+	_, err = qs.Filter("Department", department.Title).Filter("Secoffice", secoffice.Title).All(&users)
+	if err != nil {
+		return nil, 0, err
+	}
+	// _, err = qs.OrderBy("-created").All(&cates)
+	// _, err := qs.All(&cates)
+	count = len(users)
+	return users, count, err
 }
 
 //添加用户
@@ -294,11 +339,24 @@ func DelUserById(Id int64) (int64, error) {
 	return status, err
 }
 
+//###*****这里特别注意，这个是用户名，是汉语拼音，不是Nickname！！！！
 func GetUserByUsername(username string) (user User) {
 	o := orm.NewOrm()
 	qs := o.QueryTable("user") //不知道主键就用这个过滤操作
 	//进行编号唯一性检查
 	qs.Filter("username", username).One(&user)
+	// user = User{Username: username} //指定字段查询，这样也行
+	// o := orm.NewOrm()
+	// o.Read(&user,"Username")
+	return user
+}
+
+//根据用户nickname取得用户
+func GetUserByNickname(nickname string) (user User) {
+	o := orm.NewOrm()
+	qs := o.QueryTable("user") //不知道主键就用这个过滤操作
+	//进行编号唯一性检查
+	qs.Filter("nickname", nickname).One(&user)
 	// user = User{Username: username} //指定字段查询，这样也行
 	// o := orm.NewOrm()
 	// o.Read(&user,"Username")

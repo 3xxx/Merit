@@ -28,6 +28,14 @@
   <button type="button" class="btn btn-default" id="import">初始化评测结构数据</button>
 </div>
 
+<form class="form-inline" method="post" action="/import_xls_catalog" enctype="multipart/form-data">
+  <div class="form-group">
+    <label>选择excel</label>
+    <input type="file" class="form-control" name="catalog" id="catalog"></div>
+  <button type="submit" class="btn btn-default">提交</button>
+</form>
+
+
 <div class="form-group">
 {{if .IsLogin}}
     <a href="/login?exit=true">

@@ -38,4 +38,13 @@ func init() {
 	// beego.Router("/registerr", &controllers.RegistController{}, "get:RegistErr")
 	beego.Router("/regist/checkuname", &controllers.RegistController{}, "post:CheckUname")
 	beego.Router("/regist/getuname", &controllers.RegistController{}, "post:GetUname")
+
+	//成果登记系统
+	//管理员登录查看分院整体情况
+	beego.Router("/getachievement", &controllers.Achievement{}, "get:GetAchievement")
+	//成果登记表导入数据库
+	beego.Router("/import_xls_catalog", &controllers.Achievement{}, "post:Import_Xls_Catalog")
+	// 主页里显示iframe——科室总体情况
+	beego.Router("/secofficeshow", &controllers.Achievement{}, "get:Secofficeshow")
+
 }
