@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-{{template "header"}}
-<title>{{.Topic.Title}} - 水利设计CMS系统</title>
+<html>
+<head>
+<title>Merit价值管理系统</title>
 
 <!-- <style type="text/css">
 h4 {
@@ -13,9 +14,6 @@ h4 {
 </style> -->
 </head>
 <body>
-<div class="navbar navba-default navbar-fixed-top">
-  <div class="container-fill">{{template "navbar" .}}</div>
-</div>
 
 <input type="button" id="btn_addtr" value="增行">
 <div class="col-lg-12">
@@ -43,18 +41,18 @@ h4 {
    {{range $index, $elem :=.Role}}
     <tr><!--tr表格的行，td定义一个单元格，<th> 标签定义表格内的表头单元格-->
       <!-- <th>{{$index}}</th> -->
-      <!-- <th>{{$.User.Id}}</th> value="{{$.User.Password}}"-->
-      <th>{{$.User.Username}}</th>
-      <th><input type="password" id="input" name="password"  size='18'/></th>
-      <th><input type="text" id="input" name="nickname" value="{{$.User.Nickname}}" size='6'/></th>
-      <th><input type="text" id="input" name="email" value="{{$.User.Email}}" size='20'/></th>
-      <th>{{dateformat $.User.Lastlogintime "2006-01-02 T 15:04:05"}}</th>
-      <th>{{dateformat $.User.Createtime "2006-01-02 T 15:04:05"}}</th>
-      <!-- <th>{{.Id}}</th> -->
-      <th>{{.Title}}</th>
-<!--       <th><input type="hidden" id="input" name="roletitle1" value="{{.Title}}"/></th> -->
-      <th>{{.Name}}</th>
-      <th>{{.Remark}}</th>
+      <!-- <td>{{$.User.Id}}</td> value="{{$.User.Password}}"-->
+      <td>{{$.User.Username}}</td>
+      <td><input type="password" id="input" name="password"  size='18'/></td>
+      <td><input type="text" id="input" name="nickname" value="{{$.User.Nickname}}" size='6'/></td>
+      <td><input type="text" id="input" name="email" value="{{$.User.Email}}" size='20'/></td>
+      <td>{{dateformat $.User.Lastlogintime "2006-01-02 T 15:04:05"}}</td>
+      <td>{{dateformat $.User.Createtime "2006-01-02 T 15:04:05"}}</td>
+      <!-- <td>{{.Id}}</td> -->
+      <td>{{.Title}}</td>
+<!--       <td><input type="hidden" id="input" name="roletitle1" value="{{.Title}}"/></td> -->
+      <td>{{.Name}}</td>
+      <td>{{.Remark}}</td>
       <td><input type="button" id="btn_deltr" onclick="deltr()" value="删行"></td>
     </tr>
     {{end}}

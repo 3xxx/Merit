@@ -1,0 +1,5 @@
+                       Merit revision history
+
+1, Merit 1.0 (Sep 1, 2016)
+  +) Initial public released edition
+  *) Fixed bug of 

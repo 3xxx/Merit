@@ -206,7 +206,6 @@ func (this *UserController) AddUser() {
 
 // }
 func (this *UserController) UpdateUser() {
-
 	userid := this.Input().Get("userid")
 	// username := this.Input().Get("username")
 	nickname := this.Input().Get("nickname")
@@ -355,37 +354,68 @@ func (this *UserController) ImportExcel() {
 
 	//读出excel内容写入数据库
 	// excelFileName := path                    //"/home/tealeg/foo.xlsx"
-	xlFile, err := xlsx.OpenFile(h.Filename) //excelFileName
+	xlFile, err := xlsx.OpenFile(path) //excelFileName
 	if err != nil {
 		beego.Error(err)
 	}
 	for _, sheet := range xlFile.Sheets {
-		for _, row := range sheet.Rows {
-			// 这里要判断单元格列数，如果超过单元格使用范围的列数，则出错for j := 2; j < 7; j += 5 {
-			j := 1
-			user.Username, err = row.Cells[j].String()
-			Pwd1, err := row.Cells[j+1].String()
-			md5Ctx := md5.New()
-			md5Ctx.Write([]byte(Pwd1))
-			cipherStr := md5Ctx.Sum(nil)
-			user.Password = hex.EncodeToString(cipherStr)
-			user.Email, err = row.Cells[j+2].String()
-			user.Nickname, err = row.Cells[j+3].String()
-			user.Department, err = row.Cells[j+5].String()
-			user.Secoffice, err = row.Cells[j+6].String()
-			user.Lastlogintime = time.Now()
-			uid, err := m.SaveUser(user)
-			role, err := row.Cells[j+4].String()
-			roleid, _ := strconv.ParseInt(role, 10, 64)
-			_, err = m.AddRoleUser(roleid, uid)
-			if err != nil {
-				beego.Error(err)
-			}
-			// }
-			// for _, cell := range row.Cells {
-			// 	fmt.Printf("%s\n", cell.String())
+		for i, row := range sheet.Rows {
+			if i != 0 { //忽略第一行标题
+				// 这里要判断单元格列数，如果超过单元格使用范围的列数，则出错for j := 2; j < 7; j += 5 {
+				j := 1
+				user.Username, err = row.Cells[j].String()
+				if err != nil {
+					beego.Error(err)
+				}
+				Pwd1, err := row.Cells[j+1].String()
+				if err != nil {
+					beego.Error(err)
+				}
+				md5Ctx := md5.New()
+				md5Ctx.Write([]byte(Pwd1))
+				cipherStr := md5Ctx.Sum(nil)
+				user.Password = hex.EncodeToString(cipherStr)
+				user.Email, err = row.Cells[j+2].String()
+				if err != nil {
+					beego.Error(err)
+				}
+				user.Nickname, err = row.Cells[j+3].String()
+				if err != nil {
+					beego.Error(err)
+				}
+				user.Department, err = row.Cells[j+5].String()
+				if err != nil {
+					beego.Error(err)
+				}
+				user.Secoffice, err = row.Cells[j+6].String()
+				if err != nil {
+					beego.Error(err)
+				}
+				user.Lastlogintime = time.Now()
+				uid, err := m.SaveUser(user) //如果姓名重复，也要返回uid
+				if err != nil {
+					beego.Error(err)
+				}
+				role, err := row.Cells[j+4].String()
+				if err != nil {
+					beego.Error(err)
+				}
+				roleid, _ := strconv.ParseInt(role, 10, 64)
+				if err != nil {
+					beego.Error(err)
+				}
+				beego.Info(roleid)
+				beego.Info(uid)
+				_, err = m.AddRoleUser(roleid, uid)
+				if err != nil {
+					beego.Error(err)
+				}
+				// }
+				// for _, cell := range row.Cells {
+				// 	fmt.Printf("%s\n", cell.String())
 
-			// }
+				// }
+			}
 		}
 	}
 }

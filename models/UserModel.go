@@ -15,14 +15,15 @@ import (
 //用户表
 type User struct {
 	Id            int64  `PK`
-	Username      string `orm:"unique"`
+	Username      string `orm:"unique"` //这个拼音的简写
+	Nickname      string //中文名，注意这里，很多都要查询中文名才行`orm:"unique;size(32)" form:"Nickname" valid:"Required;MaxSize(20);MinSize(2)"`
 	Password      string
 	Repassword    string    `orm:"-" form:"Repassword" valid:"Required"`
-	Nickname      string    //`orm:"unique;size(32)" form:"Nickname" valid:"Required;MaxSize(20);MinSize(2)"`
 	Email         string    `orm:"size(32)" form:"Email" valid:"Email"`
 	Department    string    //分院
-	Secoffice     string    //科室,这里应该用科室id，才能保证即时重名也不怕
+	Secoffice     string    //科室,这里应该用科室id，才能保证即时重名也不怕。否则，查看科室必须要上溯到分院才能避免科室名称重复问题
 	Remark        string    `orm:"null;size(200)" form:"Remark" valid:"MaxSize(200)"`
+	Ip            string    //ip地址
 	Status        int       `orm:"default(2)" form:"Status" valid:"Range(1,2)"`
 	Lastlogintime time.Time `orm:"null;type(datetime)" form:"-"`
 	Createtime    time.Time `orm:"type(datetime);auto_now_add" `
@@ -60,6 +61,8 @@ func SaveUser(user User) (uid int64, err error) {
 		if err != nil {
 			return 0, err //如果文章编号相同，则唯一性检查错误，返回id吗？
 		}
+	} else { //应该进行更新操作
+		uid = user.Id
 	}
 	return uid, err
 
@@ -187,7 +190,7 @@ func GetAllusers(page int64, page_size int64, sort string) (users []*User, count
 	return users, count
 }
 
-//根据分院和科室查所有用户
+//根据分院和科室名称查所有用户
 func GetUsersbySec(department, secoffice string) (users []*User, count int, err error) {
 	o := orm.NewOrm()
 	// cates := make([]*Category, 0)
@@ -209,7 +212,10 @@ func GetUsersbySecId(secofficeid string) (users []*User, count int, err error) {
 	// cates := make([]*Category, 0)
 	qs := o.QueryTable("user")
 	//这里进行过滤
-	secid, _ := strconv.ParseInt(secofficeid, 10, 64)
+	secid, err := strconv.ParseInt(secofficeid, 10, 64)
+	if err != nil {
+		return nil, 0, err
+	}
 	//由secid查自身科室名称
 	secoffice, err := GetCategory(secid)
 	if err != nil {

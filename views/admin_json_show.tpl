@@ -3,7 +3,7 @@
 <html>
 <head>
  <meta charset="UTF-8">
-  <title>技术人员价值评测系统</title>
+  <title>Merit价值管理系统</title>
   <!-- <base target=_blank> -->
 <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
@@ -44,36 +44,36 @@ allLinks[i].target="_blank";
     <tbody>
       {{range $k,$v :=.Input.Fenyuan}}
       <tr>
-        <th>{{$k}}</th>
-        <th>{{.Department}}</th>
-        <th></th>
-        <th></th> 
-        <th></th>
+        <td>{{$k}}</td>
+        <td>{{.Department}}</td>
+        <td></td>
+        <td></td> 
+        <td></td>
         
-        <th>
+        <td>
           <!-- <input type="hidden" id="{{.Id}}" value="{{.Pid}}"/> -->
           <a href="" onclick="prom('{{.Pid}}')">添加同级</a><!-- href="/addjson?pid=0" -->
           <a href="" onclick="prom('{{.Id}}')">添加下级</a>
           <a href="/modifyjson?id={{.Id}}">修改</a>
           <a href="/deletejson?id={{.Id}}">删除</a>
-        </th>
+        </td>
                   {{range $k1,$v1 :=$.Input.Fenyuan}}
                  {{range $k2,$v2 :=.Bumen}}
                  {{if eq $v2.Pid $v.Id}}
                  <tr>
-                   <th></th>
-                   <th></th>
-                 <th>{{.Keshi}}</th>
-                 <th></th>
-                 <th></th>
+                   <td></td>
+                   <td></td>
+                 <td>{{.Keshi}}</td>
+                 <td></td>
+                 <td></td>
                  
-                 <th>
+                 <td>
                   <!-- <input type="hidden" id="{{.Id}}" value="{{$v.Id}}"/> -->
                    <a href="" onclick="prom('{{$v.Id}}')">添加同级</a>
                    <a href="" onclick="prom('{{.Id}}')">添加下级</a>
                   <a href="/modifyjson?id={{.Id}}">修改</a>
                   <a href="/deletejson?id={{.Id}}">删除</a>
-                 </th>
+                 </td>
                  </tr>
                   {{range $k3,$v3 :=$.Input.Fenyuan}}
                  {{range $k4,$v4 :=.Bumen}}
@@ -81,19 +81,19 @@ allLinks[i].target="_blank";
                  {{if eq $v5.Pid $v2.Id}}
 
                  <tr>
-                   <th></th>
-                   <th></th>
-                   <th></th>
-                  <th>{{.Category}}</th>  
-                  <th></th>
+                   <td></td>
+                   <td></td>
+                   <td></td>
+                  <td>{{.Category}}</td>  
+                  <td></td>
                                   
-                  <th>
+                  <td>
                   <!-- <input type="hidden" id="{{.Id}}" value="{{$v2.Id}}"/> -->
                   <a href="" onclick="prom('{{$v2.Id}}')">添加同级</a>
                   <a href="" onclick="prom('{{.Id}}')">添加下级</a>
                   <a href="/modifyjson?id={{.Id}}">修改</a>
                   <a href="/deletejson?id={{.Id}}">删除</a>
-                  </th>
+                  </td>
                  </tr>
                   {{range $k6,$v6 :=$.Input.Fenyuan}}
                  {{range $k7,$v7 :=.Bumen}}
@@ -101,16 +101,16 @@ allLinks[i].target="_blank";
                  {{range $k9,$v9 :=.Fenlei}}
                  {{if eq $v9.Pid $v5.Id}}
                   <tr>
-                   <th></th>
-                   <th></th>
-                   <th></th>
-                  <th></th>  
-                  <th>{{.Project}}</th>
+                   <td></td>
+                   <td></td>
+                   <td></td>
+                  <td></td>  
+                  <td>{{.Project}}</td>
                                   
-                  <th>
+                  <td>
                   <a href="/modifyjson?id={{.Id}}">修改</a>
                   <a href="/deletejson?id={{.Id}}">删除</a>
-                  </th>
+                  </td>
                  </tr>
 
                   {{end}} 

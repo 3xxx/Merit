@@ -3,7 +3,7 @@
 <html>
 <head>
  <meta charset="UTF-8">
-  <title>技术人员价值评测系统</title>
+  <title>Merit价值管理系统</title>
   <!-- <base target=_blank> -->
 <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
@@ -43,20 +43,20 @@ allLinks[i].target="_blank";
     <tbody>
       {{range $k,$v :=.topics}}
       <tr>
-        <th>{{$k}}</th>
-        <th>{{.Title}}</th>
-        <th>{{.Choose}}</th>
-        <th>{{.Mark}}</th>
+        <td>{{$k}}</td>
+        <td>{{.Title}}</td>
+        <td>{{.Choose}}</td>
+        <td>{{.Mark}}</td>
         {{range $k1,$v1 :=$.category}}
         {{if eq $v.ParentId $v1.Id}}
-        <th>{{.Title}}</th>
+        <td>{{.Title}}</td>
         {{end}}
         {{end}}
-        <th>
+        <td>
          <a href="/view?id={{.Id}}"><i class="glyphicon glyphicon-open"></i>详细</a>
           <a href="/modify?id={{.Id}}"><i class="glyphicon glyphicon-edit"></i>修改</a>
           <a href="/delete?id={{.Id}}"><i id="delete" class="glyphicon glyphicon-remove-sign"></i>删除</a>
-        </th>  
+        </td>  
       </tr>
       {{end}}
     </tbody>

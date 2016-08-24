@@ -644,8 +644,117 @@ func (c *JsonController) Deletejson() {
 	c.Redirect("/json", 301)
 }
 
-//导入json数据，初始化价值结构
+//导入json数据
 func (c *JsonController) ImportJson() {
+	//获取上传的文件
+	_, h, err := c.GetFile("json")
+	if err != nil {
+		beego.Error(err)
+	}
+	var path string
+	if h != nil {
+		//保存附件
+		path = ".\\attachment\\" + h.Filename
+		// f.Close()                                             // 关闭上传的文件，不然的话会出现临时文件不能清除的情况
+		err = c.SaveToFile("json", path) //.Join("attachment", attachment)) //存文件    WaterMark(path)    //给文件加水印
+		if err != nil {
+			beego.Error(err)
+		}
+	}
+	contents, _ := ioutil.ReadFile(path)
+	var r List6
+	//var r JsonStruct//空结构对于系统unmarshal不行。
+	//	var r map[string]interface{}//空接口可行
+	//	var r []interface{}//这个对于系统unmarshal不行
+	err = json.Unmarshal([]byte(contents), &r)
+	if err != nil {
+		fmt.Printf("err was %v", err)
+	}
+	// fmt.Println(r)
+	// beego.Info(r)
+
+	js, err := simplejson.NewJson([]byte(contents))
+	if err != nil {
+		panic("json format error")
+	}
+	//1.获取省水利院
+	text, err := js.Get("text").String()
+	//存入数据库——单位
+	Id, err := models.AddCategory(0, text, "", "", "", "")
+	if err != nil {
+		beego.Error(err)
+	}
+
+	arr, err := js.Get("nodes").Array()
+	if err != nil {
+		fmt.Println("decode error: get array failed!")
+		// return
+	}
+	for i, _ := range arr {
+		// beego.Info(v)是map[string]interface{}
+		text1, _ := js.Get("nodes").GetIndex(i).Get("text").String()
+		//存入数据库——分院
+		Id1, err := models.AddCategory(Id, text1, "", "", "", "")
+		if err != nil {
+			beego.Error(err)
+		}
+		arr1, err := js.Get("nodes").GetIndex(i).Get("nodes").Array()
+		for i1, _ := range arr1 {
+			text2, _ := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(i1).Get("text").String()
+			//存入数据库——科室
+			Id2, err := models.AddCategory(Id1, text2, "", "", "", "")
+			if err != nil {
+				beego.Error(err)
+			}
+			arr2, err := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(i1).Get("nodes").Array()
+			for i2, _ := range arr2 {
+				text3, _ := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(i1).Get("nodes").GetIndex(i2).Get("text").String()
+				//存入数据库——管理类
+				Id3, err := models.AddCategory(Id2, text3, "", "", "", "")
+				if err != nil {
+					beego.Error(err)
+				}
+				arr3, err := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(i1).Get("nodes").GetIndex(i2).Get("nodes").Array()
+				for i3, _ := range arr3 {
+					text4, _ := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(i1).Get("nodes").GetIndex(i2).Get("nodes").GetIndex(i3).Get("text").String()
+					text5, _ := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(i1).Get("nodes").GetIndex(i2).Get("nodes").GetIndex(i3).Get("mark").String()
+					//循环取出选择项，拼接字符串
+					//循环取出每个选择项的打分，拼接字符串
+					arr4, err := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(i1).Get("nodes").GetIndex(i2).Get("nodes").GetIndex(i3).Get("nodes").Array()
+					var text8, text9 string
+					for i4, _ := range arr4 {
+						text6, _ := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(i1).Get("nodes").GetIndex(i2).Get("nodes").GetIndex(i3).Get("nodes").GetIndex(i4).Get("text").String()
+						text7, _ := js.Get("nodes").GetIndex(i).Get("nodes").GetIndex(i1).Get("nodes").GetIndex(i2).Get("nodes").GetIndex(i3).Get("nodes").GetIndex(i4).Get("mark").String()
+						if i == 0 {
+							text8 = text6
+							text9 = text7
+						} else {
+							text8 = text8 + "," + text6
+							text9 = text9 + "," + text7
+						}
+						// for i, label2 := range label {
+						// 		if i == 0 {
+						// 			label1 = label2.Title
+						// 		} else {
+						// 			label1 = label1 + "," + label2.Title
+						// 		}
+						// 	}
+					}
+					//存入数据库——项目负责人
+					// url:="/"+"add?id="+
+					_, err = models.AddCategory(Id3, text4, text5, "", text8, text9)
+					if err != nil {
+						beego.Error(err)
+					}
+				}
+
+			}
+		}
+	}
+}
+
+//根据conf目录下的json.json文件初始化价值结构
+func (c *JsonController) InitJson() {
 	contents, _ := ioutil.ReadFile("./conf/json.json")
 	var r List6
 	//var r JsonStruct//空结构对于系统unmarshal不行。

@@ -1,16 +1,16 @@
-<!-- 展示科室总体情况-->
+<!-- iframe里展示个人详细情况-->
 <!DOCTYPE html>
 <html>
 <head>
  <meta charset="UTF-8">
-  <title>科室情况汇总</title>
+  <title>情况汇总</title>
   <!-- <base target=_blank> -->
 <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
  <script src="/static/js/bootstrap-treeview.js"></script>
  <script type="text/javascript" src="/static/js/jquery.tablesorter.min.js"></script> 
 <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
-<style type="text/css">
+<!-- <style type="text/css">
 a:active{text:expression(target="_blank");}
 i#delete
 {
@@ -22,8 +22,7 @@ color:#DC143C;
 for(var i=0;i!=allLinks.length; i++){
 allLinks[i].target="_blank";
 }
-
-</script>
+</script> -->
 </head>
 
 
@@ -153,20 +152,20 @@ allLinks[i].target="_blank";
 <tr><th colspan=13>标书</th></tr>
       {{range $k,$v :=.Catalogbiaoshu}}
       <tr>
-        <th>{{$k}}</th>
-        <th>{{.ProjectNumber}}</th>
-        <th>{{.ProjectName}}</th>
-        <th>{{.DesignStage}}</th>
+        <td>{{$k}}</td>
+        <td>{{.ProjectNumber}}</td>
+        <td>{{.ProjectName}}</td>
+        <td>{{.DesignStage}}</td>
 
-        <th>{{.Tnumber}}</th>
-        <th>{{.Name}}</th>
-        <th>{{.Category }}</th>
-        <th>{{.Page}}</th>
-        <th>{{.Count }}</th>
-        <th>{{.Drawn }}</th>
-        <th>{{.Designd}}</th>
-        <th>{{.Checked}}</th>
-        <th>{{.Examined}}</th>  
+        <td>{{.Tnumber}}</td>
+        <td>{{.Name}}</td>
+        <td>{{.Category }}</td>
+        <td>{{.Page}}</td>
+        <td>{{.Count }}</td>
+        <td>{{.Drawn }}</td>
+        <td>{{.Designd}}</td>
+        <td>{{.Checked}}</td>
+        <td>{{.Examined}}</td>  
       </tr>
       {{end}}
     </tbody>
@@ -175,18 +174,18 @@ allLinks[i].target="_blank";
 </div>
 
 <script type="text/javascript">
-$(function() {
+// $(function() {
          // $('#treeview').treeview('collapseAll', { silent: true });
-          $('#treeview').treeview({
-          data: [{{.json}}],//defaultData,
+          // $('#treeview').treeview({
+          // data: [{{.json}}],//defaultData,
           // data:alternateData,
-          levels: 5,// expanded to 5 levels
-          enableLinks:true,
-          showTags:true,
+          // levels: 5,// expanded to 5 levels
+          // enableLinks:true,
+          // showTags:true,
           // collapseIcon:"glyphicon glyphicon-chevron-up",
           // expandIcon:"glyphicon glyphicon-chevron-down",
-        });
-});
+//         });
+// });
 
 
   $(document).ready(function() {

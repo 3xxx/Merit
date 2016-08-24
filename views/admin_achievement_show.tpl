@@ -1,4 +1,4 @@
-
+<!-- 这个是显示左侧栏，右边显示secoffice_show和employee_show或employeeself_show -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -35,7 +35,7 @@ color:#DC143C;
         <label class="control-label" id="regis" for="LoginForm-UserName"></label>
     </div>
 
-        <iframe src="/secofficeshow" name='main' id="iframepage" frameborder="0" width="100%" scrolling="no" marginheight="0" marginwidth="0" onLoad="iFrameHeight()"></iframe>
+        <iframe src="/secofficeshow" name='main' id="iframepage" frameborder="0" width="100%" scrolling="yes" marginheight="0" marginwidth="0" onLoad="iFrameHeight()"></iframe>
 </div>  
 
 <!--   <div class="col-lg-9">

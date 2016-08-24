@@ -3,7 +3,7 @@
 <html>
 <head>
  <meta charset="UTF-8">
-  <title>技术人员价值评测系统</title>
+  <title>Merit价值管理系统</title>
 <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
  <script src="/static/js/bootstrap-treeview.js"></script>
@@ -26,10 +26,10 @@
 
     <tbody>
       <tr>
-        <th>{{.Topic.Title}}</th>
-        <th>{{.Topic.Choose}}</th>
-        <th>{{.Topic.Mark}}</th>
-        <th>{{.Topic.Content}}</th>  
+        <td>{{.Topic.Title}}</td>
+        <td>{{.Topic.Choose}}</td>
+        <td>{{.Topic.Mark}}</td>
+        <td>{{.Topic.Content}}</td>  
       </tr>
     </tbody>
   </table>

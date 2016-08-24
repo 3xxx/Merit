@@ -1,4 +1,4 @@
-<!-- 展示科室总体情况-->
+<!-- iframe里展示科室总体情况-->
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,26 +10,62 @@
  <script src="/static/js/bootstrap-treeview.js"></script>
  <script type="text/javascript" src="/static/js/jquery.tablesorter.min.js"></script> 
 <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
-<style type="text/css">
+
+<script type="text/javascript" src="/static/js/moment.min.js"></script>
+<script type="text/javascript" src="/static/js/daterangepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css" />
+<!-- <style type="text/css">
 a:active{text:expression(target="_blank");}
 i#delete
 {
 color:#DC143C;
 }
-</style>
-<script type="text/javascript">
+</style> -->
+<!-- <script type="text/javascript">
   var allLinks=document.getElementsByTagName("a");
 for(var i=0;i!=allLinks.length; i++){
 allLinks[i].target="_blank";
 }
-
-</script>
+</script> -->
 </head>
 
 
 <!-- <div id="treeview" class="col-xs-3"></div> -->
 
 <div class="col-lg-12">
+
+<div>
+<form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data">
+<input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
+<input type="hidden" id="level" name="level" value="{{.Level}}"/>
+<div class="form-group">
+<label for="taskNote">统计周期：</label>
+  <input type="text" class="form-control" name="datefilter" value="" placeholder="选择时间段(默认最近一个月)"/>
+</div>
+<script type="text/javascript">
+$(function() {
+  $('input[name="datefilter"]').daterangepicker({
+      autoUpdateInput: false,
+      locale: {
+          cancelLabel: 'Clear'
+      }
+  });
+  $('input[name="datefilter"]').on('apply.daterangepicker', function(ev, picker) {
+      $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+  });
+  $('input[name="datefilter"]').on('cancel.daterangepicker', function(ev, picker) {
+      $(this).val('');
+  });
+});
+</script>
+<button type="submit" class="btn btn-primary" name="button">提交</button>
+  </form>
+  <br></div>
+
+
+<div class="form-group">
+        <label class="control-label" id="regis" for="LoginForm-UserName">统计时间段：{{dateformat .Starttime "2006-01-02"}}-{{dateformat .Endtime "2006-01-02"}}</label>
+</div>
   <table class="table table-striped">
     <thead>
       <tr>
@@ -47,16 +83,16 @@ allLinks[i].target="_blank";
     <tbody>
       {{range $k,$v :=.Employee}}
       <tr>
-        <th>{{$k}}</th>
-        <th>{{.Name}}</th>
-        <th>{{.Drawn}}</th>
-        <th>{{.Designd}}</th>
-        <th>{{.Checked}}</th>
-        <th>{{.Examined}}</th>
-        <th>{{.Sigma}}</th>
-        <th>
+        <td>{{$k}}</td>
+        <td>{{.Name}}</td>
+        <td>{{.Drawn}}</td>
+        <td>{{.Designd}}</td>
+        <td>{{.Checked}}</td>
+        <td>{{.Examined}}</td>
+        <td>{{.Sigma}}</td>
+        <td>
          <a href="/secofficeshow?secid={{.Id}}&level=3"><i class="glyphicon glyphicon-open"></i>详细</a>
-        </th>  
+        </td>  
       </tr>
       {{end}}
     </tbody>
@@ -65,18 +101,18 @@ allLinks[i].target="_blank";
 </div>
 
 <script type="text/javascript">
-$(function() {
+// $(function() {
          // $('#treeview').treeview('collapseAll', { silent: true });
-          $('#treeview').treeview({
-          data: [{{.json}}],//defaultData,
+          // $('#treeview').treeview({
+          // data: [{{.json}}],//defaultData,
           // data:alternateData,
-          levels: 5,// expanded to 5 levels
-          enableLinks:true,
-          showTags:true,
+          // levels: 5,// expanded to 5 levels
+          // enableLinks:true,
+          // showTags:true,
           // collapseIcon:"glyphicon glyphicon-chevron-up",
           // expandIcon:"glyphicon glyphicon-chevron-down",
-        });
-});
+//         });
+// });
 
 
   $(document).ready(function() {

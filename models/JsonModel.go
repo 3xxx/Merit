@@ -47,6 +47,7 @@ func AddCategory(pid int64, title, mark, url, list, listmark string) (id int64, 
 	return id, nil
 }
 
+//由父级id得到所有下级
 func GetPids(pid int64) ([]*Category, error) {
 	o := orm.NewOrm()
 	cates := make([]*Category, 0)

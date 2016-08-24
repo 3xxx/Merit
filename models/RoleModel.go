@@ -12,12 +12,12 @@ import (
 //角色表
 type Role struct {
 	Id     int64
-	Title  string `orm:"size(100)" form:"Title"  valid:"Required"`
-	Name   string `orm:"size(100)" form:"Name"  valid:"Required"`
-	Remark string `orm:"null;size(200)" form:"Remark" valid:"MaxSize(200)"`
-	Status int    `orm:"default(2)" form:"Status" valid:"Range(1,2)"`
+	Title  string  `orm:"size(100)" form:"Title"  valid:"Required"`
+	Name   string  `orm:"size(100)" form:"Name"  valid:"Required"`
+	Remark string  `orm:"null;size(200)" form:"Remark" valid:"MaxSize(200)"`
+	Status int     `orm:"default(2)" form:"Status" valid:"Range(1,2)"`
+	Users  []*User `orm:"reverse(many)"`
 	// Node   []*Node `orm:"reverse(many)"`
-	Users []*User `orm:"reverse(many)"`
 }
 
 func init() {

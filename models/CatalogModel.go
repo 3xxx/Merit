@@ -49,6 +49,13 @@ type Employeeachievement struct {
 	Sigma    float64 //合计
 }
 
+//分院里各个科室人员结构
+type Secofficeachievement struct {
+	Id       int64  //科室Id
+	Name     string //科室
+	Employee []Employeeachievement
+}
+
 func init() {
 	orm.RegisterModel(new(Catalog))
 }
@@ -72,6 +79,7 @@ func GetAllCatalogs(cid string) (catalogs []*Catalog, err error) {
 	return catalogs, err
 }
 
+//用savecatalog，下面这个没用？
 func AddCatalog(name, tnumber string) (id int64, err error) {
 	// cid, err := strconv.ParseInt(categoryid, 10, 64)
 	o := orm.NewOrm()
@@ -112,22 +120,34 @@ func ModifyCatalog(cid string, catalog1 Catalog) error {
 	o := orm.NewOrm()
 	catalog := &Catalog{Id: cidNum}
 	if o.Read(catalog) == nil {
+		// 指定多个字段
+		// o.Update(&user, "Field1", "Field2", ...)这个试验没成功
+		catalog.ProjectNumber = catalog1.ProjectNumber
+		catalog.ProjectName = catalog1.ProjectName
+		catalog.DesignStage = catalog1.DesignStage
+		catalog.Section = catalog1.Section
 		catalog.Tnumber = catalog1.Tnumber
 		catalog.Name = catalog1.Name
+		catalog.Category = catalog1.Category
+		catalog.Page = catalog1.Page
+		catalog.Count = catalog1.Count
 		catalog.Drawn = catalog1.Drawn
 		catalog.Designd = catalog1.Designd
 		catalog.Checked = catalog1.Checked
 		catalog.Examined = catalog1.Examined
-		catalog.Verified = catalog1.Verified
-		catalog.Approved = catalog1.Approved
+		// catalog.Verified     = catalog1.Verified
+		// catalog.Approved     = catalog1.Approved
+		// catalog.Complex      = catalog1.Complex
+		// catalog.Drawnratio   = catalog1.Drawnratio
+		// catalog.Designdratio = catalog1.Designdratio
+		// catalog.Checkedratio = catalog1.Checkedratio
+		// catalog.Examinedratio= catalog1.Examinedratio
 		catalog.Data = catalog1.Data
-		catalog.DesignStage = catalog1.DesignStage
-		catalog.Section = catalog1.Section
-		catalog.ProjectName = catalog1.ProjectName
-		// catalogid, _ := strconv.ParseInt(cid, 10, 64)
-		// catalog.Created = time.Now()
-		catalog.Updated = time.Now()
-		_, err = o.Update(catalog)
+		// catalog.Created      = catalog1.Created
+		catalog.Updated = catalog1.Updated
+		catalog.Author = catalog1.Author
+		// _, err = o.Update(&catalog, "ProjectName", "DesignStage", "Section", "Tnumber", "Name", "Category", "Page", "Count", "Drawn", "Designd", "Checked", "Examined", "Data", "Updated", "Author")
+		_, err := o.Update(catalog) //这里不能用&catalog
 		if err != nil {
 			return err
 		}
@@ -193,10 +213,15 @@ func GetCatalog(tid string) (*Catalog, error) {
 // }
 
 //由用户姓名取得所有编制、设计、校核分值
-func Getemployeevalue(uname string) (employeevalue []Employeeachievement, err error) {
-	o := orm.NewOrm()
+func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeeachievement, err error) {
+
 	catalogs := make([]*Catalog, 0)
+
+	cond := orm.NewCondition()
+	cond1 := cond.And("data__gte", t1).And("data__lte", t2)
+	o := orm.NewOrm()
 	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond1)
 	//1、查制图工作量
 	_, err = qs.Filter("Drawn", uname).All(&catalogs) //而这个字段parentid为何又不用呢
 	if err != nil {
@@ -352,7 +377,7 @@ func Getemployeevalue(uname string) (employeevalue []Employeeachievement, err er
 	return employeevalue, err
 }
 
-//由用户Id取得所有编制、设计、校核详细catalog
+//由用户Id取得所有编制、设计、校核详细catalog，按成果类型排列
 func Getcatalogbyuserid(id, category string) (catalogs []*Catalog, err error) {
 	Id, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
@@ -382,6 +407,43 @@ func Getcatalogbyuserid(id, category string) (catalogs []*Catalog, err error) {
 	}
 	catalogs = append(catalogs, cc...)
 	_, err = qs.Filter("Examined", user.Nickname).Filter("Category", category).All(&dd) //而这个字段parentid为何又不用呢
+	if err != nil {
+		return nil, err
+	}
+	catalogs = append(catalogs, dd...)
+	return catalogs, err
+}
+
+//由用户Id取得所有成果按时间顺序排列
+func Getcatalog2byuserid(id string) (catalogs []*Catalog, err error) {
+	Id, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	user := GetUserByUserId(Id)
+	o := orm.NewOrm()
+	aa := make([]*Catalog, 0)
+	bb := make([]*Catalog, 0)
+	cc := make([]*Catalog, 0)
+	dd := make([]*Catalog, 0)
+	qs := o.QueryTable("catalog")
+	//1、查图纸类型的工作
+	_, err = qs.Filter("Drawn", user.Nickname).All(&aa) //而这个字段parentid为何又不用呢
+	if err != nil {
+		return nil, err
+	}
+	catalogs = append(catalogs, aa...)
+	_, err = qs.Filter("Designd", user.Nickname).All(&bb) //而这个字段parentid为何又不用呢
+	if err != nil {
+		return nil, err
+	}
+	catalogs = append(catalogs, bb...)
+	_, err = qs.Filter("Checked", user.Nickname).All(&cc) //而这个字段parentid为何又不用呢
+	if err != nil {
+		return nil, err
+	}
+	catalogs = append(catalogs, cc...)
+	_, err = qs.Filter("Examined", user.Nickname).All(&dd) //而这个字段parentid为何又不用呢
 	if err != nil {
 		return nil, err
 	}

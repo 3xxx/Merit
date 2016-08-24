@@ -3,7 +3,7 @@
 <html>
 <head>
  <meta charset="UTF-8">
-  <title>技术人员价值评测系统</title>
+  <title>Merit价值管理系统</title>
 <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
 <!-- jquery一定要放前面 -->
  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
@@ -43,15 +43,15 @@ allLinks[i].target="_blank";
     <tbody>
       {{range $k,$v :=.person}}
       <tr>
-        <th>{{$k}}</th>
-        <th>{{.Name}}</th>
-        <th>{{.Numbers}}</th>
-        <th>{{.Marks}}</th>
-        <th>{{.Keshi}}</th>
-        <th>{{.Department}}</th>
-        <th>
+        <td>{{$k}}</td>
+        <td>{{.Name}}</td>
+        <td>{{.Numbers}}</td>
+        <td>{{.Marks}}</td>
+        <td>{{.Keshi}}</td>
+        <td>{{.Department}}</td>
+        <td>
          <a href="/user?uid={{.Id}}"><i class="glyphicon glyphicon-open"></i>详细</a>
-        </th>  
+        </td>  
       </tr>
       {{end}}
     </tbody>

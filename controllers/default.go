@@ -37,8 +37,7 @@ func (c *MainController) Admin() {
 		// c.Redirect("/login", 302)
 		return
 	}
-	//2.取得文章的作者
-	//3.由用户id取得用户名
+
 	//4.取得客户端用户名
 	// var uname string
 	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
