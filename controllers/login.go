@@ -210,7 +210,7 @@ func checkAccount(ctx *context.Context) bool {
 	// 	beego.AppConfig.String("pwd") == pwd
 }
 
-func checkRole(ctx *context.Context) (role string, err error) { //这里返回用户的role
+func checkRole(ctx *context.Context) (role int, err error) { //这里返回用户的role
 	//（4）获取当前的请求会话，并返回当前请求会话的对象
 	sess, _ := globalSessions.SessionStart(ctx.ResponseWriter, ctx.Request)
 	defer sess.SessionRelease(ctx.ResponseWriter)
@@ -221,13 +221,18 @@ func checkRole(ctx *context.Context) (role string, err error) { //这里返回�
 	// }
 	var user models.User
 	user.Username = v.(string) //ck.Value
-	var roles []*models.Role
-	roles, _, err = models.GetRoleByUsername(user.Username)
-	if err == nil {
-		return roles[0].Title, err //这里修改Name改为title就对了
-	} else {
-		return "", err
+	user, err = models.GetUserByUsername(user.Username)
+	if err != nil {
+		beego.Error(err)
 	}
+	return user.Role, err
+	// var roles []*models.Role
+	// roles, _, err = models.GetRoleByUsername(user.Username)
+	// if err == nil {
+	// 	return roles[0].Title, err //这里修改Name改为title就对了
+	// } else {
+	// 	return "", err
+	// }
 }
 
 // func checkRole(ctx *context.Context) (roles []*models.Role, err error) {

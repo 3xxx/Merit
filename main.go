@@ -8,7 +8,15 @@ import (
 	_ "merit/routers"
 )
 
+//自定义模板函数，序号加1
+func Indexaddone(index int) (index1 int) {
+	index1 = index + 1
+	return
+}
+
 func main() {
+	beego.AddFuncMap("indexaddone", Indexaddone) //模板中使用{{indexaddone $index}}或{{$index|indexaddone}}
+
 	//开启orm调试模式
 	orm.Debug = true
 	//自动建表

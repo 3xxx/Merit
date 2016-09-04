@@ -6,9 +6,6 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
   <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
-  
-
-
     <!--[if lt IE 9]>
     <script src="https://www.novamind.com/wp-content/themes/novamind/js/html5.js"></script>
     <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -146,8 +143,8 @@ color: #E6E6FA;
           <div class="col-480-12">
             <h3 class="col-480-12">初始化部门、价值结构</h3>
           <div class="form-group">
-            <form method="post" action="/importjson" enctype="multipart/form-data">
-              <div class="input-group">
+            <form class="form-inline" method="post" action="/importjson" enctype="multipart/form-data">
+              <div class="form-group">
                 <label>
                   选择部门、价值结构数据(json格式)：
                   <input type="file" class="form-control" name="json" id="json" />  
@@ -159,11 +156,9 @@ color: #E6E6FA;
           </div>
           <div class="form-group">
             <form method="post" action="/user/importexcel" enctype="multipart/form-data">
-              <div class="input-group">
-                <label>
-                  选择用户数据文件(Excel)：
-                  <input type="file" class="form-control" name="excel" id="excel" />          
-                </label>
+              <div class="form-inline" class="form-group">
+                <label>选择用户数据文件(Excel)：
+                  <input type="file" class="form-control" name="excel" id="excel" /> </label>
                 <br/>          
               </div>
               <button type="submit" class="btn btn-default">提交</button>
@@ -189,6 +184,15 @@ color: #E6E6FA;
               </div>
             <button type="submit" class="btn btn-default">提交</button>
           </form>
+          <br/>
+          <div class="form-group">
+            <a href="/achievement/ratio">
+              <button type="button" class="btn btn-primary">
+                <span class="glyphicon glyphicon-user"></span>
+                编辑成果类型、折标系数表
+              </button>
+            </a>
+          </div>
         </div>
       </div>
     </div>

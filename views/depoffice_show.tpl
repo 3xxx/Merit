@@ -2,47 +2,48 @@
 <!DOCTYPE html>
 <html>
 <head>
- <meta charset="UTF-8">
+  <meta charset="UTF-8">
   <title>分院情况汇总</title>
-  <!-- <base target=_blank> -->
-<script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
- <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
- <script src="/static/js/bootstrap-treeview.js"></script>
- <script type="text/javascript" src="/static/js/jquery.tablesorter.min.js"></script> 
-<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
+  <!-- <base target=_blank>
+  -->
+  <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
+  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+  <script src="/static/js/bootstrap-treeview.js"></script>
+  <script type="text/javascript" src="/static/js/jquery.tablesorter.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
 
-<script type="text/javascript" src="/static/js/moment.min.js"></script>
-<script type="text/javascript" src="/static/js/daterangepicker.js"></script>
-<link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css" />
-<!-- <style type="text/css">
-a:active{text:expression(target="_blank");}
+  <script type="text/javascript" src="/static/js/moment.min.js"></script>
+  <script type="text/javascript" src="/static/js/daterangepicker.js"></script>
+  <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css" />
+  <!-- <style type="text/css">
+  a:active{text:expression(target="_blank");}
 i#delete
 {
 color:#DC143C;
 }
-</style> -->
+</style>
+-->
 <!-- <script type="text/javascript">
-  var allLinks=document.getElementsByTagName("a");
+var allLinks=document.getElementsByTagName("a");
 for(var i=0;i!=allLinks.length; i++){
 allLinks[i].target="_blank";
 }
-</script> -->
+</script>
+-->
 </head>
 
-
-<!-- <div id="treeview" class="col-xs-3"></div> -->
-
+<!-- <div id="treeview" class="col-xs-3"></div>
+-->
 <div class="col-lg-12">
-
 <div>
 <form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data">
-<input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
-<input type="hidden" id="level" name="level" value="{{.Level}}"/>
-<div class="form-group">
-<label for="taskNote">统计周期：</label>
-  <input type="text" class="form-control" name="datefilter" value="" placeholder="选择时间段(默认最近一个月)"/>
-</div>
-<script type="text/javascript">
+  <input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
+  <input type="hidden" id="level" name="level" value="{{.Level}}"/>
+  <div class="form-group">
+    <label for="taskNote">统计周期：</label>
+    <input type="text" class="form-control" name="datefilter" value="" placeholder="选择时间段(默认最近一个月)"/>
+  </div>
+  <script type="text/javascript">
 $(function() {
   $('input[name="datefilter"]').daterangepicker({
       autoUpdateInput: false,
@@ -58,52 +59,53 @@ $(function() {
   });
 });
 </script>
-<button type="submit" class="btn btn-primary" name="button">提交</button>
-  </form>
-  <br></div>
-
+  <button type="submit" class="btn btn-primary" name="button">提交</button>
+</form>
+<br></div>
 
 <div class="form-group">
-        <label class="control-label" id="regis" for="LoginForm-UserName">统计时间段：{{dateformat .Starttime "2006-01-02"}}-{{dateformat .Endtime "2006-01-02"}}</label>
+<label class="control-label" id="regis" for="LoginForm-UserName">
+  统计时间段：{{dateformat .Starttime "2006-01-02"}}-{{dateformat .Endtime "2006-01-02"}}
+</label>
 </div>
 {{range $k,$v :=.Secoffice}}
 <h2>{{.Name}}</h2>
-  <table class="table table-striped">
-  
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>姓名</th>
-        <th>编制</th>
-        <th>设计</th>
-        <th>校核</th>
-        <th>审查</th>
-        <th>汇总</th>
-        <th>详细</th>
-      </tr>
-    </thead>
+<table class="table table-striped">
 
-    <tbody>
-    
-      {{range $k1,$v1 :=.Employee}}
-      <tr>
-        <td>{{$k1}}</td>
-        <td>{{.Name}}</td>
-        <td>{{.Drawn}}</td>
-        <td>{{.Designd}}</td>
-        <td>{{.Checked}}</td>
-        <td>{{.Examined}}</td>
-        <td>{{.Sigma}}</td>
-        <td>
-         <a href="/secofficeshow?secid={{.Id}}&level=3"><i class="glyphicon glyphicon-open"></i>详细</a>
-        </td>  
-      </tr>
-      {{end}}
-     
-    </tbody>
-    
-  </table>
-  {{end}} 
+<thead>
+  <tr>
+    <th>#</th>
+    <th>姓名</th>
+    <th>编制</th>
+    <th>设计</th>
+    <th>校核</th>
+    <th>审查</th>
+    <th>汇总</th>
+    <th>详细</th>
+  </tr>
+</thead>
+
+<tbody>
+  {{range $k1,$v1 :=.Employee}}
+  <tr>
+    <td>{{$k1|indexaddone}}</td>
+    <td>{{.Name}}</td>
+    <td>{{.Drawn}}</td>
+    <td>{{.Designd}}</td>
+    <td>{{.Checked}}</td>
+    <td>{{.Examined}}</td>
+    <td>{{.Sigma}}</td>
+    <td>
+      <a href="/secofficeshow?secid={{.Id}}&level=3"> <i class="glyphicon glyphicon-open"></i>
+        详细
+      </a>
+    </td>
+  </tr>
+  {{end}}
+</tbody>
+
+</table>
+{{end}}
 </div>
 
 <script type="text/javascript">
@@ -141,9 +143,12 @@ $(function() {
 </body>
 </html>
 <!-- <button type="button" class="btn btn-primary btn-lg" style="color: rgb(212, 106, 64);">
-<span class="glyphicon glyphicon-user"></span> User
+<span class="glyphicon glyphicon-user"></span>
+User
 </button>
 
 <button type="button" class="btn btn-primary btn-lg" style="text-shadow: black 5px 3px 3px;">
-<span class="glyphicon glyphicon-user"></span> User
-</button> -->
+<span class="glyphicon glyphicon-user"></span>
+User
+</button>
+-->

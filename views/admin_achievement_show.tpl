@@ -32,7 +32,7 @@ color:#DC143C;
 <!-- <a href="/category/view?id={{.Id}}" target='main'> -->
 <div class="col-lg-9">
     <div class="form-group">
-        <label class="control-label" id="regis" for="LoginForm-UserName"></label>
+        <label class="control-label" id="regis" for="LoginForm-UserName"></label><!-- 显示部门名称 -->
     </div>
 
         <iframe src="/secofficeshow" name='main' id="iframepage" frameborder="0" width="100%" scrolling="yes" marginheight="0" marginwidth="0" onLoad="iFrameHeight()"></iframe>
@@ -74,7 +74,7 @@ $(function() {
             // alert("节点id："+data.nodeId);
             // alert("部门id："+data.Id);  
             // alert("部门级别："+data.Level);
-            $("#regis").html(data.text);
+            $("#regis").html(data.text);//显示部门名称
             $("#regis").css("color","black");
           document.getElementById("iframepage").src="/secofficeshow?secid="+data.Id+"&level="+data.Level;
         });   
@@ -96,23 +96,23 @@ if(ifm != null && subWeb != null) {
 // }
 //弹出一个输入框，输入一段文字，可以提交 
 //添加同级/下级，通过id来区分统计或下级
-    function prom(id) {  
-        var name = prompt("请输入名称", ""); //将输入的内容赋给变量 name ，  
-        //这里需要注意的是，prompt有两个参数，前面是提示的话，后面是当对话框出来后，在对话框里的默认值  
-        if (name)//如果返回的有内容  
-        {  
-          // var pid = $('#'+id).val();
-            // alert("欢迎您：" + name) 
-            $.ajax({
-                type:"post",//这里是否一定要用post？？？
-                url:"/addjson",
-                data: {pid:id,title:name},
-                success:function(data,status){//数据提交成功时返回数据
-                  alert("添加“"+data+"”成功！(status:"+status+".)");
-                 }
-            });  
-        }  
-    } 
+    // function prom(id) {  
+    //     var name = prompt("请输入名称", ""); //将输入的内容赋给变量 name ，  
+    //     //这里需要注意的是，prompt有两个参数，前面是提示的话，后面是当对话框出来后，在对话框里的默认值  
+    //     if (name)//如果返回的有内容  
+    //     {  
+    //       // var pid = $('#'+id).val();
+    //         // alert("欢迎您：" + name) 
+    //         $.ajax({
+    //             type:"post",//这里是否一定要用post？？？
+    //             url:"/addjson",
+    //             data: {pid:id,title:name},
+    //             success:function(data,status){//数据提交成功时返回数据
+    //               alert("添加“"+data+"”成功！(status:"+status+".)");
+    //              }
+    //         });  
+    //     }  
+    // } 
    
 
 </script>

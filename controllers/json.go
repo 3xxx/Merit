@@ -113,8 +113,8 @@ func (c *JsonController) GetPerson() {
 	role, _ := checkRole(c.Ctx) //login里的
 	// beego.Info(role)
 	//5.进行逻辑分析：
-	rolename, _ := strconv.ParseInt(role, 10, 64)
-	if rolename > 2 { //
+	// rolename, _ := strconv.ParseInt(role, 10, 64)
+	if role > 2 { //
 		// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
 		route := c.Ctx.Request.URL.String()
 		c.Data["Url"] = route
@@ -307,6 +307,7 @@ func (c *JsonController) GetMeritUser() {
 	//构造struct——
 	//这个不用：转json数据b, err := json.Marshal(group) fmt.Println(string(b))
 	var user models.User
+	var err error
 	//管理员可以查看
 	Uid := c.Input().Get("uid")
 	if Uid == "" { //如果是技术人员自己进行查看，则Uid为空
@@ -335,11 +336,11 @@ func (c *JsonController) GetMeritUser() {
 		role, _ := checkRole(c.Ctx) //login里的
 		// beego.Info(role)
 		//5.进行逻辑分析：
-		rolename, err := strconv.ParseInt(role, 10, 64)
-		if err != nil {
-			beego.Error(err)
-		}
-		if rolename > 5 { //
+		// rolename, err := strconv.ParseInt(role, 10, 64)
+		// if err != nil {
+		// 	beego.Error(err)
+		// }
+		if role > 5 { //
 			// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
 			route := c.Ctx.Request.URL.String()
 			c.Data["Url"] = route
@@ -347,7 +348,10 @@ func (c *JsonController) GetMeritUser() {
 			// c.Redirect("/roleerr", 302)
 			return
 		}
-		user = models.GetUserByUsername(uname) //得到用户的id、分院和科室等
+		user, err = models.GetUserByUsername(uname) //得到用户的id、分院和科室等
+		if err != nil {
+			beego.Error(err)
+		}
 	} else { //如果是管理员进行查看，则uid是用户名
 		userid, err := strconv.ParseInt(Uid, 10, 64)
 		if err != nil {
@@ -551,8 +555,8 @@ func (c *JsonController) Modifyjson() {
 	role, _ := checkRole(c.Ctx) //login里的
 	// beego.Info(role)
 	//5.进行逻辑分析：
-	rolename, _ := strconv.ParseInt(role, 10, 64)
-	if rolename > 2 { //
+	// rolename, _ := strconv.ParseInt(role, 10, 64)
+	if role > 2 { //
 		// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
 		route := c.Ctx.Request.URL.String()
 		c.Data["Url"] = route

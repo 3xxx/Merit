@@ -3,7 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/session"
-	"strconv"
+	// "strconv"
 )
 
 type MainController struct {
@@ -15,7 +15,7 @@ var globalSessions *session.Manager
 
 //（3）在初始化“全局session mananger对象”
 func init() {
-	globalSessions, _ = session.NewManager("memory", `{"cookieName":"gosessionid", "enableSetCookie,omitempty": true, "gclifetime":3600, "maxLifetime": 3600, "secure": false, "sessionIDHashFunc": "sha1", "sessionIDHashKey": "", "cookieLifeTime": 3600, "providerConfig": ""}`)
+	globalSessions, _ = session.NewManager("memory", `{"cookieName":"gosessionid", "enableSetCookie,omitempty": true, "gclifetime":3600, "maxLifetime": 36000, "secure": false, "sessionIDHashFunc": "sha1", "sessionIDHashKey": "", "cookieLifeTime": 36000, "providerConfig": ""}`)
 	go globalSessions.GC()
 	// globalSessions, _ = session.NewManager("memory", `{"cookieName":"gosessionid","gclifetime":3600}`)
 	// go globalSessions.GC()
@@ -55,8 +55,8 @@ func (c *MainController) Admin() {
 	} else {
 		// beego.Info(role)
 		//5.进行逻辑分析：
-		rolename, _ := strconv.ParseInt(role, 10, 64)
-		if rolename > 2 { //
+		// rolename, _ := strconv.ParseInt(role, 10, 64)
+		if role > 2 { //
 			// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
 			route := c.Ctx.Request.URL.String()
 			c.Data["Url"] = route

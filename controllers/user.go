@@ -71,9 +71,9 @@ func (this *UserController) Index() {
 	role, _ := checkRole(this.Ctx) //login里的
 	// beego.Info(role)
 	//6.进行逻辑分析：
-	rolename, _ := strconv.ParseInt(role, 10, 64)
+	// rolename, _ := strconv.ParseInt(role, 10, 64)
 	// if filetype != "pdf" && filetype != "jpg" && filetype != "diary" {
-	if rolename > 1 { //&& uname != category.Author
+	if role > 1 { //&& uname != category.Author
 		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
 		route := this.Ctx.Request.URL.String()
 		this.Data["Url"] = route
@@ -133,11 +133,12 @@ func (this *UserController) View() {
 	// userid, _ := strconv.ParseInt(id, 10, 64)
 
 	userid, _ := strconv.ParseInt(this.Input().Get("useid"), 10, 64)
-	// beego.Info(userid)
+	beego.Info(userid)
 	user := m.GetUserByUserId(userid)
+	beego.Info(user)
 	// if this.IsAjax() {
 	// users, _ := m.Getuserlist(1, 1000, "Id")
-	list, _ := m.GetRoleByUserId(userid)
+	// list, _ := m.GetRoleByUserId(userid)
 	// if err != nil {
 	// 	beego.Error(err)
 	// 	c.Redirect("/", 302)
@@ -159,7 +160,7 @@ func (this *UserController) View() {
 	// return
 	// } else {
 	this.Data["User"] = user
-	this.Data["Role"] = list
+	// this.Data["Role"] = list
 	// this.Data["Users"] = &users
 	this.TplName = "admin_user_view.tpl"
 	// this.TplName = this.GetTemplatetype() + "/rbac/roletouserlist.tpl"
@@ -206,6 +207,7 @@ func (this *UserController) AddUser() {
 
 // }
 func (this *UserController) UpdateUser() {
+
 	userid := this.Input().Get("userid")
 	// username := this.Input().Get("username")
 	nickname := this.Input().Get("nickname")
@@ -270,30 +272,45 @@ func (this *UserController) DelUser() {
 	}
 }
 
-func (this *UserController) GetUserByUsername() {
+//用户查看自己，修改密码等
+func (c *UserController) GetUserByUsername() {
 	// 	c.Data["IsCategory"] = true
 	// c.TplName = "category.tpl"
-	this.Data["IsLogin"] = checkAccount(this.Ctx)
-	//2.取得客户端用户名
-	sess, _ := globalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
-	defer sess.SessionRelease(this.Ctx.ResponseWriter)
+	c.Data["IsLogin"] = checkAccount(c.Ctx)
+	//4.取得客户端用户名
+	var uname string
+	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
+	defer sess.SessionRelease(c.Ctx.ResponseWriter)
 	v := sess.Get("uname")
 	if v != nil {
-		this.Data["Uname"] = v.(string)
+		uname = v.(string)
+		c.Data["Uname"] = v.(string)
 	}
-	// ck, err := this.Ctx.Request.Cookie("uname")
+	if uname == "" {
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/roleerr?url="+route, 302)
+		// c.Redirect("/roleerr", 302)
+		return
+	}
+	// uname := v.(string) //ck.Value
+	//4.取出用户的权限等级
+	// role, _ := checkRole(c.Ctx) //login里的
+	//5.进行逻辑分析：
+	// rolename, err := strconv.ParseInt(role, 10, 64)
 	// if err != nil {
-	// 	beego.Error(err)
-	// } else {
-	// 	this.Data["Uname"] = ck.Value
+	// beego.Error(err)
 	// }
-	username := this.Input().Get("username")
-	// beego.Info(userid)
-	user := m.GetUserByUsername(username)
-	list, _, _ := m.GetRoleByUsername(username)
-	this.Data["User"] = user
-	this.Data["Role"] = list
-	this.TplName = "user_view.tpl"
+	// username := this.Input().Get("username")
+	user, err := m.GetUserByUsername(uname)
+	if err != nil {
+		beego.Error(err)
+	}
+	beego.Info(user)
+	// list, _, _ := m.GetRoleByUsername(uname)
+	c.Data["User"] = user
+	// c.Data["Role"] = list
+	c.TplName = "user_view.tpl"
 }
 
 //上传excel文件，导入到数据库
@@ -351,7 +368,8 @@ func (this *UserController) ImportExcel() {
 	// route := "/attachment/" + categoryproj.Number + " " + categoryproj.Title + "/" + categoryphase.Title + "/" + categoryspec.Title + "/" + category + "/" + h.Filename
 	//Catalogid := c.Input().Get("Catalogid")
 	var user m.User
-
+	// var Pwd1 string
+	// var role string
 	//读出excel内容写入数据库
 	// excelFileName := path                    //"/home/tealeg/foo.xlsx"
 	xlFile, err := xlsx.OpenFile(path) //excelFileName
@@ -363,59 +381,94 @@ func (this *UserController) ImportExcel() {
 			if i != 0 { //忽略第一行标题
 				// 这里要判断单元格列数，如果超过单元格使用范围的列数，则出错for j := 2; j < 7; j += 5 {
 				j := 1
-				user.Username, err = row.Cells[j].String()
-				if err != nil {
-					beego.Error(err)
+				if len(row.Cells) >= 2 { //总列数，从1开始
+					user.Username, err = row.Cells[j].String()
+					if err != nil {
+						beego.Error(err)
+					}
 				}
-				Pwd1, err := row.Cells[j+1].String()
-				if err != nil {
-					beego.Error(err)
+				if len(row.Cells) >= 3 {
+					Pwd1, err := row.Cells[j+1].String()
+					if err != nil {
+						beego.Error(err)
+					}
+
+					md5Ctx := md5.New()
+					md5Ctx.Write([]byte(Pwd1))
+					cipherStr := md5Ctx.Sum(nil)
+					user.Password = hex.EncodeToString(cipherStr)
 				}
-				md5Ctx := md5.New()
-				md5Ctx.Write([]byte(Pwd1))
-				cipherStr := md5Ctx.Sum(nil)
-				user.Password = hex.EncodeToString(cipherStr)
-				user.Email, err = row.Cells[j+2].String()
-				if err != nil {
-					beego.Error(err)
+				if len(row.Cells) >= 4 {
+					user.Email, err = row.Cells[j+2].String()
+					if err != nil {
+						beego.Error(err)
+					}
 				}
-				user.Nickname, err = row.Cells[j+3].String()
-				if err != nil {
-					beego.Error(err)
+				if len(row.Cells) >= 5 {
+					user.Nickname, err = row.Cells[j+3].String()
+					if err != nil {
+						beego.Error(err)
+					}
 				}
-				user.Department, err = row.Cells[j+5].String()
-				if err != nil {
-					beego.Error(err)
+				if len(row.Cells) >= 6 {
+					role, err := row.Cells[j+4].String()
+					if err != nil {
+						beego.Error(err)
+					}
+					role1, err := strconv.Atoi(role)
+					if err != nil {
+						beego.Error(err)
+					}
+					user.Role = role1
 				}
-				user.Secoffice, err = row.Cells[j+6].String()
-				if err != nil {
-					beego.Error(err)
+				if len(row.Cells) >= 7 {
+					user.Department, err = row.Cells[j+5].String()
+					if err != nil {
+						beego.Error(err)
+					}
 				}
-				user.Lastlogintime = time.Now()
-				uid, err := m.SaveUser(user) //如果姓名重复，也要返回uid
-				if err != nil {
-					beego.Error(err)
+				if len(row.Cells) >= 8 {
+					user.Secoffice, err = row.Cells[j+6].String()
+					if err != nil {
+						beego.Error(err)
+					}
+					user.Lastlogintime = time.Now()
+					_, err := m.SaveUser(user) //如果姓名重复，也要返回uid
+					// beego.Info(uid)
+					if err != nil {
+						beego.Error(err)
+					}
+					// role, err := row.Cells[j+4].String()
+					// if err != nil {
+					// 	beego.Error(err)
+					// }
+
+					//这里写法不对，应该是根据权限等级取得对应的roleid
+					// roleid, err := m.GetRoleIdbyTitle(role)
+					// if err != nil {
+					// 	beego.Error(err)
+					// }
+					// roleid, _ := strconv.ParseInt(role, 10, 64)
+					// if err != nil {
+					// 	beego.Error(err)
+					// }
+
+					//如果role存在，则update，否则就add
+					// _, err = m.AddRoleUser(roleid, uid)
+					// if err != nil {
+					// 	beego.Error(err)
+					// }
 				}
-				role, err := row.Cells[j+4].String()
-				if err != nil {
-					beego.Error(err)
-				}
-				roleid, _ := strconv.ParseInt(role, 10, 64)
-				if err != nil {
-					beego.Error(err)
-				}
-				beego.Info(roleid)
-				beego.Info(uid)
-				_, err = m.AddRoleUser(roleid, uid)
-				if err != nil {
-					beego.Error(err)
-				}
+
+				// if len(row.Cells) >= 6 {
+
+				// }
 				// }
 				// for _, cell := range row.Cells {
 				// 	fmt.Printf("%s\n", cell.String())
-
 				// }
 			}
 		}
 	}
+	this.Redirect("/admin", 302)
 }

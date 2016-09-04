@@ -44,7 +44,7 @@ allLinks[i].target="_blank";
     <tbody>
       {{range $k,$v :=.Input.Fenyuan}}
       <tr>
-        <td>{{$k}}</td>
+        <td>{{$k|indexaddone}}</td>
         <td>{{.Department}}</td>
         <td></td>
         <td></td> 

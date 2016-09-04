@@ -28,6 +28,7 @@ func init() {
 }
 
 func AddCategory(pid int64, title, mark, url, list, listmark string) (id int64, err error) {
+	//重复性检查
 	o := orm.NewOrm()
 	cate := &Category{
 		ParentId: pid,

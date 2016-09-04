@@ -27,7 +27,8 @@ type User struct {
 	Status        int       `orm:"default(2)" form:"Status" valid:"Range(1,2)"`
 	Lastlogintime time.Time `orm:"null;type(datetime)" form:"-"`
 	Createtime    time.Time `orm:"type(datetime);auto_now_add" `
-	Roles         []*Role   `orm:"rel(m2m)"`
+	Role          int
+	// Roles         []*Role   `orm:"rel(m2m)"`
 }
 
 // Id            int64
@@ -40,36 +41,37 @@ func init() {
 
 func SaveUser(user User) (uid int64, err error) {
 	o := orm.NewOrm()
+	var user1 User
 	//判断是否有重名
-	// var spider Spider //下面这个filter放在topic=&Topic{后面用返回one(topic)则查询出错！
-	//只有编号和主机都不同才写入。
-	err = o.QueryTable("user").Filter("username", user.Username).One(&user, "Id")
-	// err = o.QueryTable("topic").Filter("categoryid", cid).Filter("tnumber", tnumber).One(&topic, "Id")
-
+	err = o.QueryTable("user").Filter("username", user.Username).One(&user1, "Id")
 	if err == orm.ErrNoRows { //Filter("tnumber", tnumber).One(topic, "Id")==nil则无法建立
 		// 没有找到记录
-		// spider1 := &Spider{
-		// 	Number:   number,
-		// 	Name:     name,
-		// 	Link:     link,
-		// 	UserName: username,
-		// 	UserIp:   userip,
-		// 	Created:  time.Now(),
-		// 	Updated:  time.Now(),
-		// }
 		uid, err = o.Insert(&user)
 		if err != nil {
-			return 0, err //如果文章编号相同，则唯一性检查错误，返回id吗？
+			return 0, err
 		}
 	} else { //应该进行更新操作
-		uid = user.Id
+		// user1 := &User{Id: user1.Id}
+		user1.Username = user.Username
+		user1.Nickname = user.Nickname
+		user1.Password = user.Password
+		user1.Repassword = user.Repassword
+		user1.Email = user.Email
+		user1.Department = user.Department
+		user1.Secoffice = user.Secoffice
+		// user1.Remark = user.Remark
+		// user1.Ip = user.Ip
+		// user1.Status = user.Status
+		user1.Lastlogintime = user.Lastlogintime
+		user1.Createtime = time.Now()
+		user1.Role = user.Role
+		_, err = o.Update(&user1)
+		if err != nil {
+			return 0, err
+		}
+		uid = user1.Id
 	}
 	return uid, err
-
-	// 原来的代码orm := orm.NewOrm()
-	// // fmt.Println(user)
-	// uid, err = orm.Insert(&user) //_, err = o.Insert(reply)
-	// return uid, err
 }
 
 func ValidateUser(user User) error {
@@ -196,7 +198,7 @@ func GetUsersbySec(department, secoffice string) (users []*User, count int, err 
 	// cates := make([]*Category, 0)
 	qs := o.QueryTable("user")
 	//这里进行过滤
-	_, err = qs.Filter("Department", department).Filter("Secoffice", secoffice).All(&users)
+	_, err = qs.Filter("Department", department).Filter("Secoffice", secoffice).OrderBy("Username").All(&users)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -227,7 +229,7 @@ func GetUsersbySecId(secofficeid string) (users []*User, count int, err error) {
 		return nil, 0, err
 	}
 	//由分院名称和科室名称查所有用户
-	_, err = qs.Filter("Department", department.Title).Filter("Secoffice", secoffice.Title).All(&users)
+	_, err = qs.Filter("Department", department.Title).Filter("Secoffice", secoffice.Title).OrderBy("Username").All(&users)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -346,15 +348,18 @@ func DelUserById(Id int64) (int64, error) {
 }
 
 //###*****这里特别注意，这个是用户名，是汉语拼音，不是Nickname！！！！
-func GetUserByUsername(username string) (user User) {
+func GetUserByUsername(username string) (user User, err error) {
 	o := orm.NewOrm()
 	qs := o.QueryTable("user") //不知道主键就用这个过滤操作
 	//进行编号唯一性检查
-	qs.Filter("username", username).One(&user)
+	err = qs.Filter("username", username).One(&user)
+	if err != nil {
+		return user, err
+	}
 	// user = User{Username: username} //指定字段查询，这样也行
 	// o := orm.NewOrm()
 	// o.Read(&user,"Username")
-	return user
+	return user, err
 }
 
 //根据用户nickname取得用户
@@ -389,6 +394,7 @@ func GetUserByUserId(userid int64) (user User) {
 // 	return replies, err
 
 // }
+
 func GetRoleByUserId(userid int64) (roles []*Role, count int64) { //*Topic, []*Attachment, error
 	roles = make([]*Role, 0)
 	o := orm.NewOrm()

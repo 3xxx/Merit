@@ -2,60 +2,43 @@
 <html>
 <head>
 <title>Merit价值管理系统</title>
-
-<!-- <style type="text/css">
-h4 {
-  color: #DC143C;
-  background: #fff;
-  margin: 0;
-  padding: 0;
-  font-family: Georgia, Palatino, serif;
-  }
-</style> -->
+  <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
+  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
 </head>
 <body>
 
-<input type="button" id="btn_addtr" value="增行">
 <div class="col-lg-12">
+<div><h2>鼠标离开输入框即修改完成</h2></div>
 <table class="table table-striped">
   <thead>
       <tr>
-      <!-- <th><span style="cursor: pointer">Id</span></th> -->
       <th><span style="cursor: pointer">Username</span></th>
       <th><span style="cursor: pointer">Password</span></th>
       <th><span style="cursor: pointer">Nickname</span></th>
       <th><span style="cursor: pointer">Email</span></th>
-      <!-- <th><span style="cursor: pointer">Remark</span></th> -->
-      <!-- <th><span style="cursor: pointer">Status</span></th> -->
+      <th><span style="cursor: pointer">分院</span></th>
+      <th><span style="cursor: pointer">科室</span></th>
       <th><span style="cursor: pointer">Lastlogintime</span></th>
       <th><span style="cursor: pointer">Createtime</span></th>
-      <!-- <th><span style="cursor: pointer">RoleId</span></th> -->
-      <th><span style="cursor: pointer">RoleTitle</span></th>
-      <th><span style="cursor: pointer">RoleName</span></th>
-      <th><span style="cursor: pointer">Remark</span></th>      
-      <th>操作</th>
+      <th><span style="cursor: pointer">权限Role</span></th>
     </tr>
   </thead>
 
+<tbody>
 
-   {{range $index, $elem :=.Role}}
     <tr><!--tr表格的行，td定义一个单元格，<th> 标签定义表格内的表头单元格-->
-      <!-- <th>{{$index}}</th> -->
-      <!-- <td>{{$.User.Id}}</td> value="{{$.User.Password}}"-->
-      <td>{{$.User.Username}}</td>
-      <td><input type="password" id="input" name="password"  size='18'/></td>
-      <td><input type="text" id="input" name="nickname" value="{{$.User.Nickname}}" size='6'/></td>
-      <td><input type="text" id="input" name="email" value="{{$.User.Email}}" size='20'/></td>
-      <td>{{dateformat $.User.Lastlogintime "2006-01-02 T 15:04:05"}}</td>
-      <td>{{dateformat $.User.Createtime "2006-01-02 T 15:04:05"}}</td>
-      <!-- <td>{{.Id}}</td> -->
-      <td>{{.Title}}</td>
-<!--       <td><input type="hidden" id="input" name="roletitle1" value="{{.Title}}"/></td> -->
-      <td>{{.Name}}</td>
-      <td>{{.Remark}}</td>
-      <td><input type="button" id="btn_deltr" onclick="deltr()" value="删行"></td>
+      <td>{{.User.Username}}</td>
+      <td><input type="password" class="form-control" id="input" name="password"  size='5'/></td>
+      <td><input type="text" class="form-control" id="input" name="nickname" value="{{.User.Nickname}}" size='6'/></td>
+      <td><input type="text" class="form-control" id="input" name="email" value="{{.User.Email}}" size='20'/></td>
+      <td>{{.User.Department}}</td>
+      <td>{{.User.Secoffice}}</td>
+      <td>{{dateformat .User.Lastlogintime "2006-01-02 T 15:04:05"}}</td>
+      <td>{{dateformat .User.Createtime "2006-01-02 T 15:04:05"}}</td>
+      <td>{{.User.Role}}</td>
     </tr>
-    {{end}}
+ </tbody>   
  </table>
 </div>
 
@@ -110,64 +93,7 @@ function checkInput(){
 // return true
 }
 
-
-
-
-  $(function(){
-    var show_count = 20;   //要显示的条数
-    var count =1
-    // var count = $("input:text").val();    //$(":text") 所有 type="text" 的 <input> 元素     递增的开始值，这里是你的ID
-    var fin_count = parseInt(count) + (show_count-1);   //结束递增的条件
-    
-      $("#btn_addtr").click(function(){
-        // if(count < fin_count)    //点击时候，如果当前的数字小于递增结束的条件
-        // {
-        $("tr:eq(1)").clone().appendTo("table");   //在表格后面添加一行
-        $("tr:last td input:first").val(++count);   //改变添加的行的ID值。
-        // }
-      });
-    });
-    function deltr(){
-    var length=$("tr").length;
-      if(length<=2){
-      alert("至少保留一行");
-      }else{
-      $("tr:last").remove();
-      }
-    }
 </script>
 
-<script type="text/javascript">
-  $(document).ready(function() {
-  $("table").tablesorter();
-  // $("#ajax-append").click(function() {
-  //    $.get("assets/ajax-content.html", function(html) {
-  //     // append the "ajax'd" data to the table body
-  //     $("table tbody").append(html);
-  //     // let the plugin know that we made a update
-  //     $("table").trigger("update");
-  //     // set sorting column and direction, this will sort on the first and third column
-  //     var sorting = [[2,1],[0,0]];
-  //     // sort on the first column
-  //     $("table").trigger("sorton",[sorting]);
-  //   });
-  //   return false;
-  // });
-});
-</script>
 </body>
 </html>
-<!--     Id       int64  `PK`
-    Username string `orm:"unique"`
-    Password string
-    // Id            int64
-    // Username      string    `orm:"unique;size(32)" form:"Username"  valid:"Required;MaxSize(20);MinSize(6)"`
-    // Password      string    `orm:"size(32)" form:"Password" valid:"Required;MaxSize(20);MinSize(6)"`
-    Repassword    string    `orm:"-" form:"Repassword" valid:"Required"`
-    Nickname      string    //`orm:"unique;size(32)" form:"Nickname" valid:"Required;MaxSize(20);MinSize(2)"`
-    Email         string    `orm:"size(32)" form:"Email" valid:"Email"`
-    Remark        string    `orm:"null;size(200)" form:"Remark" valid:"MaxSize(200)"`
-    Status        int       `orm:"default(2)" form:"Status" valid:"Range(1,2)"`
-    Lastlogintime time.Time `orm:"null;type(datetime)" form:"-"`
-    Createtime    time.Time `orm:"type(datetime);auto_now_add" `
-    Role          []*Role   `orm:"rel(m2m)"` -->

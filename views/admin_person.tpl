@@ -43,7 +43,7 @@ allLinks[i].target="_blank";
     <tbody>
       {{range $k,$v :=.person}}
       <tr>
-        <td>{{$k}}</td>
+        <td>{{$k|indexaddone}}</td>
         <td>{{.Name}}</td>
         <td>{{.Numbers}}</td>
         <td>{{.Marks}}</td>

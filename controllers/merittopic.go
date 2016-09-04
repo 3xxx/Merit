@@ -54,7 +54,10 @@ func (c *MeritTopicController) Add() {
 		c.Data["Uname"] = v.(string)
 	}
 	//先由uname取得uid
-	user := models.GetUserByUsername(uname)
+	user, err := models.GetUserByUsername(uname)
+	if err != nil {
+		beego.Error(err)
+	}
 	//取得父级id和用户id下的价值
 	topics, _, _, err := models.GetMeritTopic(idNum, user.Id)
 	c.Data["topics"] = topics
@@ -107,7 +110,10 @@ func (c *MeritTopicController) AddMeritTopic() {
 
 	_, err = models.AddMeritTopic(idNum, uname, name, choose, content, ff)
 	//先由uname取得uid
-	user := models.GetUserByUsername(uname)
+	user, err := models.GetUserByUsername(uname)
+	if err != nil {
+		beego.Error(err)
+	}
 	topics, _, _, err := models.GetMeritTopic(idNum, user.Id)
 	// c.Data["category"] = category
 	// c.Data["list"] = slice1
@@ -222,8 +228,8 @@ func (c *MeritTopicController) ModifyMeritTopic() { //这个也要登陆验证
 	role, _ := checkRole(c.Ctx) //login里的
 	// beego.Info(role)
 	//5.进行逻辑分析：
-	rolename, _ := strconv.ParseInt(role, 10, 64)
-	if rolename > 2 && uname != username.Username { //
+	// rolename, _ := strconv.ParseInt(role, 10, 64)
+	if role > 2 && uname != username.Username { //
 		// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
 		route := c.Ctx.Request.URL.String()
 		c.Data["Url"] = route
@@ -322,10 +328,10 @@ func (c *MeritTopicController) DeleteMeritTopic() { //应该显示警告
 	uname := v.(string)
 	//5.取出用户的权限等级
 	role, _ := checkRole(c.Ctx) //login里的
-	beego.Info(role)
+	// beego.Info(role)
 	//5.进行逻辑分析：
-	rolename, _ := strconv.ParseInt(role, 10, 64)
-	if rolename > 2 && uname != username.Username { //
+	// rolename, _ := strconv.ParseInt(role, 10, 64)
+	if role > 2 && uname != username.Username { //
 		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
 		route := c.Ctx.Request.URL.String()
 		c.Data["Url"] = route

@@ -86,7 +86,7 @@ $(function() {
     
       {{range $k1,$v1 :=.Employee}}
       <tr>
-        <td>{{$k1}}</td>
+        <td>{{$k1|indexaddone}}</td>
         <td>{{.Name}}</td>
         <td>{{.Drawn}}</td>
         <td>{{.Designd}}</td>

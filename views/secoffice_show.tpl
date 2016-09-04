@@ -83,7 +83,7 @@ $(function() {
     <tbody>
       {{range $k,$v :=.Employee}}
       <tr>
-        <td>{{$k}}</td>
+        <td>{{$k|indexaddone}}</td>
         <td>{{.Name}}</td>
         <td>{{.Drawn}}</td>
         <td>{{.Designd}}</td>

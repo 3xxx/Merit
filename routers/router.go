@@ -14,18 +14,26 @@ func init() {
 
 	//2.1首页进入价值——直接进入自己的价值页面
 	beego.Router("/merit", &controllers.JsonController{}, "get:GetMeritUser")
-	//这个同上面一样
-	beego.Router("/user", &controllers.JsonController{}, "get:GetMeritUser")
 	//2.2首页进入成果登记
 	beego.Router("/achievement", &controllers.Achievement{}, "get:GetAchievement")
 	//这个同上面一样
 	beego.Router("/getachievement", &controllers.Achievement{}, "get:GetAchievement")
 	//个人在线添加成果
 	beego.Router("/achievement/addcatalog", &controllers.Achievement{}, "post:AddCatalog")
-	//个人在线修改成果
+	//个人在线直接提交成果
+	beego.Router("/achievement/sendcatalog", &controllers.Achievement{}, "post:SendCatalog")
+	//在线退回成果
+	beego.Router("/achievement/downsendcatalog", &controllers.Achievement{}, "post:DownSendCatalog")
+
+	//个人在线修改保存成果
 	beego.Router("/achievement/modifycatalog", &controllers.Achievement{}, "post:ModifyCatalog")
+
 	//个人在线删除一条成功
 	beego.Router("/achievement/delete", &controllers.Achievement{}, "post:DeleteCatalog")
+	//编辑成果类型和折标系数表
+	beego.Router("/achievement/ratio", &controllers.Achievement{}, "get:Ratio")
+	beego.Router("/achievement/addratio", &controllers.Achievement{}, "post:AddRatio")
+	beego.Router("/achievement/modifyratio", &controllers.Achievement{}, "post:ModifyRatio")
 
 	beego.Router("/test", &controllers.MainController{}, "get:Test")
 	beego.Router("/test1", &controllers.MainController{}, "get:Test1")
@@ -51,6 +59,8 @@ func init() {
 	beego.Router("/delete", &controllers.MeritTopicController{}, "get:DeleteMeritTopic")
 
 	beego.Router("/login", &controllers.LoginController{})
+	beego.Router("/loginerr", &controllers.LoginController{}, "get:Loginerr")
+
 	beego.Router("/regist", &controllers.RegistController{})
 	// beego.Router("/registerr", &controllers.RegistController{}, "get:RegistErr")
 	beego.Router("/regist/checkuname", &controllers.RegistController{}, "post:CheckUname")
@@ -73,6 +83,9 @@ func init() {
 	beego.Router("/user/view", &controllers.UserController{}, "get:View")
 	beego.Router("/user/view/*", &controllers.UserController{}, "get:View")
 	beego.Router("/user/importexcel", &controllers.UserController{}, "post:ImportExcel")
+
+	//用户修改自己密码
+	beego.Router("/user", &controllers.UserController{}, "get:GetUserByUsername")
 	//用户登录后查看自己的资料
 	beego.Router("/user/getuserbyusername", &controllers.UserController{}, "get:GetUserByUsername")
 

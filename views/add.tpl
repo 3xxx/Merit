@@ -35,7 +35,7 @@
     <tbody>
       {{range $k,$v :=.topics}}
       <tr>
-        <td>{{$k}}</td>
+        <td>{{$k|indexaddone}}</td>
         <td><a href="/view?id={{.Id}}">{{.Title}}</a></td>
         <td>{{.Choose}}</td>
         <td>{{.Mark}}</td>

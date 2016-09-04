@@ -30,7 +30,10 @@ func init() {
 //用户添加价值
 func AddAchievementTopic(pid int64, uname, title, choose, content, mark string) (id int64, err error) {
 	//先由uname取得uid
-	user := GetUserByUsername(uname)
+	user, err := GetUserByUsername(uname)
+	if err != nil {
+		return 0, err
+	}
 
 	o := orm.NewOrm()
 	topic := &AchievementTopic{
