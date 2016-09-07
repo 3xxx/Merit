@@ -13,6 +13,10 @@
 <script type="text/javascript" src="/static/js/moment.min.js"></script>
   <script type="text/javascript" src="/static/js/daterangepicker.js"></script>
   <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css" />
+
+  <script type="text/javascript" src="/static/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="/static/bootstrap-datepicker/bootstrap-datepicker.zh-CN.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/bootstrap-datepicker/bootstrap-datepicker3.css"/> 
 <!-- <style type="text/css">
 a:active{text:expression(target="_blank");}
 i#delete
@@ -86,6 +90,7 @@ $(function() {
         <th>设计</th>
         <th>校核</th>
         <th>审查</th>
+        <th>绘制系数</th>
         <th>出版</th>
         <th>操作</th>
       </tr>
@@ -94,7 +99,7 @@ $(function() {
     <tbody>
     {{range $k1,$v1 :=$.Catalogs}}
       {{if eq $v1.State "1"}}
-      {{if eq $.UserNickname $v1.Drawn}}
+      {{if eq $.UserNickname $v1.Drawn $v1.Designd}}
       <tr id="row{{.Id}}">
         <td>{{$k1|indexaddone}}</td>
         <td>{{.ProjectNumber}}</td>
@@ -104,11 +109,12 @@ $(function() {
         <td>{{.Name}}</td>
         <td>{{.Category }}</td>
         <td>{{.Page}}</td>
-        <td>{{.Count }}</td>
-        <td>{{.Drawn }}</td>
+        <td>{{.Count}}</td>
+        <td>{{.Drawn}}</td>
         <td>{{.Designd}}</td>
         <td>{{.Checked}}</td>
         <td>{{.Examined}}</td>
+        <td>{{.Drawnratio}}</td>
         <td>{{dateformat .Data "2006-01-02"}}</td>
         <td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow("row{{.Id}}")'/> 
         <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow("row{{.Id}}")' />
@@ -161,7 +167,7 @@ $(function() {
         <td>{{.Designdratio}}</td>
         <td>{{.Checkedratio}}</td>
         <td>{{dateformat .Data "2006-01-02"}}</td>
-        <td><input type='button' class='btn btn-default' name='delete' value='退回' onclick='deleteSelectedRow("row{{.Id}}")'/> 
+        <td><input type='button' class='btn btn-default' name='delete' value='退回' onclick='downsendSelectedRow("row{{.Id}}")'/> 
         <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow2("row{{.Id}}")' />
         <input type='button' class='btn btn-default' name='update' value='提交' onclick='sendSelectedRow("row{{.Id}}")' /></td> 
       </tr>
@@ -303,7 +309,8 @@ var flag = 0;  //标志位，标志第几行
             var oldDesignd = $("#"+rowId+" td:eq(10)").html();
             var oldChecked = $("#"+rowId+" td:eq(11)").html();
             var oldExamined = $("#"+rowId+" td:eq(12)").html();
-            var oldData = $("#"+rowId+" td:eq(13)").html();
+            var oldDrawnratio = $("#"+rowId+" td:eq(13)").html();
+            var oldData = $("#"+rowId+" td:eq(14)").html();
             // if(oldPrice != ""){//去掉第一个人民币符号  
             //     oldPrice = oldPrice.substring(1);  
             // }  
@@ -320,9 +327,17 @@ var flag = 0;  //标志位，标志第几行
                         + "<td><input type='text' id='txtDesignd"+flag+"' value='"+oldDesignd+"' size='2'/></td>"
                         + "<td><input type='text' id='txtChecked"+flag+"' value='"+oldChecked+"' size='2'/></td>"
                         + "<td><input type='text' id='txtExamined"+flag+"' value='"+oldExamined+"' size='2'/></td>"
-                        + "<td><input type='text' id='txtData"+flag+"' value='"+oldData+"' size='8'/></td>"
+                        + "<td><input type='text' id='txtDrawnratio"+flag+"' value='"+oldDrawnratio+"' size='2'/></td>"
+                        + "<td><input type='text' id='txtData"+flag+"' class='datepicker' value='"+oldData+"'/></td>"
                         + "<td><input type='button' class='btn btn-default' name='update' value='保存' onclick='saveUpdateRow(\""+rowId+"\",\""+flag+"\")'/></td>";  
-            $("#"+rowId).html(uploadStr);  
+            $("#"+rowId).html(uploadStr); 
+            $(".datepicker").datepicker({
+               language: "zh-CN",
+               autoclose: true,//选中之后自动隐藏日期选择框
+               clearBtn: true,//清除按钮
+               todayBtn: 'linked',//今日按钮
+               format: "yyyy-mm-dd"//日期格式，详见 http://bootstrap-datepicker.readthedocs.org/en/release/options.html#format
+            }); 
          }    
   
          /*    
@@ -342,6 +357,7 @@ var flag = 0;  //标志位，标志第几行
             var newDesignd = $("#txtDesignd"+flag).val();
             var newChecked = $("#txtChecked"+flag).val();
             var newExamined = $("#txtExamined"+flag).val();
+            var newDrawnratio = $("#txtDrawnratio"+flag).val();
             var newData = $("#txtData"+flag).val();
             var saveStr = "<td>" + newIndex + "</td>"
                         + "<td>" + newPnumber + "</td>"  
@@ -356,8 +372,9 @@ var flag = 0;  //标志位，标志第几行
                         + "<td>" + newDesignd + "</td>"
                         + "<td>" + newChecked + "</td>"
                         + "<td>" + newExamined + "</td>"
+                        + "<td>" + newDrawnratio + "</td>"
                         + "<td>" + newData + "</td>"
-                        + "<td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='downsendSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow(\""+rowId+"\")' /><input type='button' class='btn btn-default' name='update' value='提交' onclick='sendSelectedRow(\""+rowId+"\")' /></td>";  
+                        + "<td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow(\""+rowId+"\")' /><input type='button' class='btn btn-default' name='update' value='提交' onclick='sendSelectedRow(\""+rowId+"\")' /></td>";  
             $("#"+rowId).html(saveStr);//因为替换的时候只替换tr标签内的html 所以不用加上tr 
             // 这里再提交到后台保存起来update 
             if (newName)//如果返回的有内容  
@@ -365,7 +382,7 @@ var flag = 0;  //标志位，标志第几行
                     $.ajax({
                     type:"post",//这里是否一定要用post？？？
                     url:"/achievement/modifycatalog",
-                    data: {Pnumber:newPnumber,Pname:newPname,Stage:newStage,Tnumber:newTnumber,Name:newName,Category:newCategory,Page:newPage,Count:newCount,Drawn:newDrawn,Designd:newDesignd,Checked:newChecked,Examined:newExamined,Data:newData,CatalogId:rowId},
+                    data: {Pnumber:newPnumber,Pname:newPname,Stage:newStage,Tnumber:newTnumber,Name:newName,Category:newCategory,Page:newPage,Count:newCount,Drawn:newDrawn,Designd:newDesignd,Checked:newChecked,Examined:newExamined,Drawnratio:newDrawnratio,Data:newData,CatalogId:rowId},
                         success:function(data,status){//数据提交成功时返回数据
                         alert("修改“"+data+"”成功！(status:"+status+".)");
                         }
@@ -409,7 +426,8 @@ var flag = 0;  //标志位，标志第几行
                         + "<td><input type='text' id='txtCheckedratio"+flag+"' value='"+oldCheckedratio+"' size='1'/></td>"
                         + "<td id='txtData"+flag+"'>"+oldData+"</td>"
                         + "<td><input type='button' class='btn btn-default' name='update' value='保存' onclick='saveUpdateRow2(\""+rowId+"\",\""+flag+"\")'/></td>";  
-            $("#"+rowId).html(uploadStr);  
+            $("#"+rowId).html(uploadStr); 
+            
          }    
   
          /*    
@@ -497,9 +515,16 @@ var flag = 0;  //标志位，标志第几行
                         + "<td id='txtExamined"+flag+"'>"+oldExamined+"</td>"  
                         + "<td><input type='text' id='txtCheckedratio"+flag+"' value='"+oldCheckedratio+"' size='1'/></td>"
                         + "<td><input type='text' id='txtExaminedratio"+flag+"' value='"+oldExaminedratio+"' size='1'/></td>"
-                        + "<td><input type='text' id='txtData"+flag+"' value='"+oldData+"' size='8'/></td>"
+                        + "<td><input type='text' id='txtData"+flag+"' class='datepicker' value='"+oldData+"'/></td>"
                         + "<td><input type='button' class='btn btn-default' name='update' value='保存' onclick='saveUpdateRow3(\""+rowId+"\",\""+flag+"\")'/></td>";  
-            $("#"+rowId).html(uploadStr);  
+            $("#"+rowId).html(uploadStr);
+            $(".datepicker").datepicker({
+            language: "zh-CN",
+            autoclose: true,//选中之后自动隐藏日期选择框
+            clearBtn: true,//清除按钮
+            todayBtn: 'linked',//今日按钮
+            format: "yyyy-mm-dd"//日期格式，详见 http://bootstrap-datepicker.readthedocs.org/en/release/options.html#format
+            });  
          }    
   
          /*    

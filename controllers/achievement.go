@@ -499,6 +499,9 @@ func (c *Achievement) Secofficeshow() {
 	}
 	//分院——科室——人员甲（乙、丙……）——绘制——设计——校核——审查——合计——排序
 	secid := c.Input().Get("secid")
+	if secid == "" {
+		secid = strconv.FormatInt(user.Id, 10)
+	}
 	secid1, err := strconv.ParseInt(secid, 10, 64)
 	if err != nil {
 		beego.Error(err)
@@ -539,6 +542,7 @@ func (c *Achievement) Secofficeshow() {
 
 	switch level {
 	case "0": //如果是总院，则显示全部分院情况
+		// c.Data["IsLogin"] = checkAccount(c.Ctx)
 		c.Data["Starttime"] = t1
 		c.Data["Endtime"] = t2
 		c.TplName = "institute_show.tpl"
@@ -585,6 +589,7 @@ func (c *Achievement) Secofficeshow() {
 			c.Data["Secid"] = secid
 			c.Data["Level"] = level
 			c.Data["Secoffice"] = Secofficevalue
+			c.Data["Deptitle"] = categoryname.Title
 			c.TplName = "depoffice_show.tpl"
 		} else {
 			route := c.Ctx.Request.URL.String()
@@ -608,8 +613,11 @@ func (c *Achievement) Secofficeshow() {
 		if role == 1 || role == 3 && user.Secoffice == categoryname.Title || role == 2 && user.Department == categoryname1.Title { //
 			employeevalue := make([]models.Employeeachievement, 0)
 			// depid := c.Input().Get("depid")
+			//根据分院和科室查所有员工
+			// users, count, err := models.GetUsersbySec(category1.Title, category2.Title) //得到员工姓名
 			//根据科室id查所有员工
 			users, _, err := models.GetUsersbySecId(secid) //得到员工姓名
+			beego.Info(users)
 			if err != nil {
 				beego.Error(err)
 			}
@@ -624,6 +632,7 @@ func (c *Achievement) Secofficeshow() {
 			c.Data["Starttime"] = t1
 			c.Data["Endtime"] = t2
 			c.Data["Secid"] = secid
+			c.Data["Sectitle"] = categoryname.Title
 			c.Data["Level"] = level
 			c.Data["Employee"] = employeevalue
 			c.TplName = "secoffice_show.tpl"
@@ -724,10 +733,23 @@ func (c *Achievement) Secofficeshow() {
 		// } else {
 		// 	c.TplName = "employee_show.tpl"
 		// }
-	default: //默认显示总院情况，下面代码没有改
+	default: //默认显示个人
+		usernickname := models.GetUserByUserId(secid1)
+		ratios, err := models.GetRatios()
+		//根据userid得到所有成果,时间段，在模板里，根据catalogs的类型与category匹配进行显示即可
+		catalogs, err := models.Getcatalog2byuserid(secid, t1, t2)
+		if err != nil {
+			beego.Error(err)
+		}
 		c.Data["Starttime"] = t1
 		c.Data["Endtime"] = t2
-		c.TplName = "institute_show.tpl"
+		c.Data["Ratio"] = ratios //定义的成果类型
+		//下面这个catalogs用于employee_show.tpl
+		c.Data["Catalogs"] = catalogs
+		c.Data["Secid"] = secid
+		c.Data["Level"] = "3"
+		c.Data["UserNickname"] = usernickname.Nickname
+		c.TplName = "employee_show.tpl"
 	}
 
 }
@@ -1080,11 +1102,13 @@ func (c *Achievement) AddCatalog() {
 	// 	beego.Error(err)
 	// }
 	// catalog.Complex = complex
-	// drawnratio, err := strconv.ParseFloat(c.Input().Get("Drawnratio"), 64)
-	// if err != nil {
-	// 	beego.Error(err)
-	// }
-	// catalog.Drawnratio = drawnratio
+	drawnratio1 := c.Input().Get("Drawnratio")
+	if drawnratio1 != "" {
+		catalog.Drawnratio, err = strconv.ParseFloat(drawnratio1, 64)
+		if err != nil {
+			beego.Error(err)
+		}
+	}
 	// designdratio, err := strconv.ParseFloat(c.Input().Get("Designdratio"), 64)
 	// if err != nil {
 	// 	beego.Error(err)
@@ -1102,7 +1126,11 @@ func (c *Achievement) AddCatalog() {
 	// catalog.Examinedratio = examinedratio
 
 	const lll = "2006-01-02" //"2006-01-02 15:04:05" //12-19-2015 22:40:24
-	printtime, _ := time.Parse(lll, c.Input().Get("Data"))
+	printtime, err := time.Parse(lll, c.Input().Get("Data"))
+	if err != nil {
+		beego.Error(err)
+	}
+	// beego.Info(printtime)
 	catalog.Data = printtime
 	catalog.Created = time.Now()
 	catalog.Updated = time.Now()
@@ -1277,7 +1305,11 @@ func (c *Achievement) ModifyCatalog() {
 		}
 	}
 	const lll = "2006-01-02" //"2006-01-02 15:04:05" //12-19-2015 22:40:24
-	printtime, _ := time.Parse(lll, c.Input().Get("Data"))
+	printtime, err := time.Parse(lll, c.Input().Get("Data"))
+	if err != nil {
+		beego.Error(err)
+	}
+	// beego.Info(printtime)
 	catalog.Data = printtime
 	catalog.Updated = time.Now()
 	catalog.Author = uname
@@ -1373,7 +1405,11 @@ func (c *Achievement) ModifySendCatalog() {
 	catalog.Checked = c.Input().Get("Checked")
 	catalog.Examined = c.Input().Get("Examined")
 	const lll = "2006-01-02" //"2006-01-02 15:04:05" //12-19-2015 22:40:24
-	printtime, _ := time.Parse(lll, c.Input().Get("Data"))
+	printtime, err := time.Parse(lll, c.Input().Get("Data"))
+	if err != nil {
+		beego.Error(err)
+	}
+	beego.Info(printtime)
 	catalog.Data = printtime
 	catalog.Updated = time.Now()
 	catalog.Author = uname
@@ -1433,6 +1469,8 @@ func (c *Achievement) ModifySendCatalog() {
 }
 
 //直接提交一条目录，即状态加1
+//如果提交的内容没有审查人员，则直接由校核人员提交，直接改为4
+//比如会务等，交组长确认，或项目负责人、专业负责人，只有一个人确认即可
 func (c *Achievement) SendCatalog() {
 	//2.如果登录或ip在允许范围内，进行访问权限检查
 	// uname, _, _ := checkRolewrite(c.Ctx) //login里的
@@ -1453,14 +1491,30 @@ func (c *Achievement) SendCatalog() {
 			beego.Error(err)
 		}
 	}
-	err = m.ModifyCatalogState(cidNum, "1")
+	//查出cidnum这个有没有审查人员，没有就直接state+2
+	catalog, err := m.GetCatalog(id)
 	if err != nil {
 		beego.Error(err)
-	} else {
-		data := "ok!"
-		c.Ctx.WriteString(data)
 	}
-
+	// beego.Info(catalog.State)
+	// beego.Info(catalog.Examined)
+	if catalog.Examined == "" && catalog.State == "2" { //catalog.Examined == "" && catalog.State == "1" ||
+		err = m.ModifyCatalogState(cidNum, "2") //记得填上难度系数为1
+		if err != nil {
+			beego.Error(err)
+		} else {
+			data := "提交汇总ok!"
+			c.Ctx.WriteString(data)
+		}
+	} else {
+		err = m.ModifyCatalogState(cidNum, "1")
+		if err != nil {
+			beego.Error(err)
+		} else {
+			data := "提交下一级ok!"
+			c.Ctx.WriteString(data)
+		}
+	}
 	logs := logs.NewLogger(1000)
 	logs.SetLogger("file", `{"filename":"log/meritlog.log"}`)
 	logs.EnableFuncCallDepth(true)
@@ -1493,7 +1547,7 @@ func (c *Achievement) DownSendCatalog() {
 	if err != nil {
 		beego.Error(err)
 	} else {
-		data := "ok!"
+		data := "退回前一级ok!"
 		c.Ctx.WriteString(data)
 	}
 

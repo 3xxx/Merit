@@ -14,96 +14,8 @@
 <script type="text/javascript" src="/static/js/moment.min.js"></script>
 <script type="text/javascript" src="/static/js/daterangepicker.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css" />
-<!-- <style type="text/css">
-a:active{text:expression(target="_blank");}
-i#delete
-{
-color:#DC143C;
-}
-</style> -->
-<!-- <script type="text/javascript">
-  var allLinks=document.getElementsByTagName("a");
-for(var i=0;i!=allLinks.length; i++){
-allLinks[i].target="_blank";
-}
-</script> -->
+
 </head>
-
-
-<!-- <div id="treeview" class="col-xs-3"></div> -->
-
-<div class="col-lg-12">
-<div>
-<form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data">
-<input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
-<input type="hidden" id="level" name="level" value="{{.Level}}"/>
-<div class="form-group">
-<label for="taskNote">统计周期：</label>
-  <input type="text" class="form-control" name="datefilter" value="" placeholder="选择时间段(默认最近一个月)"/>
-</div>
-<script type="text/javascript">
-$(function() {
-  $('input[name="datefilter"]').daterangepicker({
-      autoUpdateInput: false,
-      locale: {
-          cancelLabel: 'Clear'
-      }
-  });
-  $('input[name="datefilter"]').on('apply.daterangepicker', function(ev, picker) {
-      $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-  });
-  $('input[name="datefilter"]').on('cancel.daterangepicker', function(ev, picker) {
-      $(this).val('');
-  });
-});
-</script>
-<button type="submit" class="btn btn-primary" name="button">提交</button>
-  </form>
-  <br></div>
-
-
-<div class="form-group">
-        <label class="control-label" id="regis" for="LoginForm-UserName">统计时间段：{{dateformat .Starttime "2006-01-02"}}-{{dateformat .Endtime "2006-01-02"}}</label>
-</div>
-{{range $k,$v :=.Secoffice}}
-<h2>{{.Name}}</h2>
-  <table class="table table-striped">
-  
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>姓名</th>
-        <th>编制</th>
-        <th>设计</th>
-        <th>校核</th>
-        <th>审查</th>
-        <th>汇总</th>
-        <th>详细</th>
-      </tr>
-    </thead>
-
-    <tbody>
-    
-      {{range $k1,$v1 :=.Employee}}
-      <tr>
-        <td>{{$k1|indexaddone}}</td>
-        <td>{{.Name}}</td>
-        <td>{{.Drawn}}</td>
-        <td>{{.Designd}}</td>
-        <td>{{.Checked}}</td>
-        <td>{{.Examined}}</td>
-        <td>{{.Sigma}}</td>
-        <td>
-         <a href="/secofficeshow?secid={{.Id}}&level=3"><i class="glyphicon glyphicon-open"></i>详细</a>
-        </td>  
-      </tr>
-      {{end}}
-     
-    </tbody>
-    
-  </table>
-  {{end}} 
-</div>
 
 <div class="container-fluid blue-bg-rpt">
   <div class="row">
@@ -123,8 +35,6 @@ $(function() {
           // expandIcon:"glyphicon glyphicon-chevron-down",
 //         });
 // });
-
-
   $(document).ready(function() {
   $("table").tablesorter({sortList: [[6,1]]});
   // $("#ajax-append").click(function() {
@@ -144,10 +54,3 @@ $(function() {
 </script>
 </body>
 </html>
-<!-- <button type="button" class="btn btn-primary btn-lg" style="color: rgb(212, 106, 64);">
-<span class="glyphicon glyphicon-user"></span> User
-</button>
-
-<button type="button" class="btn btn-primary btn-lg" style="text-shadow: black 5px 3px 3px;">
-<span class="glyphicon glyphicon-user"></span> User
-</button> -->

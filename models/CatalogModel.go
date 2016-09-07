@@ -158,7 +158,7 @@ func ModifyCatalog(cid int64, catalog1 Catalog, state string) error {
 		// catalog.Verified     = catalog1.Verified
 		// catalog.Approved     = catalog1.Approved
 		// catalog.Complex      = catalog1.Complex
-		// catalog.Drawnratio   = catalog1.Drawnratio
+		catalog.Drawnratio = catalog1.Drawnratio
 		// catalog.Designdratio = catalog1.Designdratio
 		// catalog.Checkedratio = catalog1.Checkedratio
 		// catalog.Examinedratio= catalog1.Examinedratio
@@ -223,6 +223,20 @@ func ModifyCatalogState(cid int64, state string) error {
 		catalog.State = strconv.Itoa(state1 + 1)
 		// _, err = o.Update(&catalog, "ProjectName", "DesignStage", "Section", "Tnumber", "Name", "Category", "Page", "Count", "Drawn", "Designd", "Checked", "Examined", "Data", "Updated", "Author")
 		_, err = o.Update(&catalog, "State") //这里不能用&catalog
+		if err != nil {
+			return err
+		} else {
+			return nil
+		}
+	} else if err == nil && state == "2" {
+		state1, err := strconv.Atoi(catalog.State)
+		if err != nil {
+			return err
+		}
+		catalog.State = strconv.Itoa(state1 + 2)
+		catalog.Complex = 1 //这种处理不好，应该由下一级填写难度系数……模板要改
+		// _, err = o.Update(&catalog, "ProjectName", "DesignStage", "Section", "Tnumber", "Name", "Category", "Page", "Count", "Drawn", "Designd", "Checked", "Examined", "Data", "Updated", "Author")
+		_, err = o.Update(&catalog, "Complex", "State") //这里只能用&catalog
 		if err != nil {
 			return err
 		} else {
@@ -311,7 +325,7 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 	qs := o.QueryTable("catalog")
 	qs = qs.SetCond(cond1)
 	//1、查制图工作量
-	_, err = qs.Filter("Drawn", uname).All(&catalogs) //而这个字段parentid为何又不用呢
+	_, err = qs.Filter("Drawn", uname).Filter("State", "4").All(&catalogs) //而这个字段parentid为何又不用呢
 	if err != nil {
 		return nil, err
 	}
@@ -329,7 +343,9 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 	for _, v := range catalogs {
 		//根据catalogs的category，再查出ratio中的系数
 		ratio, err := GetRationumbycategory(v.Category)
-		if err != nil {
+		if err == orm.ErrNoRows {
+			ratio = 0
+		} else if err != nil {
 			return nil, err
 		}
 		Drawnvalue = v.Count * ratio * v.Complex * v.Drawnratio
@@ -374,16 +390,18 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 	aa[0].Drawn = Round(drawn, 1)
 
 	//2、查设计工作量
-	_, err = qs.Filter("Designd", uname).All(&catalogs) //而这个字段parentid为何又不用呢
+	_, err = qs.Filter("Designd", uname).Filter("State", "4").All(&catalogs) //而这个字段parentid为何又不用呢
 	if err != nil {
 		return nil, err
 	}
 	for _, v := range catalogs {
 		ratio, err := GetRationumbycategory(v.Category)
-		if err != nil {
+		if err == orm.ErrNoRows {
+			ratio = 0
+		} else if err != nil {
 			return nil, err
 		}
-		Designdvalue = v.Count * ratio * v.Complex * v.Drawnratio
+		Designdvalue = v.Count * ratio * v.Complex * v.Designdratio
 		//成果数量*难度系数*绘制占比
 		//成果数量*难度系数*设计占比
 		//如果是图纸
@@ -406,16 +424,18 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 	aa[0].Designd = Round(designd, 1)
 
 	//3、查校核工作量
-	_, err = qs.Filter("Checked", uname).All(&catalogs) //而这个字段parentid为何又不用呢
+	_, err = qs.Filter("Checked", uname).Filter("State", "4").All(&catalogs) //而这个字段parentid为何又不用呢
 	if err != nil {
 		return nil, err
 	}
 	for _, v := range catalogs {
 		ratio, err := GetRationumbycategory(v.Category)
-		if err != nil {
+		if err == orm.ErrNoRows {
+			ratio = 0
+		} else if err != nil {
 			return nil, err
 		}
-		Checkedvalue = v.Count * ratio * v.Complex * v.Drawnratio
+		Checkedvalue = v.Count * ratio * v.Complex * v.Checkedratio
 		//成果数量*难度系数*绘制占比
 		//成果数量*难度系数*设计占比
 		//如果是图纸
@@ -437,16 +457,18 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 	}
 	aa[0].Checked = Round(checked, 1)
 	//4、查审查工作量
-	_, err = qs.Filter("Examined", uname).All(&catalogs) //而这个字段parentid为何又不用呢
+	_, err = qs.Filter("Examined", uname).Filter("State", "4").All(&catalogs) //而这个字段parentid为何又不用呢
 	if err != nil {
 		return nil, err
 	}
 	for _, v := range catalogs {
 		ratio, err := GetRationumbycategory(v.Category)
-		if err != nil {
+		if err == orm.ErrNoRows {
+			ratio = 0
+		} else if err != nil {
 			return nil, err
 		}
-		Examinedvalue = v.Count * ratio * v.Complex * v.Drawnratio
+		Examinedvalue = v.Count * ratio * v.Complex * v.Examinedratio
 		//成果数量*难度系数*绘制占比
 		//成果数量*难度系数*设计占比
 		//如果是图纸

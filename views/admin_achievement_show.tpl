@@ -31,11 +31,10 @@ color:#DC143C;
 
 <!-- <a href="/category/view?id={{.Id}}" target='main'> -->
 <div class="col-lg-9">
-    <div class="form-group">
-        <label class="control-label" id="regis" for="LoginForm-UserName"></label><!-- 显示部门名称 -->
-    </div>
-
-        <iframe src="/secofficeshow" name='main' id="iframepage" frameborder="0" width="100%" scrolling="yes" marginheight="0" marginwidth="0" onLoad="iFrameHeight()"></iframe>
+    <!-- <div class="form-group"> -->
+        <!-- <label class="control-label" id="regis" for="LoginForm-UserName"></label> 显示部门名称  -->
+    <!-- </div> -->
+        <iframe src="/secofficeshow" name='main' id="iframepage" frameborder="0" width="100%" scrolling="no" marginheight="0" marginwidth="0" onLoad="iFrameHeight()"></iframe>
 </div>  
 
 <!--   <div class="col-lg-9">

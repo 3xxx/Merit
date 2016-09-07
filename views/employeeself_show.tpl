@@ -10,9 +10,17 @@
  <script src="/static/js/bootstrap-treeview.js"></script>
  <script type="text/javascript" src="/static/js/jquery.tablesorter.min.js"></script> 
 <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
+
 <script type="text/javascript" src="/static/js/moment.min.js"></script>
   <script type="text/javascript" src="/static/js/daterangepicker.js"></script>
   <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css" />
+ <script type="text/javascript" src="/static/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap-select.min.css"/>  
+
+<script type="text/javascript" src="/static/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="/static/bootstrap-datepicker/bootstrap-datepicker.zh-CN.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/bootstrap-datepicker/bootstrap-datepicker3.css"/> 
+
 <!-- <style type="text/css">
 a:active{text:expression(target="_blank");}
 i#delete
@@ -28,13 +36,12 @@ allLinks[i].target="_blank";
 </script> -->
 </head>
 
-
 <!-- <div id="treeview" class="col-xs-3"></div> -->
-
 <div class="col-lg-12">
-<div class="form-group">
+<div class="form-group" id="div2">
         <label class="control-label" id="regis" for="LoginForm-UserName">{{.UserNickname}}</label><!-- 显示部门名称 -->
 </div>
+
 <div>
 <form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data">
   <input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
@@ -70,7 +77,6 @@ $(function() {
 </label>
 </div>
 
-
   <table class="table table-striped" id="orderTable" name="orderTable">
     <thead>
       <tr>
@@ -87,6 +93,7 @@ $(function() {
         <th>设计</th>
         <th>校核</th>
         <th>审查</th>
+        <th>绘制系数</th>
         <th>出版</th>
         <th>操作</th>
       </tr>
@@ -109,6 +116,7 @@ $(function() {
         <td>{{.Designd}}</td>
         <td>{{.Checked}}</td>
         <td>{{.Examined}}</td>
+        <td>{{.Drawnratio}}</td>
         <td>{{dateformat .Data "2006-01-02"}}</td>
         <td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow("row{{.Id}}")'/> 
         <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow("row{{.Id}}")'/>
@@ -141,24 +149,42 @@ var flag = 0;  //标志位，标志第几行
             //每次都往低flag+1的下标出添加tr，因为append是往标签内追加，所以用after
             //"<td>￥<input type='text' id='txtDrawn"+flag+"' value='' size='10'/></td>"  
             var insertStr = "<tr id="+rowId+">" 
-                         +      "<td><input type='text' placeholder='序号' id='txtIndex"+flag+"' value='' size='1'/></td>" 
-                         +      "<td><input type='text' placeholder='项目编号' id='txtPnumber"+flag+"' value='' size='3'/></td>"  
-                         +      "<td><input type='text' placeholder='项目名称' id='txtPname"+flag+"' value='' size='14'/></td>"  
-                         +      "<td><input type='text' placeholder='阶段' id='txtStage"+flag+"' value='' size='3'/></td>"
-                         +      "<td><input type='text' placeholder='成果编号' id='txtTnumber"+flag+"' value='' size='12'/></td>" 
-                         +      "<td><input type='text' placeholder='成果名称' id='txtName"+flag+"' value='' size='20'/></td>" 
-                         +      "<td><input type='text' placeholder='成果类型' id='txtCategory"+flag+"' value='' size='4'/></td>" 
-                         +      "<td><input type='text' placeholder='计量单位' id='txtPage"+flag+"' value='' size='1'/></td>" 
-                         +      "<td><input type='text' placeholder='数量' id='txtCount"+flag+"' value='' size='1'/></td>" 
-                         +      "<td><input type='text' placeholder='编制/绘制' id='txtDrawn"+flag+"' value='' size='2'/></td>" 
-                         +      "<td><input type='text' placeholder='设计' id='txtDesignd"+flag+"' value='' size='2'/></td>"
-                         +      "<td><input type='text' placeholder='校核' id='txtChecked"+flag+"' value='' size='2'/></td>"
-                         +      "<td><input type='text' placeholder='审查' id='txtExamined"+flag+"' value='' size='2'/></td>"
-                         +      "<td><input type='text' placeholder='出版' id='txtData"+flag+"' value='' size='8'/></td>"
-                         +      "<td><input type='button' class='btn btn-default' name='update' value='保存' onclick='saveAddRow(\""+rowId+"\",\""+flag+"\")'/></td>"                   
+                         +"<td><input type='text' placeholder='序号' id='txtIndex"+flag+"' value='' size='1'/></td>" 
+                         +"<td><input type='text' placeholder='项目编号' id='txtPnumber"+flag+"' value='' size='3'/></td>"  
+                         +"<td><input type='text' placeholder='项目名称' id='txtPname"+flag+"' value='' size='14'/></td>"  
+                         + "<td><input type='text' placeholder='阶段' id='txtStage"+flag+"' value='' size='3'/></td>"
+                         +"<td><input type='text' placeholder='成果编号' id='txtTnumber"+flag+"' value='' size='12'/></td>" 
+                         +"<td><input type='text' placeholder='成果名称' id='txtName"+flag+"' value='' size='20'/></td>"
+                         +"<td><select id='txtCategory"+flag+"'><option>成果类型：</option></select></td>"
+                          
+                         +"<td><input type='text' placeholder='计量单位' id='txtPage"+flag+"' value='' size='1'/></td>" 
+                         +"<td><input type='text' placeholder='数量' id='txtCount"+flag+"' value='' size='1'/></td>" 
+                         +"<td><input type='text' placeholder='编制/绘制' id='txtDrawn"+flag+"' value='' size='2'/></td>" 
+                         + "<td><input type='text' placeholder='设计' id='txtDesignd"+flag+"' value='' size='2'/></td>"
+                         +"<td><input type='text' placeholder='校核' id='txtChecked"+flag+"' value='' size='2'/></td>"
+                         +"<td><input type='text' placeholder='审查' id='txtExamined"+flag+"' value='' size='2'/></td>"
+                         +"<td><input type='text' placeholder='绘制系数' id='txtDrawnratio"+flag+"' value='' size='2'/></td>"
+
+                         +"<td><input type='text' placeholder='出版' id='txtData"+flag+"' class='datepicker' value=''/></td>"
+                         +"<td><input type='button' class='btn btn-default' name='update' value='保存' onclick='saveAddRow(\""+rowId+"\",\""+flag+"\")'/></td>"                   
                          + "</tr>";  
-            $("#orderTable tr:eq("+(rowLength-1)+")").after(insertStr);  //这里之所以减2 ，是因为减去底部的一行和顶部一行，剩下的为开始插入的索引。  
-            flag++;  
+            $("#orderTable tr:eq("+(rowLength-1)+")").after(insertStr);  //这里之所以减2 ，是因为减去底部的一行和顶部一行，剩下的为开始插入的索引。
+             // $(document).ready(function(){
+            var data={{.Ratio}};
+              for ( var i = 0; i<data.length; i++) {  
+                $("#txtCategory"+flag).append('<option>' + data[i].Category + '</option>');
+              // alert(data[i].text)
+                }
+             // }) 
+        $(".datepicker").datepicker({
+            language: "zh-CN",
+            autoclose: true,//选中之后自动隐藏日期选择框
+            clearBtn: true,//清除按钮
+            todayBtn: 'linked',//今日按钮
+            format: "yyyy-mm-dd"//日期格式，详见 http://bootstrap-datepicker.readthedocs.org/en/release/options.html#format
+        });
+
+            flag++; 
         }    
   
         /*    
@@ -184,6 +210,11 @@ var flag = 0;  //标志位，标志第几行
           *用户直接传递行   
           */
         function sendSelectedRow(rowId){
+          var oldDrawnratio = $("#"+rowId+" td:eq(13)").html();
+          if (oldDrawnratio=="0"){
+            alert("请输入系数");
+            return false;
+          }
           if(confirm("确定提交该行吗？")){    
                 $("#"+rowId).remove();    //这里需要注意删除一行之后 我的标志位没有-1，因为如果减一，那么我再增加一行的话，可能会导致我的tr的id重复，不好维护。
                 // 提交到后台进行修改数据库状态为降一个
@@ -215,7 +246,8 @@ var flag = 0;  //标志位，标志第几行
             var oldDesignd = $("#"+rowId+" td:eq(10)").html();
             var oldChecked = $("#"+rowId+" td:eq(11)").html();
             var oldExamined = $("#"+rowId+" td:eq(12)").html();
-            var oldData = $("#"+rowId+" td:eq(13)").html();
+            var oldDrawnratio = $("#"+rowId+" td:eq(13)").html();
+            var oldData = $("#"+rowId+" td:eq(14)").html();
             // if(oldPrice != ""){//去掉第一个人民币符号  
             //     oldPrice = oldPrice.substring(1);  
             // }  
@@ -225,16 +257,34 @@ var flag = 0;  //标志位，标志第几行
                         + "<td><input type='text' id='txtStage"+flag+"' value='"+oldStage+"' size='3'/></td>"
                         + "<td><input type='text' id='txtTnumber"+flag+"' value='"+oldTnumber+"' size='12'/></td>"
                         + "<td><input type='text' id='txtName"+flag+"' value='"+oldName+"' size='20'/></td>"
-                        + "<td><input type='text' id='txtCategory"+flag+"' value='"+oldCategory+"' size='4'/></td>"
+                        
+                        +      "<td><select id='txtCategory"+flag+"'><option>"+oldCategory+"</option></select></td>"
                         + "<td><input type='text' id='txtPage"+flag+"' value='"+oldPage+"' size='1'/></td>"
                         + "<td><input type='text' id='txtCount"+flag+"' value='"+oldCount+"' size='1'/></td>"
                         + "<td><input type='text' id='txtDrawn"+flag+"' value='"+oldDrawn+"' size='2'/></td>"
                         + "<td><input type='text' id='txtDesignd"+flag+"' value='"+oldDesignd+"' size='2'/></td>"
                         + "<td><input type='text' id='txtChecked"+flag+"' value='"+oldChecked+"' size='2'/></td>"
                         + "<td><input type='text' id='txtExamined"+flag+"' value='"+oldExamined+"' size='2'/></td>"
-                        + "<td><input type='text' id='txtData"+flag+"' value='"+oldData+"' size='8'/></td>"
+                        + "<td><input type='text' id='txtDrawnratio"+flag+"' value='"+oldDrawnratio+"' size='2'/></td>"
+                        + "<td><input type='text' id='txtData"+flag+"' class='datepicker' value='"+oldData+"'/></td>"
+                        
                         + "<td><input type='button' class='btn btn-default' name='update' value='保存' onclick='saveUpdateRow(\""+rowId+"\",\""+flag+"\")'/></td>";  
-            $("#"+rowId).html(uploadStr);  
+            $("#"+rowId).html(uploadStr);
+            var data={{.Ratio}};
+              for ( var i = 0; i<data.length; i++) {  
+                $("#txtCategory"+flag).append('<option>' + data[i].Category + '</option>');
+       // alert(data[i].text)
+                } 
+        // $(function () {
+        $(".datepicker").datepicker({
+            language: "zh-CN",
+            autoclose: true,//选中之后自动隐藏日期选择框
+            clearBtn: true,//清除按钮
+            todayBtn: 'linked',//今日按钮
+            format: "yyyy-mm-dd"//日期格式，详见 http://bootstrap-datepicker.readthedocs.org/en/release/options.html#format
+        });
+        // });
+               
          }    
   
          /*    
@@ -254,6 +304,7 @@ var flag = 0;  //标志位，标志第几行
             var newDesignd = $("#txtDesignd"+flag).val();
             var newChecked = $("#txtChecked"+flag).val();
             var newExamined = $("#txtExamined"+flag).val();
+            var newDrawnratio = $("#txtDrawnratio"+flag).val();
             var newData = $("#txtData"+flag).val();
             var saveStr = "<td>" + newIndex + "</td>"
                         + "<td>" + newPnumber + "</td>"  
@@ -268,6 +319,7 @@ var flag = 0;  //标志位，标志第几行
                         + "<td>" + newDesignd + "</td>"
                         + "<td>" + newChecked + "</td>"
                         + "<td>" + newExamined + "</td>"
+                        + "<td>" + newDrawnratio + "</td>"
                         + "<td>" + newData + "</td>"
                         + "<td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow(\""+rowId+"\")' /><input type='button' class='btn btn-default' name='update' value='提交' onclick='sendSelectedRow(\""+rowId+"\")' /></td>";  
             $("#"+rowId).html(saveStr);//因为替换的时候只替换tr标签内的html 所以不用加上tr 
@@ -279,12 +331,22 @@ var flag = 0;  //标志位，标志第几行
                     $.ajax({
                     type:"post",//这里是否一定要用post？？？
                     url:"/achievement/addcatalog",
-                    data: {Pnumber:newPnumber,Pname:newPname,Stage:newStage,Tnumber:newTnumber,Name:newName,Category:newCategory,Page:newPage,Count:newCount,Drawn:newDrawn,Designd:newDesignd,Checked:newChecked,Examined:newExamined,Data:newData},
+                    data: {Pnumber:newPnumber,Pname:newPname,Stage:newStage,Tnumber:newTnumber,Name:newName,Category:newCategory,Page:newPage,Count:newCount,Drawn:newDrawn,Designd:newDesignd,Checked:newChecked,Examined:newExamined,Drawnratio:newDrawnratio,Data:newData},
                         success:function(data,status){//数据提交成功时返回数据
                         alert("添加“"+data+"”成功！(status:"+status+".)");
+                        window.location.reload();
                         }
                     });  
                 }
+                // location.reload();
+                // history.go(0);
+// location.reload(); 
+// location=location;
+// location.assign(location);// 这个可以
+// document.execCommand('Refresh'); 
+// window.navigate(location); 
+// location.replace(location);
+// document.URL=location.href;
           }
 
           /*    
@@ -304,6 +366,7 @@ var flag = 0;  //标志位，标志第几行
             var newDesignd = $("#txtDesignd"+flag).val();
             var newChecked = $("#txtChecked"+flag).val();
             var newExamined = $("#txtExamined"+flag).val();
+            var newDrawnratio = $("#txtDrawnratio"+flag).val();
             var newData = $("#txtData"+flag).val();
             var saveStr = "<td>" + newIndex + "</td>"
                         + "<td>" + newPnumber + "</td>"  
@@ -318,6 +381,7 @@ var flag = 0;  //标志位，标志第几行
                         + "<td>" + newDesignd + "</td>"
                         + "<td>" + newChecked + "</td>"
                         + "<td>" + newExamined + "</td>"
+                        + "<td>" + newDrawnratio + "</td>"
                         + "<td>" + newData + "</td>"
                         + "<td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow(\""+rowId+"\")' /><input type='button' class='btn btn-default' name='update' value='提交' onclick='sendSelectedRow(\""+rowId+"\")' /></td>";  
             $("#"+rowId).html(saveStr);//因为替换的时候只替换tr标签内的html 所以不用加上tr 
@@ -327,7 +391,7 @@ var flag = 0;  //标志位，标志第几行
                     $.ajax({
                     type:"post",//这里是否一定要用post？？？
                     url:"/achievement/modifycatalog",
-                    data: {Pnumber:newPnumber,Pname:newPname,Stage:newStage,Tnumber:newTnumber,Name:newName,Category:newCategory,Page:newPage,Count:newCount,Drawn:newDrawn,Designd:newDesignd,Checked:newChecked,Examined:newExamined,Data:newData,CatalogId:rowId},
+                    data: {Pnumber:newPnumber,Pname:newPname,Stage:newStage,Tnumber:newTnumber,Name:newName,Category:newCategory,Page:newPage,Count:newCount,Drawn:newDrawn,Designd:newDesignd,Checked:newChecked,Examined:newExamined,Drawnratio:newDrawnratio,Data:newData,CatalogId:rowId},
                         success:function(data,status){//数据提交成功时返回数据
                         alert("修改“"+data+"”成功！(status:"+status+".)");
                         }
@@ -351,7 +415,7 @@ var flag = 0;  //标志位，标志第几行
 //         });
 // });
   $(document).ready(function() {
-  $("table").tablesorter({sortList: [[13,0]]});
+  $("table").tablesorter({sortList: [[0,0]]});
   // $("#ajax-append").click(function() {
   //    $.get("assets/ajax-content.html", function(html) {
   //     // append the "ajax'd" data to the table body
@@ -366,7 +430,9 @@ var flag = 0;  //标志位，标志第几行
   //   return false;
   // });
 });
+
 </script>
+
 </body>
 </html>
 <!-- <button type="button" class="btn btn-primary btn-lg" style="color: rgb(212, 106, 64);">

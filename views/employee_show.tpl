@@ -30,8 +30,11 @@ allLinks[i].target="_blank";
 
 
 <!-- <div id="treeview" class="col-xs-3"></div> -->
-
+<div class="form-group">
+        <label class="control-label" id="regis" for="LoginForm-UserName">{{.UserNickname}}</label><!-- 显示部门名称 -->
+    </div>
 <div class="col-lg-12">
+
 <div>
 <form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data">
   <input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
@@ -113,7 +116,7 @@ $(function() {
     </tbody>
   </table>
   <tr>    
-       <td colspan="4"><input type="button" class="btn btn-default" name="insert" value="在线添加" onclick="insertNewRow()"/></td>    
+       <td colspan="4"><input type="button" class="btn btn-primary" name="insert" value="在线添加" onclick="insertNewRow()"/></td>    
        </tr>
 <h3>需要提交给校核</h3>
   <table class="table table-striped">
@@ -137,8 +140,8 @@ $(function() {
 
     <tbody>
       {{range $k1,$v1 :=$.Catalogs}}
-      {{if eq $v1.State "1"}}
-      {{if eq $.UserNickname $v1.Drawn}}
+      {{if eq $v1.State "1" "2"}}
+      {{if eq $.UserNickname $v1.Drawn $v1.Designd}}
       <tr>
         <td>{{$k1|indexaddone}}</td>
         <td>{{.ProjectNumber}}</td>
@@ -251,7 +254,7 @@ $(function() {
     </tbody>
   </table>
 <tr>    
-       <td colspan="4"><input type="button" class="btn btn-default" name="insert" value="处理" onclick="ModifyRow()"/></td>    
+       <td colspan="4"><input type="button" class="btn btn-primary" name="insert" value="处&nbsp;&nbsp;&nbsp;&nbsp;理" onclick="ModifyRow()"/></td>    
        </tr>
 </div>
 
