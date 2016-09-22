@@ -1,10 +1,10 @@
-<!-- iframe里展示个人详细情况-->
+<!-- iframe里展示个人详细情况，这个是自己查看显示处理按钮-->
 <!DOCTYPE html>
 <html>
 <head>
  <meta charset="UTF-8">
   <title>情况汇总</title>
-  <!-- <base target=_blank> -->
+
 <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
  <script src="/static/js/bootstrap-treeview.js"></script>
@@ -13,35 +13,26 @@
 <script type="text/javascript" src="/static/js/moment.min.js"></script>
   <script type="text/javascript" src="/static/js/daterangepicker.js"></script>
   <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css" />
-<!-- <style type="text/css">
-a:active{text:expression(target="_blank");}
-i#delete
-{
-color:#DC143C;
-}
-</style>
-<script type="text/javascript">
-  var allLinks=document.getElementsByTagName("a");
-for(var i=0;i!=allLinks.length; i++){
-allLinks[i].target="_blank";
-}
-</script> -->
+
+ <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-table.min.css"/>
+<script type="text/javascript" src="/static/js/bootstrap-table.min.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap-table-zh-CN.min.js"></script> 
+
+<script src="/static/js/moment-with-locales.min.js"></script> 
 </head>
 
-
-<!-- <div id="treeview" class="col-xs-3"></div> -->
-<div class="form-group">
-        <label class="control-label" id="regis" for="LoginForm-UserName">{{.UserNickname}}</label><!-- 显示部门名称 -->
-    </div>
+<!-- <div class="form-group"> -->
 <div class="col-lg-12">
-
+<h2>{{.UserNickname}}</h2>
 <div>
-<form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data">
+<!-- <form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data"> -->
+<div class="form-inline">
   <input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
   <input type="hidden" id="level" name="level" value="{{.Level}}"/>
+  <input type="hidden" id="key" name="key" value="modify"/>
   <div class="form-group">
     <label for="taskNote">统计周期：</label>
-    <input type="text" class="form-control" name="datefilter" value="" placeholder="选择时间段(默认最近一个月)"/>
+    <input type="text" class="form-control" name="datefilter" id="datefilter" value="" placeholder="选择时间段(默认最近一个月)"/>
   </div>
   <script type="text/javascript">
 $(function() {
@@ -59,206 +50,336 @@ $(function() {
   });
 });
 </script>
-  <button type="submit" class="btn btn-primary" name="button">提交</button>
-</form>
-<br></div>
+  <!-- <button type="submit" class="btn btn-primary">提交</button> -->
+  <button id="button1" class="btn btn-default">提交</button>
+        <label class="control-label">tips:(StartDay < DateRange <= EndDay)</label>
+    </div>
+  </div>
+<!-- </form> -->
+<br>
+<!-- ：{{dateformat .Starttime "2006-01-02"}}-{{dateformat .Endtime "2006-01-02"}} -->
 
-<div class="form-group">
-<label class="control-label" id="regis" for="LoginForm-UserName">
-  统计时间段：{{dateformat .Starttime "2006-01-02"}}-{{dateformat .Endtime "2006-01-02"}}
-</label>
-</div>
 <h3>已完成</h3>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>项目编号</th>
-        <th>项目名称</th>
-        <th>项目阶段</th>
-        <th>成果编号</th>
-        <th>成果名称</th>
-        <th>成果类型</th>
-        <th>成果计量单位</th>
-        <th>成果数量</th>
-        <th>编制、绘制</th>
-        <th>设计</th>
-        <th>校核</th>
-        <th>审查</th>
+<div id="toolbar" class="btn-group">
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-plus"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-heart"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-trash"></i>
+    </button>
+</div>
+<table id="table"
+        data-toggle="table"
+       data-url="/completed"
+       data-search="true"
+       data-show-refresh="true"
+       data-show-toggle="true"
+       data-show-columns="true"
+       data-toolbar="#toolbar"
+       data-query-params="queryParams"
+       >
+    <thead>        
+    <tr>
+        <th data-formatter="index1">#</th>
+        <th data-field="ProjectNumber">项目编号</th>
+        <th data-field="ProjectName" data-sortable="true">项目名称</th>
+        <th data-field="DesignStage" data-sortable="true">项目阶段</th>
+        <th data-field="Tnumber">成果编号</th>
+        <th data-field="Name">成果名称</th>
+        <th data-field="Category" data-sortable="true">成果类型</th>
+        <th data-field="Page">成果计量单位</th>
+        <th data-field="Count">成果数量</th>
+        <th data-field="Drawn">编制、绘制</th>
+        <th data-field="Designd">设计</th>
+        <th data-field="Checked">校核</th>
+        <th data-field="Examined">审查</th>
+        <th data-field="Date" data-formatter="localDateFormatter">出版</th>
+<!--         <th data-field="action" data-formatter="actionFormatter" data-events="actionEvents">操作</th> -->
       </tr>
     </thead>
+</table>
 
-    <tbody>
-    {{range $k,$v :=.Ratio}}
-      <tr><th colspan=13>{{$v.Category}}</th></tr>
-      {{range $k1,$v1 :=$.Catalogs}}
-      {{if eq $v.Category $v1.Category}}
-      {{if eq $v1.State "4"}}
-      <tr>
-        <td>{{$k|indexaddone}}</td>
-        <td>{{.ProjectNumber}}</td>
-        <td>{{.ProjectName}}</td>
-        <td>{{.DesignStage}}</td>
-        <td>{{.Tnumber}}</td>
-        <td>{{.Name}}</td>
-        <td>{{.Category }}</td>
-        <td>{{.Page}}</td>
-        <td>{{.Count }}</td>
-        <td>{{.Drawn }}</td>
-        <td>{{.Designd}}</td>
-        <td>{{.Checked}}</td>
-        <td>{{.Examined}}</td> 
-      </tr>
-      {{end}}
-      {{end}}
-      {{end}}
-    {{end}}
-    </tbody>
-  </table>
-  <tr>    
-       <td colspan="4"><input type="button" class="btn btn-primary" name="insert" value="在线添加" onclick="insertNewRow()"/></td>    
-       </tr>
-<h3>需要提交给校核</h3>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>项目编号</th>
-        <th>项目名称</th>
-        <th>项目阶段</th>
-        <th>成果编号</th>
-        <th>成果名称</th>
-        <th>成果类型</th>
-        <th>成果计量单位</th>
-        <th>成果数量</th>
-        <th>编制、绘制</th>
-        <th>设计</th>
-        <th>校核</th>
-        <th>审查</th>
-      </tr>
-    </thead>
+<!-- <div class="form-group">   
+      <input type="button" class="btn btn-primary" name="insert" value="在线添加" onclick="insertNewRow()"/>
+          <form id="form1" class="form-inline" method="post" action="/import_xls_catalog" enctype="multipart/form-data">
+            <div class="form-group">
+              <label>选择成果登记数据文件(Excel)
+              <input type="file" class="form-control" name="catalog" id="catalog"></label>
+              <br/>
+              </div>
+            <button type="submit" class="btn btn-primary" onclick="return import_xls_catalog();">提交</button>
+          </form>
+</div> --> 
 
-    <tbody>
-      {{range $k1,$v1 :=$.Catalogs}}
-      {{if eq $v1.State "1" "2"}}
-      {{if eq $.UserNickname $v1.Drawn $v1.Designd}}
-      <tr>
-        <td>{{$k1|indexaddone}}</td>
-        <td>{{.ProjectNumber}}</td>
-        <td>{{.ProjectName}}</td>
-        <td>{{.DesignStage}}</td>
-        <td>{{.Tnumber}}</td>
-        <td>{{.Name}}</td>
-        <td>{{.Category }}</td>
-        <td>{{.Page}}</td>
-        <td>{{.Count }}</td>
-        <td>{{.Drawn }}</td>
-        <td>{{.Designd}}</td>
-        <td>{{.Checked}}</td>
-        <td>{{.Examined}}</td> 
-      </tr>
-      {{end}}
-      {{end}}
-      {{end}}
-
-    </tbody>
-  </table>
-  <h3>需要处理校核</h3>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>项目编号</th>
-        <th>项目名称</th>
-        <th>项目阶段</th>
-        <th>成果编号</th>
-        <th>成果名称</th>
-        <th>成果类型</th>
-        <th>成果计量单位</th>
-        <th>成果数量</th>
-        <th>编制、绘制</th>
-        <th>设计</th>
-        <th>校核</th>
-        <th>审查</th>
+<h3>已提交</h3>
+<div id="running" class="btn-group">
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-plus"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-heart"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-trash"></i>
+    </button>
+</div>
+<table id="table1"
+        data-toggle="table"
+       data-url="/running"
+       data-search="true"
+       data-show-refresh="true"
+       data-show-toggle="true"
+       data-show-columns="true"
+       data-toolbar="#running"
+       data-query-params="queryParams"
+       data-sort-name="ProjectName"
+       data-sort-order="desc"
+       >
+    <thead>        
+    <tr>
+        <th data-formatter="index1">#</th>
+        <th data-field="ProjectNumber">项目编号</th>
+        <th data-field="ProjectName" data-sortable="true">项目名称</th>
+        <th data-field="DesignStage" data-sortable="true">项目阶段</th>
+        <th data-field="Tnumber" data-sortable="true">成果编号</th>
+        <th data-field="Name">成果名称</th>
+        <th data-field="Category" data-sortable="true">成果类型</th>
+        <th data-field="Page">成果计量单位</th>
+        <th data-field="Count">成果数量</th>
+        <th data-field="Drawn">编制、绘制</th>
+        <th data-field="Designd">设计</th>
+        <th data-field="Checked">校核</th>
+        <th data-field="Examined">审查</th>
+        <th data-field="Date" data-formatter="localDateFormatter">出版</th>
       </tr>
     </thead>
+</table>
+<script>
+function index1(value,row,index){
+  // alert( "Data Loaded: " + index );
+            return index+1
+          }
+function localDateFormatter(value) {
+  return moment(value, 'YYYY-MM-DD').format('L');
+}
+function queryParams(params) {
+  var date=$("#datefilter").val();
+  var secid=$("#secid").val();
+  var level=$("#level").val();
+  // alert( "Data Loaded: " + date );
+        params.datefilter=date;
+        params.secid=secid;//传secid给后台，点击用户名，显示对应成果
+        params.level=level;
+        return params;
+    }
+$(function () {
+        $('#button1').click(function () {
+            //已完成
+            $('#table').bootstrapTable('refresh', {url:'/completed'});
+            //已提交
+            $('#table1').bootstrapTable('refresh', {url:'/running'});
+            //待提交
+            $('#table2').bootstrapTable('refresh', {url:'/myself'});
+            //待我处理的设计
+            $('#table3').bootstrapTable('refresh', {url:'/designd'});
+            //待我处理的校核
+            $('#table4').bootstrapTable('refresh', {url:'/checked'});
+            //待我处理的审查
+            $('#table5').bootstrapTable('refresh', {url:'/examined'});
 
-    <tbody>
-      {{range $k1,$v1 :=$.Catalogs}}
-      {{if eq $v1.State "2"}}
-      {{if eq $.UserNickname $v1.Checked}}
-      <tr>
-        <td>{{$k1|indexaddone}}</td>
-        <td>{{.ProjectNumber}}</td>
-        <td>{{.ProjectName}}</td>
-        <td>{{.DesignStage}}</td>
-        <td>{{.Tnumber}}</td>
-        <td>{{.Name}}</td>
-        <td>{{.Category }}</td>
-        <td>{{.Page}}</td>
-        <td>{{.Count }}</td>
-        <td>{{.Drawn }}</td>
-        <td>{{.Designd}}</td>
-        <td>{{.Checked}}</td>
-        <td>{{.Examined}}</td> 
-      </tr>
-      {{end}}
-      {{end}}
-      {{end}}
+        });
+    }); 
+</script>
 
-    </tbody>
-  </table>
-  <h3>需要处理审查</h3>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>项目编号</th>
-        <th>项目名称</th>
-        <th>项目阶段</th>
-        <th>成果编号</th>
-        <th>成果名称</th>
-        <th>成果类型</th>
-        <th>成果计量单位</th>
-        <th>成果数量</th>
-        <th>编制、绘制</th>
-        <th>设计</th>
-        <th>校核</th>
-        <th>审查</th>
+<h3>我发起，待提交</h3>
+<div id="send" class="btn-group">
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-plus"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-heart"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-trash"></i>
+    </button>
+</div>
+<table id="table2"
+        data-toggle="table"
+       data-url="/myself"
+       data-search="true"
+       data-show-refresh="true"
+       data-show-toggle="true"
+       data-show-columns="true"
+       data-toolbar="#send"
+       data-query-params="queryParams"
+       >
+    <thead>        
+    <tr>
+        <th data-formatter="index1">#</th>
+        <th data-field="ProjectNumber">项目编号</th>
+        <th data-field="ProjectName">项目名称</th>
+        <th data-field="DesignStage">项目阶段</th>
+        <th data-field="Tnumber">成果编号</th>
+        <th data-field="Name">成果名称</th>
+        <th data-field="Category">成果类型</th>
+        <th data-field="Page">成果计量单位</th>
+        <th data-field="Count">成果数量</th>
+        <th data-field="Drawn">编制、绘制</th>
+        <th data-field="Designd">设计</th>
+        <th data-field="Checked">校核</th>
+        <th data-field="Examined">审查</th>
+        <th data-field="Date" data-formatter="localDateFormatter">出版</th>
       </tr>
     </thead>
+</table>
 
-    <tbody>
-      {{range $k1,$v1 :=$.Catalogs}}
-      {{if eq $v1.State "3"}}
-      {{if eq $.UserNickname $v1.Examined}}
-      <tr>
-        <td>{{$k1|indexaddone}}</td>
-        <td>{{.ProjectNumber}}</td>
-        <td>{{.ProjectName}}</td>
-        <td>{{.DesignStage}}</td>
-        <td>{{.Tnumber}}</td>
-        <td>{{.Name}}</td>
-        <td>{{.Category }}</td>
-        <td>{{.Page}}</td>
-        <td>{{.Count }}</td>
-        <td>{{.Drawn }}</td>
-        <td>{{.Designd}}</td>
-        <td>{{.Checked}}</td>
-        <td>{{.Examined}}</td> 
+<h3>待我处理设计</h3>
+<div id="designd" class="btn-group">
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-plus"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-heart"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-trash"></i>
+    </button>
+</div>
+<table id="table3"
+        data-toggle="table"
+       data-url="/designd"
+       data-search="true"
+       data-show-refresh="true"
+       data-show-toggle="true"
+       data-show-columns="true"
+       data-query-params="queryParams"
+       data-toolbar="#designd"
+       >
+    <thead>        
+    <tr>
+        <th data-formatter="index1">#</th>
+        <th data-field="ProjectNumber">项目编号</th>
+        <th data-field="ProjectName">项目名称</th>
+        <th data-field="DesignStage">项目阶段</th>
+        <th data-field="Tnumber">成果编号</th>
+        <th data-field="Name">成果名称</th>
+        <th data-field="Category">成果类型</th>
+        <th data-field="Page">成果计量单位</th>
+        <th data-field="Count">成果数量</th>
+        <th data-field="Drawn">编制、绘制</th>
+        <th data-field="Designd">设计</th>
+        <th data-field="Checked">校核</th>
+        <th data-field="Examined">审查</th>
+        <th data-field="Date" data-formatter="localDateFormatter">出版</th>
       </tr>
-      {{end}}
-      {{end}}
-      {{end}}
+    </thead>
+</table>
 
-    </tbody>
-  </table>
+<h3>待我处理校核</h3>
+<div id="checked" class="btn-group">
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-plus"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-heart"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-trash"></i>
+    </button>
+</div>
+<table id="table4"
+        data-toggle="table"
+       data-url="/checked"
+       data-search="true"
+       data-show-refresh="true"
+       data-show-toggle="true"
+       data-show-columns="true"
+       data-query-params="queryParams"
+       data-toolbar="#checked">
+    <thead>        
+    <tr>
+        <th data-formatter="index1">#</th>
+        <th data-field="ProjectNumber">项目编号</th>
+        <th data-field="ProjectName">项目名称</th>
+        <th data-field="DesignStage">项目阶段</th>
+        <th data-field="Tnumber">成果编号</th>
+        <th data-field="Name">成果名称</th>
+        <th data-field="Category">成果类型</th>
+        <th data-field="Page">成果计量单位</th>
+        <th data-field="Count">成果数量</th>
+        <th data-field="Drawn">编制、绘制</th>
+        <th data-field="Designd">设计</th>
+        <th data-field="Checked">校核</th>
+        <th data-field="Examined">审查</th>
+        <th data-field="Date" data-formatter="localDateFormatter">出版</th>
+      </tr>
+    </thead>
+</table>
+
+<h3>待我处理审查</h3>
+<div id="examined" class="btn-group">
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-plus"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-heart"></i>
+    </button>
+    <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-trash"></i>
+    </button>
+</div>
+<table id="table5"
+        data-toggle="table"
+       data-url="/examined"
+       data-search="true"
+       data-show-refresh="true"
+       data-show-toggle="true"
+       data-show-columns="true"
+       data-query-params="queryParams"
+       data-toolbar="#examined">
+    <thead>        
+    <tr>
+        <th data-formatter="index1">#</th>
+        <th data-field="ProjectNumber">项目编号</th>
+        <th data-field="ProjectName">项目名称</th>
+        <th data-field="DesignStage">项目阶段</th>
+        <th data-field="Tnumber">成果编号</th>
+        <th data-field="Name">成果名称</th>
+        <th data-field="Category">成果类型</th>
+        <th data-field="Page">成果计量单位</th>
+        <th data-field="Count">成果数量</th>
+        <th data-field="Drawn">编制、绘制</th>
+        <th data-field="Designd">设计</th>
+        <th data-field="Checked">校核</th>
+        <th data-field="Examined">审查</th>
+        <th data-field="Date" data-formatter="localDateFormatter">出版</th>
+      </tr>
+    </thead>
+</table>
+  
 <tr>    
        <td colspan="4"><input type="button" class="btn btn-primary" name="insert" value="处&nbsp;&nbsp;&nbsp;&nbsp;理" onclick="ModifyRow()"/></td>    
        </tr>
+       <br/>
+       <br/>
 </div>
 
 <script type="text/javascript">
+function import_xls_catalog(){
+  var form1 = window.document.getElementById("form1");//获取form1对象
+  form1.submit();
+  $.ajax({
+                        success:function(data,status){//数据提交成功时返回数据
+                        // alert("添加“"+data+"”成功！(status:"+status+".)");
+                        window.location.reload();
+                        }
+                    });
+    return true;  //这个return必须放最后，前面的值才能传到后台    
+   }
+
 function insertNewRow(){
         // document.getElementById("iframepage").src="/secofficeshow?secid="+data.Id+"&level="+data.Level;
         window.open('/secofficeshow?secid='+{{.Secid}}+'&level='+{{.Level}}+'&key=editor');
@@ -267,43 +388,35 @@ function insertNewRow(){
         // document.getElementById("iframepage").src="/secofficeshow?secid="+data.Id+"&level="+data.Level;
         window.open('/secofficeshow?secid='+{{.Secid}}+'&level='+{{.Level}}+'&key=modify');
         }       
-// $(function() {
-         // $('#treeview').treeview('collapseAll', { silent: true });
-          // $('#treeview').treeview({
-          // data: [{{.json}}],//defaultData,
-          // data:alternateData,
-          // levels: 5,// expanded to 5 levels
-          // enableLinks:true,
-          // showTags:true,
-          // collapseIcon:"glyphicon glyphicon-chevron-up",
-          // expandIcon:"glyphicon glyphicon-chevron-down",
-//         });
-// });
 
+function actionFormatter(value, row, index) {
+    return [
+        '<a class="like" href="javascript:void(0)" title="Like">',
+        '<i class="glyphicon glyphicon-heart"></i>',
+        '</a>',
+        '<a class="edit ml10" href="javascript:void(0)" title="Edit">',
+        '<i class="glyphicon glyphicon-edit"></i>',
+        '</a>',
+        '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
+        '<i class="glyphicon glyphicon-remove"></i>',
+        '</a>'
+    ].join('');
+}
 
-  $(document).ready(function() {
-  $("table").tablesorter({sortList: [[6,1]]});
-  // $("#ajax-append").click(function() {
-  //    $.get("assets/ajax-content.html", function(html) {
-  //     // append the "ajax'd" data to the table body
-  //     $("table tbody").append(html);
-  //     // let the plugin know that we made a update
-  //     $("table").trigger("update");
-  //     // set sorting column and direction, this will sort on the first and third column
-  //     var sorting = [[2,1],[0,0]];
-  //     // sort on the first column
-  //     $("table").trigger("sorton",[sorting]);
-  //   });
-  //   return false;
-  // });
-});
+window.actionEvents = {
+    'click .like': function (e, value, row, index) {
+        alert('You click like icon, row: ' + JSON.stringify(row));
+        console.log(value, row, index);
+    },
+    'click .edit': function (e, value, row, index) {
+        alert('You click edit icon, row: ' + JSON.stringify(row));
+        console.log(value, row, index);
+    },
+    'click .remove': function (e, value, row, index) {
+        alert('You click remove icon, row: ' + JSON.stringify(row));
+        console.log(value, row, index);
+    }
+};
 </script>
 </body>
 </html>
-<!-- <button type="button" class="btn btn-primary btn-lg" style="color: rgb(212, 106, 64);">
-<span class="glyphicon glyphicon-user"></span> User
-</button>
-
-<button type="button" class="btn btn-primary btn-lg" style="text-shadow: black 5px 3px 3px;">
-<span class="glyphicon glyphicon-user"></span> User
-</button> -->

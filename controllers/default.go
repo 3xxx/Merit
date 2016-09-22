@@ -74,6 +74,13 @@ func (c *MainController) Test() {
 	c.Data["Website"] = "beego.me"
 	c.Data["Email"] = "astaxie@gmail.com"
 	c.TplName = "user_show.tpl"
+	c.Data["json"] = map[string]interface{}{
+		"id":    2,
+		"name":  "111",
+		"price": "demo.jpg",
+	}
+	// c.Data["json"] = catalogs
+	c.ServeJSON()
 }
 
 func (c *MainController) Test1() {

@@ -32,20 +32,15 @@ allLinks[i].target="_blank";
 -->
 </head>
 
-<!-- <div id="treeview" class="col-xs-3"></div>
--->
-<div class="form-group">
-        <label class="control-label" id="regis" for="LoginForm-UserName">{{.Deptitle}}</label><!-- 显示部门名称 -->
-    </div>
-
 <div class="col-lg-12">
+<h2>{{.Deptitle}}</h2>
 <div>
 <form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data">
   <input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
   <input type="hidden" id="level" name="level" value="{{.Level}}"/>
   <div class="form-group">
     <label for="taskNote">统计周期：</label>
-    <input type="text" class="form-control" name="datefilter" value="" placeholder="选择时间段(默认最近一个月)"/>
+    <input type="text" class="form-control" name="datefilter"  id="datefilter" value="" placeholder="选择时间段(默认最近一个月)"/>
   </div>
   <script type="text/javascript">
 $(function() {

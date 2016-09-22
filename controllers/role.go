@@ -42,7 +42,16 @@ func (this *RoleController) Index() {
 }
 
 func (this *RoleController) Roleerr() {
-	url := this.Input().Get("url")
+	// url := this.Input().Get("url")
+	url1 := this.Input().Get("url") //这里不支持这样的url，http://192.168.9.13/login?url=/topic/add?id=955&mid=3
+	url2 := this.Input().Get("level")
+	url3 := this.Input().Get("key")
+	var url string
+	if url2 == "" {
+		url = url1
+	} else {
+		url = url1 + "&level=" + url2 + "&key=" + url3
+	}
 	this.Data["Url"] = url
 	this.TplName = "role_err.tpl"
 }

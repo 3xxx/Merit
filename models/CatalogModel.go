@@ -30,11 +30,12 @@ type Catalog struct {
 	Designdratio  float64   //设计系数
 	Checkedratio  float64   //校核系数
 	Examinedratio float64   //审查系数
-	Data          time.Time `orm:"null;auto_now_add;type(datetime)"`
+	Datestring    string    //保存字符型日期
+	Date          time.Time `orm:"null;auto_now_add;type(datetime)"`
 	Created       time.Time `orm:"index;auto_now_add;type(datetime)"`
 	Updated       time.Time `orm:"index;auto_now_add;type(datetime)"`
 	Author        string    //上传者
-	State         string    //1编写状态，未提交；2编写者提交，等待校核确认;3,校核确认，等待审查确认;4，审查确认
+	State         int       //1编写状态，未提交；2编写者提交，等待校核确认;3,校核确认，等待审查确认;4，审查确认
 }
 
 //任何人只能在线填写自己是编制和设计的，填写自己是校核和审查的不允许
@@ -63,23 +64,30 @@ func init() {
 	orm.RegisterModel(new(Catalog))
 }
 
-func SaveCatalog(catalog Catalog) (cid int64, err error) {
+//在线添加，批量导入
+func SaveCatalog(catalog Catalog) (cid int64, err error, news string) {
 	// orm := orm.NewOrm()
 	// fmt.Println(user)
 	//判断重复性
 	o := orm.NewOrm()
 	var catalog1 Catalog
+	//保证成果的唯一性
+	//出差必须在成果名称中写入自己的名字以示区别
+	//Filter("Drawn", catalog.Drawn).Filter("Designd", catalog.Designd).Filter("Checked", catalog.Checked).
 	err = o.QueryTable("catalog").Filter("Tnumber", catalog.Tnumber).Filter("Name", catalog.Name).Filter("Category", catalog.Category).One(&catalog1)
 	if err == orm.ErrNoRows {
 		cid, err = o.Insert(&catalog) //_, err = o.Insert(reply)
-		return cid, err
+		if err != nil {
+			return 0, err, "insert err"
+		} else {
+			return cid, nil, "insert ok"
+		}
 		// fmt.Println("查询不到")
-		// } else if err == orm.ErrMissPK {
+	} else if err == orm.ErrMissPK {
+		return 0, err, "找不到主键"
 		//     fmt.Println("找不到主键")
 	} else {
-		ModifyCatalog(catalog1.Id, catalog, "1")
-		// fmt.Println(user.Id, user.Name)
-		return catalog1.Id, nil
+		return 0, nil, "数据已存在"
 	}
 }
 
@@ -128,127 +136,206 @@ func AddCatalog(name, tnumber string) (id int64, err error) {
 	return id, err
 }
 
-//用户修改一条成果
-func ModifyCatalog(cid int64, catalog1 Catalog, state string) error {
-	// cidNum, err := strconv.ParseInt(cid, 10, 64)
-	// if err != nil {
-	// 	return err
-	// }
+//用户修改一条成果的某个字段
+func ModifyCatalog(cid int64, fieldname, value string) error {
 	o := orm.NewOrm()
 	var catalog Catalog
 	// catalog := &Catalog{Id: cid}
 	err := o.QueryTable("catalog").Filter("Id", cid).One(&catalog)
 	// err:=o.Read(catalog).One()
-	if err == nil && state == "1" {
+	if err == nil {
+		type Duration int64
+		const (
+			Nanosecond  Duration = 1
+			Microsecond          = 1000 * Nanosecond
+			Millisecond          = 1000 * Microsecond
+			Second               = 1000 * Millisecond
+			Minute               = 60 * Second
+			Hour                 = 60 * Minute
+		)
+		// hours := 8
+
+		const lll = "2006-01-02"
+		catalog.Updated = time.Now() //.Add(+time.Duration(hours) * time.Hour)
+		switch fieldname {
+		case "ProjectNumber":
+			catalog.ProjectNumber = value
+			_, err := o.Update(&catalog, "ProjectNumber", "Updated")
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "ProjectName":
+			catalog.ProjectName = value
+			_, err := o.Update(&catalog, "ProjectName", "Updated")
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "DesignStage":
+			catalog.DesignStage = value
+			_, err := o.Update(&catalog, "DesignStage", "Updated")
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Section":
+			catalog.Section = value
+			_, err := o.Update(&catalog, "Section", "Updated")
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Tnumber":
+			catalog.Tnumber = value
+			_, err := o.Update(&catalog, "Tnumber", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Name":
+			catalog.Name = value
+			_, err := o.Update(&catalog, "Name", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Category":
+			catalog.Category = value
+			_, err := o.Update(&catalog, "Category", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Count":
+			//转成float64
+			catalog.Count, err = strconv.ParseFloat(value, 64)
+			if err != nil {
+				return err
+			}
+			_, err := o.Update(&catalog, "Count", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Drawn":
+			catalog.Drawn = value
+			_, err := o.Update(&catalog, "Drawn", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Designd":
+			catalog.Designd = value
+			_, err := o.Update(&catalog, "Designd", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Checked":
+			catalog.Checked = value
+			_, err := o.Update(&catalog, "Checked", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Examined":
+			catalog.Examined = value
+			_, err := o.Update(&catalog, "Examined", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Drawnratio":
+			catalog.Drawnratio, err = strconv.ParseFloat(value, 64)
+			if err != nil {
+				return err
+			}
+			_, err := o.Update(&catalog, "Drawnratio", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Designdratio":
+			catalog.Designdratio, err = strconv.ParseFloat(value, 64)
+			if err != nil {
+				return err
+			}
+			_, err := o.Update(&catalog, "Designdratio", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Checkedratio":
+			catalog.Checkedratio, err = strconv.ParseFloat(value, 64)
+			if err != nil {
+				return err
+			}
+			_, err := o.Update(&catalog, "Checkedratio", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Examinedratio":
+			catalog.Examinedratio, err = strconv.ParseFloat(value, 64)
+			_, err := o.Update(&catalog, "Examinedratio", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Complex":
+			catalog.Complex, err = strconv.ParseFloat(value, 64)
+			_, err := o.Update(&catalog, "Complex", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Datestring":
+			const lll = "2006-01-02" //"2006-01-02 15:04:05" //12-19-2015 22:40:24
+			catalog.Date, err = time.Parse(lll, value)
+			if err != nil {
+				return err
+			}
+			catalog.Datestring = value
+			_, err := o.Update(&catalog, "Datestring", "Date", "Updated") //这里不能用&catalog
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		}
 		// 指定多个字段
 		// o.Update(&user, "Field1", "Field2", ...)这个试验没成功
-		catalog.ProjectNumber = catalog1.ProjectNumber
-		catalog.ProjectName = catalog1.ProjectName
-		catalog.DesignStage = catalog1.DesignStage
-		catalog.Section = catalog1.Section
-		catalog.Tnumber = catalog1.Tnumber
-		catalog.Name = catalog1.Name
-		catalog.Category = catalog1.Category
-		catalog.Page = catalog1.Page
-		catalog.Count = catalog1.Count
-		catalog.Drawn = catalog1.Drawn
-		catalog.Designd = catalog1.Designd
-		catalog.Checked = catalog1.Checked
-		catalog.Examined = catalog1.Examined
-		// catalog.Verified     = catalog1.Verified
-		// catalog.Approved     = catalog1.Approved
-		// catalog.Complex      = catalog1.Complex
-		catalog.Drawnratio = catalog1.Drawnratio
-		// catalog.Designdratio = catalog1.Designdratio
-		// catalog.Checkedratio = catalog1.Checkedratio
-		// catalog.Examinedratio= catalog1.Examinedratio
-		catalog.Data = catalog1.Data
-		// catalog.Created      = catalog1.Created
-		catalog.Updated = catalog1.Updated
-		catalog.Author = catalog1.Author
-		catalog.State = "1"
-		// _, err = o.Update(&catalog, "ProjectName", "DesignStage", "Section", "Tnumber", "Name", "Category", "Page", "Count", "Drawn", "Designd", "Checked", "Examined", "Data", "Updated", "Author")
-		_, err := o.Update(&catalog) //这里不能用&catalog
-		if err != nil {
-			return err
-		} else {
-			return nil
-		}
-	} else if err == nil && state == "2" {
-		catalog.Designdratio = catalog1.Designdratio
-		catalog.Checkedratio = catalog1.Checkedratio
-		catalog.State = "2"
-		// _, err = o.Update(&catalog, "ProjectName", "DesignStage", "Section", "Tnumber", "Name", "Category", "Page", "Count", "Drawn", "Designd", "Checked", "Examined", "Data", "Updated", "Author")
-		_, err := o.Update(&catalog, "Designdratio", "Checkedratio") //这里不能用&catalog
-		if err != nil {
-			return err
-		} else {
-			return nil
-		}
-	} else if err == nil && state == "3" {
-		catalog.Complex = catalog1.Complex
-		catalog.Checkedratio = catalog1.Checkedratio
-		catalog.Examinedratio = catalog1.Examinedratio
-		catalog.Data = catalog1.Data
-		catalog.State = "3"
-		// _, err = o.Update(&catalog, "ProjectName", "DesignStage", "Section", "Tnumber", "Name", "Category", "Page", "Count", "Drawn", "Designd", "Checked", "Examined", "Data", "Updated", "Author")
-		_, err := o.Update(&catalog, "Complex", "Checkedratio", "Examinedratio", "Data") //这里不能用&catalog
-		if err != nil {
-			return err
-		} else {
-			return nil
-		}
 	} else {
 		return o.Read(&catalog)
 	}
+	return nil
 }
 
 //用户修改一条成果状态
-func ModifyCatalogState(cid int64, state string) error {
-	// cidNum, err := strconv.ParseInt(cid, 10, 64)
-	// if err != nil {
-	// 	return err
-	// }
+func ModifyCatalogState(cid int64, state int) error {
 	o := orm.NewOrm()
 	var catalog Catalog
-	// catalog := &Catalog{Id: cid}
 	err := o.QueryTable("catalog").Filter("Id", cid).One(&catalog)
-	// err:=o.Read(catalog).One()
-
-	if err == nil && state == "1" {
-		state1, err := strconv.Atoi(catalog.State)
-		if err != nil {
-			return err
-		}
-		catalog.State = strconv.Itoa(state1 + 1)
-		// _, err = o.Update(&catalog, "ProjectName", "DesignStage", "Section", "Tnumber", "Name", "Category", "Page", "Count", "Drawn", "Designd", "Checked", "Examined", "Data", "Updated", "Author")
-		_, err = o.Update(&catalog, "State") //这里不能用&catalog
-		if err != nil {
-			return err
-		} else {
-			return nil
-		}
-	} else if err == nil && state == "2" {
-		state1, err := strconv.Atoi(catalog.State)
-		if err != nil {
-			return err
-		}
-		catalog.State = strconv.Itoa(state1 + 2)
-		catalog.Complex = 1 //这种处理不好，应该由下一级填写难度系数……模板要改
-		// _, err = o.Update(&catalog, "ProjectName", "DesignStage", "Section", "Tnumber", "Name", "Category", "Page", "Count", "Drawn", "Designd", "Checked", "Examined", "Data", "Updated", "Author")
-		_, err = o.Update(&catalog, "Complex", "State") //这里只能用&catalog
-		if err != nil {
-			return err
-		} else {
-			return nil
-		}
-	} else if err == nil && state == "-1" {
-		state1, err := strconv.Atoi(catalog.State)
-		if err != nil {
-			return err
-		}
-		catalog.State = strconv.Itoa(state1 - 1)
-		// _, err = o.Update(&catalog, "ProjectName", "DesignStage", "Section", "Tnumber", "Name", "Category", "Page", "Count", "Drawn", "Designd", "Checked", "Examined", "Data", "Updated", "Author")
+	if err == nil {
+		catalog.State = state
 		_, err = o.Update(&catalog, "State") //这里不能用&catalog
 		if err != nil {
 			return err
@@ -320,12 +407,12 @@ func GetCatalog(tid string) (*Catalog, error) {
 func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeeachievement, err error) {
 	catalogs := make([]*Catalog, 0)
 	cond := orm.NewCondition()
-	cond1 := cond.And("data__gte", t1).And("data__lte", t2)
+	cond1 := cond.And("date__gt", t1).And("Date__lte", t2)
 	o := orm.NewOrm()
 	qs := o.QueryTable("catalog")
 	qs = qs.SetCond(cond1)
 	//1、查制图工作量
-	_, err = qs.Filter("Drawn", uname).Filter("State", "4").All(&catalogs) //而这个字段parentid为何又不用呢
+	_, err = qs.Filter("Drawn", uname).Filter("State", "5").All(&catalogs) //而这个字段parentid为何又不用呢
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +477,7 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 	aa[0].Drawn = Round(drawn, 1)
 
 	//2、查设计工作量
-	_, err = qs.Filter("Designd", uname).Filter("State", "4").All(&catalogs) //而这个字段parentid为何又不用呢
+	_, err = qs.Filter("Designd", uname).Filter("State", "5").All(&catalogs) //而这个字段parentid为何又不用呢
 	if err != nil {
 		return nil, err
 	}
@@ -424,7 +511,7 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 	aa[0].Designd = Round(designd, 1)
 
 	//3、查校核工作量
-	_, err = qs.Filter("Checked", uname).Filter("State", "4").All(&catalogs) //而这个字段parentid为何又不用呢
+	_, err = qs.Filter("Checked", uname).Filter("State", "5").All(&catalogs) //而这个字段parentid为何又不用呢
 	if err != nil {
 		return nil, err
 	}
@@ -457,7 +544,7 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 	}
 	aa[0].Checked = Round(checked, 1)
 	//4、查审查工作量
-	_, err = qs.Filter("Examined", uname).Filter("State", "4").All(&catalogs) //而这个字段parentid为何又不用呢
+	_, err = qs.Filter("Examined", uname).Filter("State", "5").All(&catalogs) //而这个字段parentid为何又不用呢
 	if err != nil {
 		return nil, err
 	}
@@ -512,7 +599,7 @@ func Getcatalogbyuserid(id, category string, t1, t2 time.Time) (catalogs []*Cata
 	cc := make([]*Catalog, 0)
 	dd := make([]*Catalog, 0)
 	cond := orm.NewCondition()
-	cond1 := cond.And("data__gte", t1).And("data__lte", t2)
+	cond1 := cond.And("date__gt", t1).And("Date__lte", t2)
 	o := orm.NewOrm()
 	qs := o.QueryTable("catalog")
 	qs = qs.SetCond(cond1)
@@ -542,6 +629,7 @@ func Getcatalogbyuserid(id, category string, t1, t2 time.Time) (catalogs []*Cata
 }
 
 //由用户Id取得所有成果按时间顺序排列
+//不返回重复的值
 func Getcatalog2byuserid(id string, t1, t2 time.Time) (catalogs []*Catalog, err error) {
 	Id, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
@@ -549,37 +637,371 @@ func Getcatalog2byuserid(id string, t1, t2 time.Time) (catalogs []*Catalog, err 
 	}
 	user := GetUserByUserId(Id)
 	aa := make([]*Catalog, 0)
-	bb := make([]*Catalog, 0)
-	cc := make([]*Catalog, 0)
-	dd := make([]*Catalog, 0)
+	// bb := make([]*Catalog, 0)
+	// cc := make([]*Catalog, 0)
+	// dd := make([]*Catalog, 0)
 
 	cond := orm.NewCondition()
-	cond1 := cond.And("data__gte", t1).And("data__lte", t2)
+	cond1 := cond.And("Date__gt", t1).And("Date__lte", t2).Or("Drawn", user.Nickname).Or("Designd", user.Nickname).Or("Checked", user.Nickname).Or("Examined", user.Nickname)
 	o := orm.NewOrm()
 	qs := o.QueryTable("catalog")
 	qs = qs.SetCond(cond1)
+
+	// 	cond := NewCondition()
+	// 	cond1 := cond.And("profile__isnull", false).AndNot("status__in", 1).Or("profile__age__gt", 2000)
+
+	// 	qs := orm.QueryTable("user")
+	// 	qs = qs.SetCond(cond1)
+	// 	// WHERE ... AND ... AND NOT ... OR ...
+
+	// 	cond2 := cond.AndCond(cond1).OrCond(cond.And("name", "slene"))
+	// 	qs = qs.SetCond(cond2).Count()
+	// 	// WHERE (... AND ... AND NOT ... OR ...) OR ( ... )
+	// qs.Distinct()
 	//1、查图纸类型的工作
-	_, err = qs.Filter("Drawn", user.Nickname).All(&aa)
+	_, err = qs.Distinct().All(&aa) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	if err != nil {
+		return nil, err
+	}
+	// catalogs = append(catalogs, aa...)
+	// _, err = qs.Filter("Designd", user.Nickname).All(&bb)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, bb...)
+	// _, err = qs.Filter("Checked", user.Nickname).All(&cc)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, cc...)
+	// _, err = qs.Filter("Examined", user.Nickname).All(&dd)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, dd...)
+	return aa, err
+}
+
+//我发起，待提交
+//由用户名（不是nickname）和时间段取得自己发起的成果
+//不返回重复的值
+//author=登录的人名，登录名所处制图-状态为1；设计-状态为2；校核-状态为3；审查-无
+func GetcatalogMyself(id string, t1, t2 time.Time) (catalogs []*Catalog, err error) {
+	Id, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	user := GetUserByUserId(Id)
+	catalogs = make([]*Catalog, 0) //没有这句，model返回null，导致json输出给table为null，而不是[]，导致错误
+	aa := make([]*Catalog, 0)
+	bb := make([]*Catalog, 0)
+	cc := make([]*Catalog, 0)
+	// dd := make([]*Catalog, 0)
+	cond := orm.NewCondition()
+	// cond1 := cond.And("Date__gte", t1).And("Date__lt", t2).Or("Drawn", user.Nickname).And("State", "1").Or("Designd", user.Nickname).And("State", "2").Or("Checked", user.Nickname).And("State", "3")
+	cond1 := cond.And("Updated__gt", t1).And("Updated__lte", t2).And("Drawn", user.Nickname).And("State", "1")
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond1)
+
+	// 	cond := NewCondition()
+	// 	cond1 := cond.And("profile__isnull", false).AndNot("status__in", 1).Or("profile__age__gt", 2000)
+
+	// 	qs := orm.QueryTable("user")
+	// 	qs = qs.SetCond(cond1)
+	// 	// WHERE ... AND ... AND NOT ... OR ...
+
+	// 	cond2 := cond.AndCond(cond1).OrCond(cond.And("name", "slene"))
+	// 	qs = qs.SetCond(cond2).Count()
+	// 	// WHERE (... AND ... AND NOT ... OR ...) OR ( ... )
+	// qs.Distinct()
+	_, err = qs.Filter("Author", user.Username).Distinct().All(&aa) //qs.Filter("Drawn", user.Nickname).All(&aa)
 	if err != nil {
 		return nil, err
 	}
 	catalogs = append(catalogs, aa...)
-	_, err = qs.Filter("Designd", user.Nickname).All(&bb)
+
+	cond2 := cond.And("Updated__gt", t1).And("Updated__lte", t2).And("Designd", user.Nickname).And("State", "2")
+	qs = qs.SetCond(cond2)
+	_, err = qs.Filter("Author", user.Username).Distinct().All(&bb) //qs.Filter("Drawn", user.Nickname).All(&aa)
 	if err != nil {
 		return nil, err
 	}
 	catalogs = append(catalogs, bb...)
-	_, err = qs.Filter("Checked", user.Nickname).All(&cc)
+
+	cond3 := cond.And("Updated__gt", t1).And("Updated__lte", t2).And("Checked", user.Nickname).And("State", "3")
+	qs = qs.SetCond(cond3)
+	_, err = qs.Filter("Author", user.Username).Distinct().All(&cc) //qs.Filter("Drawn", user.Nickname).All(&aa)
 	if err != nil {
 		return nil, err
 	}
 	catalogs = append(catalogs, cc...)
-	_, err = qs.Filter("Examined", user.Nickname).All(&dd)
+	// _, err = qs.Filter("Designd", user.Nickname).All(&bb)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, bb...)
+	// _, err = qs.Filter("Checked", user.Nickname).All(&cc)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, cc...)
+	// _, err = qs.Filter("Examined", user.Nickname).All(&dd)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, dd...)
+	return catalogs, err
+}
+
+//自己发起，已经提交
+//author=登录人名，状态>登录名字所处位置，且状态<5
+//设计和制图同一人会重复
+func GetcatalogRunning(id string, t1, t2 time.Time) (catalogs []*Catalog, err error) {
+	Id, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		return nil, err
 	}
-	catalogs = append(catalogs, dd...)
-	return catalogs, err
+	user := GetUserByUserId(Id)
+	catalogs = make([]*Catalog, 0) //没有这句，model返回null，导致json输出给table为null，而不是[]，导致错误
+	aa := make([]*Catalog, 0)
+	// bb := make([]*Catalog, 0)
+	// cc := make([]*Catalog, 0)
+	// dd := make([]*Catalog, 0)
+
+	cond := orm.NewCondition()
+	// cond1 := cond.And("Date__gte", t1).And("Date__lt", t2).Or("Drawn", user.Nickname).And("State", "1").Or("Designd", user.Nickname).And("State", "2").Or("Checked", user.Nickname).And("State", "3")
+	// cond1 := cond.And("Date__gte", t1).And("Date__lt", t2).And("Drawn", user.Nickname).And("State__gt", 1).And("State__lt", 5)
+	cond1 := cond.And("Updated__gt", t1).And("Updated__lte", t2)
+	cond2 := cond.And("Drawn", user.Nickname).And("State__gt", 1).And("State__lt", 5)
+	cond3 := cond.And("Designd", user.Nickname).And("State__gt", 2).And("State__lt", 5)
+	cond4 := cond.And("Checked", user.Nickname).And("State__gt", 3).And("State__lt", 5)
+	cond5 := cond.AndCond(cond1).AndCond(cond.OrCond(cond2).OrCond(cond3).OrCond(cond4))
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond5)
+
+	// 	cond := NewCondition()
+	// 	cond1 := cond.And("profile__isnull", false).AndNot("status__in", 1).Or("profile__age__gt", 2000)
+
+	// 	qs := orm.QueryTable("user")
+	// 	qs = qs.SetCond(cond1)
+	// 	// WHERE ... AND ... AND NOT ... OR ...
+
+	// 	cond2 := cond.AndCond(cond1).OrCond(cond.And("name", "slene"))
+	// 	qs = qs.SetCond(cond2).Count()
+	// 	// WHERE (... AND ... AND NOT ... OR ...) OR ( ... )
+	// qs.Distinct()
+	_, err = qs.Filter("Author", user.Username).Distinct().All(&aa) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	if err != nil {
+		return nil, err
+	}
+	// catalogs = append(catalogs, aa...)
+
+	// cond2 := cond.And("Date__gte", t1).And("Date__lt", t2).And("Designd", user.Nickname).And("State__gt", 2).And("State__lt", 5)
+	// qs = qs.SetCond(cond2)
+	// _, err = qs.Filter("Author", user.Username).Distinct().All(&bb) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, bb...)
+
+	// cond3 := cond.And("Date__gte", t1).And("Date__lt", t2).And("Checked", user.Nickname).And("State__gt", 3).And("State__lt", 5)
+	// qs = qs.SetCond(cond3)
+	// _, err = qs.Filter("Author", user.Username).Distinct().All(&cc) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, cc...)
+	// _, err = qs.Filter("Designd", user.Nickname).All(&bb)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, bb...)
+	// _, err = qs.Filter("Checked", user.Nickname).All(&cc)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, cc...)
+	// _, err = qs.Filter("Examined", user.Nickname).All(&dd)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, dd...)
+	return aa, err
+}
+
+//已经完成
+//制图、设计、校核、审查中含有登录名字，状态为5
+func GetcatalogCompleted(id string, t1, t2 time.Time) (catalogs []*Catalog, err error) {
+	Id, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	user := GetUserByUserId(Id)
+	aa := make([]*Catalog, 0)
+	// bb := make([]*Catalog, 0)
+	// cc := make([]*Catalog, 0)
+	// dd := make([]*Catalog, 0)
+
+	cond := orm.NewCondition()
+	// cond1 := cond.And("Date__gte", t1).And("Date__lt", t2).Or("Drawn", user.Nickname).And("State", "1").Or("Designd", user.Nickname).And("State", "2").Or("Checked", user.Nickname).And("State", "3")
+	cond1 := cond.And("Date__gt", t1).And("Date__lte", t2).And("State", "5")
+	cond2 := cond.AndCond(cond1).AndCond(cond.Or("Drawn", user.Nickname).Or("Designd", user.Nickname).Or("Checked", user.Nickname).Or("Examined", user.Nickname))
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond2)
+
+	// 	cond := NewCondition()
+	// 	cond1 := cond.And("profile__isnull", false).AndNot("status__in", 1).Or("profile__age__gt", 2000)
+
+	// 	qs := orm.QueryTable("user")
+	// 	qs = qs.SetCond(cond1)
+	// 	// WHERE ... AND ... AND NOT ... OR ...
+
+	// 	cond2 := cond.AndCond(cond1).OrCond(cond.And("name", "slene"))
+	// 	qs = qs.SetCond(cond2).Count()
+	// 	// WHERE (... AND ... AND NOT ... OR ...) OR ( ... )
+	// qs.Distinct()
+
+	_, err = qs.Distinct().All(&aa) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	if err != nil {
+		return nil, err
+	}
+	// catalogs = append(catalogs, aa...)
+
+	// cond2 := cond.And("Date__gte", t1).And("Date__lt", t2).And("Designd", user.Nickname).And("State", "5")
+	// qs = qs.SetCond(cond2)
+	// _, err = qs.Distinct().All(&bb) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, bb...)
+
+	// cond3 := cond.And("Date__gte", t1).And("Date__lt", t2).And("Checked", user.Nickname).And("State", "5")
+	// qs = qs.SetCond(cond3)
+	// _, err = qs.Distinct().All(&cc) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, cc...)
+
+	// cond4 := cond.And("Date__gte", t1).And("Date__lt", t2).And("Examined", user.Nickname).And("State", "5")
+	// qs = qs.SetCond(cond4)
+	// _, err = qs.Distinct().All(&dd) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, dd...)
+	// _, err = qs.Filter("Designd", user.Nickname).All(&bb)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, bb...)
+	// _, err = qs.Filter("Checked", user.Nickname).All(&cc)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, cc...)
+	// _, err = qs.Filter("Examined", user.Nickname).All(&dd)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// catalogs = append(catalogs, dd...)
+	return aa, err
+}
+
+//别人传来，自己处于设计位置的展示
+//author！=登录名,状态为2，设计名=登录名
+func GetcatalogDesignd(id string, t1, t2 time.Time) (catalogs []*Catalog, err error) {
+	Id, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	user := GetUserByUserId(Id)
+	aa := make([]*Catalog, 0)
+	cond := orm.NewCondition()
+	// cond1 := cond.And("Date__gte", t1).And("Date__lt", t2).Or("Drawn", user.Nickname).And("State", "1").Or("Designd", user.Nickname).And("State", "2").Or("Checked", user.Nickname).And("State", "3")
+	cond1 := cond.And("Updated__gt", t1).And("Updated__lte", t2).And("Designd", user.Nickname).And("State", "2").AndNot("Author", user.Username)
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond1)
+	// 	cond := NewCondition()
+	// 	cond1 := cond.And("profile__isnull", false).AndNot("status__in", 1).Or("profile__age__gt", 2000)
+	// 	qs := orm.QueryTable("user")
+	// 	qs = qs.SetCond(cond1)
+	// 	// WHERE ... AND ... AND NOT ... OR ...
+	// 	cond2 := cond.AndCond(cond1).OrCond(cond.And("name", "slene"))
+	// 	qs = qs.SetCond(cond2).Count()
+	// 	// WHERE (... AND ... AND NOT ... OR ...) OR ( ... )
+	// qs.Distinct()
+	_, err = qs.Distinct().All(&aa) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	if err != nil {
+		return nil, err
+	}
+	return aa, err
+}
+
+//别人传来，自己处于校核位置的展示
+//author！=登录名,状态为3，校核名=登录名
+func GetcatalogChecked(id string, t1, t2 time.Time) (catalogs []*Catalog, err error) {
+	Id, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	user := GetUserByUserId(Id)
+	aa := make([]*Catalog, 0)
+	cond := orm.NewCondition()
+	// cond1 := cond.And("Date__gte", t1).And("Date__lt", t2).Or("Drawn", user.Nickname).And("State", "1").Or("Designd", user.Nickname).And("State", "2").Or("Checked", user.Nickname).And("State", "3")
+	cond1 := cond.And("Updated__gt", t1).And("Updated__lte", t2).And("Checked", user.Nickname).And("State", "3").AndNot("Author", user.Username)
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond1)
+	// 	cond := NewCondition()
+	// 	cond1 := cond.And("profile__isnull", false).AndNot("status__in", 1).Or("profile__age__gt", 2000)
+	// 	qs := orm.QueryTable("user")
+	// 	qs = qs.SetCond(cond1)
+	// 	// WHERE ... AND ... AND NOT ... OR ...
+	// 	cond2 := cond.AndCond(cond1).OrCond(cond.And("name", "slene"))
+	// 	qs = qs.SetCond(cond2).Count()
+	// 	// WHERE (... AND ... AND NOT ... OR ...) OR ( ... )
+	// qs.Distinct()
+	_, err = qs.Distinct().All(&aa) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	if err != nil {
+		return nil, err
+	}
+	return aa, err
+}
+
+//别人传来，自己处于审查位置的展示
+//author！=登录名,状态为4，审查名=登录名
+func GetcatalogExamined(id string, t1, t2 time.Time) (catalogs []*Catalog, err error) {
+	Id, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	user := GetUserByUserId(Id)
+	aa := make([]*Catalog, 0)
+	cond := orm.NewCondition()
+	// cond1 := cond.And("Date__gte", t1).And("Date__lt", t2).Or("Drawn", user.Nickname).And("State", "1").Or("Designd", user.Nickname).And("State", "2").Or("Checked", user.Nickname).And("State", "3")
+	cond1 := cond.And("Updated__gt", t1).And("Updated__lte", t2).And("Examined", user.Nickname).And("State", "4").AndNot("Author", user.Username)
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond1)
+	// 	cond := NewCondition()
+	// 	cond1 := cond.And("profile__isnull", false).AndNot("status__in", 1).Or("profile__age__gt", 2000)
+	// 	qs := orm.QueryTable("user")
+	// 	qs = qs.SetCond(cond1)
+	// 	// WHERE ... AND ... AND NOT ... OR ...
+	// 	cond2 := cond.AndCond(cond1).OrCond(cond.And("name", "slene"))
+	// 	qs = qs.SetCond(cond2).Count()
+	// 	// WHERE (... AND ... AND NOT ... OR ...) OR ( ... )
+	// qs.Distinct()
+	_, err = qs.Distinct().All(&aa) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	if err != nil {
+		return nil, err
+	}
+	return aa, err
 }
 
 //四舍五入

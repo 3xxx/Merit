@@ -29,13 +29,8 @@ allLinks[i].target="_blank";
 </script> -->
 </head>
 
-
-<!-- <div id="treeview" class="col-xs-3"></div> -->
-<div class="form-group">
-        <label class="control-label" id="regis" for="LoginForm-UserName">{{.Sectitle}}</label><!-- 显示部门名称 -->
-    </div>
 <div class="col-lg-12">
-
+<h2>{{.Sectitle}}</h2>
 <div>
 <form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data">
 <input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
@@ -115,9 +110,7 @@ $(function() {
           // expandIcon:"glyphicon glyphicon-chevron-down",
 //         });
 // });
-
-
-  $(document).ready(function() {
+ $(document).ready(function() {
   $("table").tablesorter({sortList: [[6,1]]});
   // $("#ajax-append").click(function() {
   //    $.get("assets/ajax-content.html", function(html) {
@@ -131,8 +124,10 @@ $(function() {
   //     $("table").trigger("sorton",[sorting]);
   //   });
   //   return false;
-  // });
-});
+  });
+// });
+
+
 </script>
 </body>
 </html>

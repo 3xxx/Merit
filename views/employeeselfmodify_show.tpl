@@ -2,614 +2,1281 @@
 <!DOCTYPE html>
 <html>
 <head>
- <meta charset="UTF-8">
+  <meta charset="UTF-8">
   <title>待处理成果</title>
-  <!-- <base target=_blank> -->
-<script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
- <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
- <script src="/static/js/bootstrap-treeview.js"></script>
- <script type="text/javascript" src="/static/js/jquery.tablesorter.min.js"></script> 
-<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
-<script type="text/javascript" src="/static/js/moment.min.js"></script>
+  <!-- <base target=_blank>
+  -->
+  <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
+  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+  <script src="/static/js/bootstrap-treeview.js"></script>
+  <script type="text/javascript" src="/static/js/jquery.tablesorter.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
+  <script type="text/javascript" src="/static/js/moment.min.js"></script>
   <script type="text/javascript" src="/static/js/daterangepicker.js"></script>
   <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css" />
 
   <script type="text/javascript" src="/static/bootstrap-datepicker/bootstrap-datepicker.js"></script>
-<script type="text/javascript" src="/static/bootstrap-datepicker/bootstrap-datepicker.zh-CN.js"></script>
-<link rel="stylesheet" type="text/css" href="/static/bootstrap-datepicker/bootstrap-datepicker3.css"/> 
-<!-- <style type="text/css">
-a:active{text:expression(target="_blank");}
+  <script type="text/javascript" src="/static/bootstrap-datepicker/bootstrap-datepicker.zh-CN.js"></script>
+  <link rel="stylesheet" type="text/css" href="/static/bootstrap-datepicker/bootstrap-datepicker3.css"/>
+  <!-- <script type="text/javascript" src="/static/js/bootstrap-datetimepicker.min.js"></script>
+-->
+<!-- <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-datetimepicker.min.css"/>
+-->
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap-table.min.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap-editable.css"/>
+<!-- <link rel="stylesheet" type="text/css" href="/static/css/select2.css"/>
+-->
+<!-- <link rel="stylesheet" type="text/css" href="/static/css/select2-bootstrap.css"/>
+-->
+<script type="text/javascript" src="/static/js/bootstrap-table.min.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap-table-zh-CN.min.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap-table-editable.min.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap-editable.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap-table-export.min.js"></script>
+
+<!-- <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-combined.min.css"/> -->
+<link rel="stylesheet" type="text/css" href="/static/css/select2.css"/>
+<script type="text/javascript" src="/static/js/select2.js"></script>
+<!-- <script type="text/javascript" src="/static/js/select2.js"></script>
+-->
+<!-- <script type="text/javascript" src="/static/js/mindmup-editabletable.js"></script>
+-->
+<!-- <script src="/static/js/moment-with-locales.min.js"></script>
+-->
+<!-- <script src="/static/js/bootstrap-table-filter-control.js"></script>
+-->
+<style>
 i#delete
 {
-color:#DC143C;
+color:#C71585;
 }
 </style>
-<script type="text/javascript">
-  var allLinks=document.getElementsByTagName("a");
-for(var i=0;i!=allLinks.length; i++){
-allLinks[i].target="_blank";
-}
-</script> -->
 </head>
 
 
-<!-- <div id="treeview" class="col-xs-3"></div> -->
-
 <div class="col-lg-12">
-<div class="form-group">
-        <label class="control-label" id="regis" for="LoginForm-UserName">{{.UserNickname}}</label><!-- 显示部门名称 -->
+    <!-- <div class="form-group"> -->
+    <!-- <label class="control-label" id="regis" for="LoginForm-UserName">   {{.UserNickname}}</label> -->
+    <!-- 显示部门名称 -->
+    <!-- </div> -->
+    <h2>{{.UserNickname}}</h2>
+<!-- <div> -->
+<!-- <form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data">
+-->
+
+    <div class="form-inline">
+        <input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
+        <input type="hidden" id="level" name="level" value="{{.Level}}"/>
+        <input type="hidden" id="key" name="key" value="modify"/>
+        <div class="form-group">
+            <label for="taskNote">统计周期：</label>
+            <input type="text" class="form-control" name="datefilter" id="datefilter" value="" placeholder="选择时间段(默认最近一个月)"/>
+        </div>
+        <script type="text/javascript">
+            $(function() {
+              $('input[name="datefilter"]').daterangepicker({
+                  autoUpdateInput: false,
+                  locale: {
+                      cancelLabel: 'Clear'
+                  }
+              });
+              $('input[name="datefilter"]').on('apply.daterangepicker', function(ev,        picker)    {
+                  $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.      endDate.   format('YYYY-MM-DD'));
+              });
+              $('input[name="datefilter"]').on('cancel.daterangepicker', function(ev,        picker)    {
+                  $(this).val('');
+              });
+            });
+        </script>
+    <!-- <button type="submit" class="btn btn-primary">提交</button>
+-->
+        <button id="button" class="btn btn-default">提交</button>
+        <label class="control-label">tips:(StartDay < DateRange <= EndDay)</label>
+    </div>
+<!-- </form>
+-->
+<br>
+
+<!-- 添加 ：{{dateformat .Starttime "2006-01-02"}}-{{dateformat .Endtime    "2006-01-02"}}-->
+<div class="form-inline">
+      <input type='text' placeholder='项目编号' class="form-control" id='Pnumber' value='' size='4'/>
+      <input type='text' placeholder='项目名称' class="form-control" id='Pname' value='' size='20'/>
+      <!-- <input type='text' placeholder='阶段' class="form-control" id='txtStage' value='' size='5'/> -->
+      <select class="form-control" id='Stage'>
+        <option>阶段：</option>
+        <option>规划</option>
+        <option>项目建议书</option>
+        <option>可行性研究</option>
+        <option>初步设计</option>
+        <option>招标设计</option>
+        <option>施工图</option>
+      </select>
+      <input type='text' placeholder='成果编号' class="form-control" id='Tnumber' value='' size='10'/>
+      <input type='text' placeholder='成果名称' class="form-control" id='Name' value='' size='25'/>
+      <select class="form-control" id='Category'>
+        <option>成果类型：</option>
+      </select>
+      <!-- <input type='text' placeholder='单位' class="form-control" id='txtPage' value='' size='1'/> -->
+      <input type='text' placeholder='数量' class="form-control" id='Count' value='' size='2'/>
 </div>
-<div>
-<form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data">
-  <input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
-  <input type="hidden" id="level" name="level" value="{{.Level}}"/>
-  <input type="hidden" id="key" name="key" value="modify"/>
-  <div class="form-group">
-    <label for="taskNote">统计周期：</label>
-    <input type="text" class="form-control" name="datefilter" value="" placeholder="选择时间段(默认最近一个月)"/>
-  </div>
-  <script type="text/javascript">
-$(function() {
-  $('input[name="datefilter"]').daterangepicker({
-      autoUpdateInput: false,
-      locale: {
-          cancelLabel: 'Clear'
-      }
-  });
-  $('input[name="datefilter"]').on('apply.daterangepicker', function(ev, picker) {
-      $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-  });
-  $('input[name="datefilter"]').on('cancel.daterangepicker', function(ev, picker) {
-      $(this).val('');
-  });
-});
-</script>
-  <button type="submit" class="btn btn-primary">提交</button>
-</form>
-<br></div>
-
-<div class="form-group">
-<label class="control-label" id="regis" for="LoginForm-UserName">
-  统计时间段：{{dateformat .Starttime "2006-01-02"}}-{{dateformat .Endtime "2006-01-02"}}
-</label>
+  <br/>
+<div class="form-inline">     
+      <input type='text' placeholder='绘制/编制' class="form-control" id="uname1" value='' list="cars1" size='7'/>
+      <input type='text' placeholder='设计' class="form-control" id="uname2" value='' list="cars2" size='7'/>
+      <input type='text' placeholder='校核' class="form-control" id="uname3" value='' list="cars3" size='7'/>
+      <input type='text' placeholder='审查' class="form-control" id="uname4" value='' list="cars4" size='7'/>
+      <input type='text' placeholder='绘制系数' class="form-control" id='Drawnratio' value='' size='4'/>
+      <input type='text' placeholder='设计系数' class="form-control" id='Designdratio' value='' size='4'/>
+      <input type='text' placeholder='出版日期' class='datepicker' id='Date' value='' size='7'/>
+      <input type='button' class='btn btn-primary' name='update' value='添加' onclick='saveAddRow()'/>
+      <div id='datalistDiv'>
+        <datalist id="cars1" name="cars1">
+        </datalist>
+      </div>
+      <div id='datalistDiv'>
+        <datalist id="cars2" name="cars2">
+        </datalist>
+      </div>
+      <div id='datalistDiv'>
+        <datalist id="cars3" name="cars3">
+        </datalist>
+      </div>
+      <div id='datalistDiv'>
+        <datalist id="cars4" name="cars4">
+        </datalist>
+      </div>
 </div>
-<h3>需要提交给校核</h3>
-  <table class="table table-striped" id="orderTable" name="orderTable">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>项目编号</th>
-        <th>项目名称</th>
-        <th>项目阶段</th>
-        <th>成果编号</th>
-        <th>成果名称</th>
-        <th>成果类型</th>
-        <th>成果计量单位</th>
-        <th>成果数量</th>
-        <th>编制、绘制</th>
-        <th>设计</th>
-        <th>校核</th>
-        <th>审查</th>
-        <th>绘制系数</th>
-        <th>出版</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-
-    <tbody>
-    {{range $k1,$v1 :=$.Catalogs}}
-      {{if eq $v1.State "1"}}
-      {{if eq $.UserNickname $v1.Drawn $v1.Designd}}
-      <tr id="row{{.Id}}">
-        <td>{{$k1|indexaddone}}</td>
-        <td>{{.ProjectNumber}}</td>
-        <td>{{.ProjectName}}</td>
-        <td>{{.DesignStage}}</td>
-        <td>{{.Tnumber}}</td>
-        <td>{{.Name}}</td>
-        <td>{{.Category }}</td>
-        <td>{{.Page}}</td>
-        <td>{{.Count}}</td>
-        <td>{{.Drawn}}</td>
-        <td>{{.Designd}}</td>
-        <td>{{.Checked}}</td>
-        <td>{{.Examined}}</td>
-        <td>{{.Drawnratio}}</td>
-        <td>{{dateformat .Data "2006-01-02"}}</td>
-        <td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow("row{{.Id}}")'/> 
-        <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow("row{{.Id}}")' />
-        <input type='button' class='btn btn-default' name='update' value='提交' onclick='sendSelectedRow("row{{.Id}}")' /></td> 
-      </tr>
-      {{end}}
-      {{end}}
-      {{end}}
-    </tbody>
-  </table>
-
-  <h3>需要处理校核</h3>
-  <table class="table table-striped" id="orderTable" name="orderTable">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>项目编号</th>
-        <th>项目名称</th>
-        <th>项目阶段</th>
-        <th>成果编号</th>
-        <th>成果名称</th>
-        <th>成果类型</th>
-        <th>成果计量单位</th>
-        <th>成果数量</th>
-        <th>设计</th>
-        <th>校核</th>
-        <th>设计系数</th>
-        <th>校核系数</th>
-        <th>出版</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-
-    <tbody>
-    {{range $k1,$v1 :=$.Catalogs}}
-      {{if eq $v1.State "2"}}
-      {{if eq $.UserNickname $v1.Checked}}
-      <tr id="row{{.Id}}">
-        <td>{{$k1|indexaddone}}</td>
-        <td>{{.ProjectNumber}}</td>
-        <td>{{.ProjectName}}</td>
-        <td>{{.DesignStage}}</td>
-        <td>{{.Tnumber}}</td>
-        <td>{{.Name}}</td>
-        <td>{{.Category }}</td>
-        <td>{{.Page}}</td>
-        <td>{{.Count }}</td>
-        <td>{{.Designd}}</td>
-        <td>{{.Checked}}</td>
-        <td>{{.Designdratio}}</td>
-        <td>{{.Checkedratio}}</td>
-        <td>{{dateformat .Data "2006-01-02"}}</td>
-        <td><input type='button' class='btn btn-default' name='delete' value='退回' onclick='downsendSelectedRow("row{{.Id}}")'/> 
-        <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow2("row{{.Id}}")' />
-        <input type='button' class='btn btn-default' name='update' value='提交' onclick='sendSelectedRow("row{{.Id}}")' /></td> 
-      </tr>
-      {{end}}
-      {{end}}
-      {{end}}
-    </tbody>
-  </table>
-  <h3>需要处理审查</h3>
-  <table class="table table-striped" id="orderTable" name="orderTable">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>项目编号</th>
-        <th>项目名称</th>
-        <th>项目阶段</th>
-        <th>成果编号</th>
-        <th>成果名称</th>
-        <th>成果类型</th>
-        <th>成果计量单位</th>
-        <th>成果数量</th>
-        <th>难度系数</th>
-        <th>校核</th>
-        <th>审查</th>
-        <th>校核系数</th>
-        <th>审查系数</th>
-        <th>出版</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-
-    <tbody>
-    {{range $k1,$v1 :=$.Catalogs}}
-      {{if eq $v1.State "3"}}
-      {{if eq $.UserNickname $v1.Examined}}
-      <tr id="row{{.Id}}">
-        <td>{{$k1|indexaddone}}</td>
-        <td>{{.ProjectNumber}}</td>
-        <td>{{.ProjectName}}</td>
-        <td>{{.DesignStage}}</td>
-        <td>{{.Tnumber}}</td>
-        <td>{{.Name}}</td>
-        <td>{{.Category }}</td>
-        <td>{{.Page}}</td>
-        <td>{{.Count}}</td>
-        <td>{{.Complex}}</td>
-        <td>{{.Checked}}</td>
-        <td>{{.Examined}}</td>
-        <td>{{.Checkedratio}}</td>
-        <td>{{.Examinedratio}}</td>
-        <td>{{dateformat .Data "2006-01-02"}}</td>
-        <td><input type='button' class='btn btn-default' name='delete' value='退回' onclick='downsendSelectedRow("row{{.Id}}")'/> 
-        <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow3("row{{.Id}}")' />
-        <input type='button' class='btn btn-default' name='update' value='提交' onclick='sendSelectedRow("row{{.Id}}")' /></td> 
-      </tr>
-      {{end}}
-      {{end}}
-      {{end}}
-    </tbody>
-  </table>
-  <!-- <input type="hidden" id="CategoryId" name="CategoryId" value="{{.CategoryId}}"/> -->
-     
-</div>
-
-
-
+<br/>
+    <form id="form1" class="form-inline" method="post" action="/import_xls_catalog" enctype="multipart/form-data">
+            <div class="form-group">
+              <label>导入成果登记数据(Excel)
+              <input type="file" class="form-control" name="catalog" id="catalog"></label>
+              <br/>
+              </div>
+            <button type="submit" class="btn btn-primary" onclick="return import_xls_catalog();">提交</button>
+    </form>
 <script type="text/javascript">
-//*********这个是编辑表格
-var flag = 0;  //标志位，标志第几行  
-         /*    
-         *删除选中的行    
-         */    
-         function deleteSelectedRow(rowId){    
-            //根据rowId查询出该行所在的行索引    
-            if(confirm("确定删除该行吗？")){    
-                $("#"+rowId).remove();    //这里需要注意删除一行之后 我的标志位没有-1，因为如果减一，那么我再增加一行的话，可能会导致我的tr的id重复，不好维护。
-                // 提交到后台进行删除数据库
-                    // alert("欢迎您：" + name) 
-                    $.ajax({
-                    type:"post",//这里是否一定要用post？？？
-                    url:"/achievement/delete",
-                    data: {CatalogId:rowId},
-                        success:function(data,status){//数据提交成功时返回数据
-                        alert("删除“"+data+"”成功！(status:"+status+".)");
-                        }
-                    });  
-            }       
-         }    
-          /*    
-         *退回选中的行    
-         */
-         function downsendSelectedRow(rowId){
-          if(confirm("确定退回该行吗？")){    
-                $("#"+rowId).remove();    //这里需要注意删除一行之后 我的标志位没有-1，因为如果减一，那么我再增加一行的话，可能会导致我的tr的id重复，不好维护。
-                // 提交到后台进行修改数据库状态为降一个
-                    // alert("欢迎您：" + name) 
-                    $.ajax({
-                    type:"post",//这里是否一定要用post？？？
-                    url:"/achievement/downsendcatalog",
-                    data: {CatalogId:rowId},
-                        success:function(data,status){//数据提交成功时返回数据
-                        alert("退回“"+data+"”成功！(status:"+status+".)");
-                        }
-                    });  
-            }   
-         }
-         /*    
-          *用户直接传递行   
-          */
-        function sendSelectedRow(rowId){
-          if(confirm("确定提交该行吗？")){    
-                $("#"+rowId).remove();    //这里需要注意删除一行之后 我的标志位没有-1，因为如果减一，那么我再增加一行的话，可能会导致我的tr的id重复，不好维护。
-                // 提交到后台进行修改数据库状态为降一个
-                    // alert("欢迎您：" + name) 
-                    $.ajax({
-                    type:"post",//这里是否一定要用post？？？
-                    url:"/achievement/sendcatalog",
-                    data: {CatalogId:rowId},
-                        success:function(data,status){//数据提交成功时返回数据
-                        alert("提交“"+data+"”成功！(status:"+status+".)");
-                        }
-                    });  
-            }   
-         }
-         /*    
-          *修改-提交给校核-选中的行    
-          */  
-         function updateSelectedRow(rowId){
-            var oldIndex = $("#"+rowId+" td:eq(0)").html();
-            var oldPnumber = $("#"+rowId+" td:eq(1)").html();  
-            var oldPname = $("#"+rowId+" td:eq(2)").html();  
-            var oldStage = $("#"+rowId+" td:eq(3)").html();
-            var oldTnumber = $("#"+rowId+" td:eq(4)").html();
-            var oldName = $("#"+rowId+" td:eq(5)").html();
-            var oldCategory = $("#"+rowId+" td:eq(6)").html();
-            var oldPage = $("#"+rowId+" td:eq(7)").html();
-            var oldCount = $("#"+rowId+" td:eq(8)").html();
-            var oldDrawn = $("#"+rowId+" td:eq(9)").html();
-            var oldDesignd = $("#"+rowId+" td:eq(10)").html();
-            var oldChecked = $("#"+rowId+" td:eq(11)").html();
-            var oldExamined = $("#"+rowId+" td:eq(12)").html();
-            var oldDrawnratio = $("#"+rowId+" td:eq(13)").html();
-            var oldData = $("#"+rowId+" td:eq(14)").html();
-            // if(oldPrice != ""){//去掉第一个人民币符号  
-            //     oldPrice = oldPrice.substring(1);  
-            // }  
-            var uploadStr = "<td><input type='text' id='txtIndex"+flag+"' value='"+oldIndex+"' size='1'/></td>"
-                        + "<td><input type='text' id='txtPnumber"+flag+"' value='"+oldPnumber+"' size='3'/></td>"  
-                        + "<td><input type='text' id='txtPname"+flag+"' value='"+oldPname+"' size='14'/></td>"  
-                        + "<td><input type='text' id='txtStage"+flag+"' value='"+oldStage+"' size='3'/></td>"
-                        + "<td><input type='text' id='txtTnumber"+flag+"' value='"+oldTnumber+"' size='12'/></td>"
-                        + "<td><input type='text' id='txtName"+flag+"' value='"+oldName+"' size='20'/></td>"
-                        + "<td><input type='text' id='txtCategory"+flag+"' value='"+oldCategory+"' size='4'/></td>"
-                        + "<td><input type='text' id='txtPage"+flag+"' value='"+oldPage+"' size='1'/></td>"
-                        + "<td><input type='text' id='txtCount"+flag+"' value='"+oldCount+"' size='1'/></td>"
-                        + "<td><input type='text' id='txtDrawn"+flag+"' value='"+oldDrawn+"' size='2'/></td>"
-                        + "<td><input type='text' id='txtDesignd"+flag+"' value='"+oldDesignd+"' size='2'/></td>"
-                        + "<td><input type='text' id='txtChecked"+flag+"' value='"+oldChecked+"' size='2'/></td>"
-                        + "<td><input type='text' id='txtExamined"+flag+"' value='"+oldExamined+"' size='2'/></td>"
-                        + "<td><input type='text' id='txtDrawnratio"+flag+"' value='"+oldDrawnratio+"' size='2'/></td>"
-                        + "<td><input type='text' id='txtData"+flag+"' class='datepicker' value='"+oldData+"'/></td>"
-                        + "<td><input type='button' class='btn btn-default' name='update' value='保存' onclick='saveUpdateRow(\""+rowId+"\",\""+flag+"\")'/></td>";  
-            $("#"+rowId).html(uploadStr); 
-            $(".datepicker").datepicker({
-               language: "zh-CN",
-               autoclose: true,//选中之后自动隐藏日期选择框
-               clearBtn: true,//清除按钮
-               todayBtn: 'linked',//今日按钮
-               format: "yyyy-mm-dd"//日期格式，详见 http://bootstrap-datepicker.readthedocs.org/en/release/options.html#format
-            }); 
-         }    
-  
-         /*    
-          *保存提交给校核修改行    
-          */
-        function saveUpdateRow(rowId,flag){ 
-            var newIndex = $("#txtIndex"+flag).val();
-            var newPnumber = $("#txtPnumber"+flag).val();    
-            var newPname = $("#txtPname"+flag).val();    
-            var newStage = $("#txtStage"+flag).val();
-            var newTnumber = $("#txtTnumber"+flag).val();
-            var newName = $("#txtName"+flag).val();
-            var newCategory = $("#txtCategory"+flag).val();
-            var newPage = $("#txtPage"+flag).val();
-            var newCount = $("#txtCount"+flag).val();
-            var newDrawn = $("#txtDrawn"+flag).val();
-            var newDesignd = $("#txtDesignd"+flag).val();
-            var newChecked = $("#txtChecked"+flag).val();
-            var newExamined = $("#txtExamined"+flag).val();
-            var newDrawnratio = $("#txtDrawnratio"+flag).val();
-            var newData = $("#txtData"+flag).val();
-            var saveStr = "<td>" + newIndex + "</td>"
-                        + "<td>" + newPnumber + "</td>"  
-                        + "<td>" + newPname + "</td>"  
-                        + "<td>" + newStage + "</td>"
-                        + "<td>" + newTnumber + "</td>"
-                        + "<td>" + newName + "</td>"
-                        + "<td>" + newCategory + "</td>"
-                        + "<td>" + newPage + "</td>"
-                        + "<td>" + newCount + "</td>"
-                        + "<td>" + newDrawn + "</td>"
-                        + "<td>" + newDesignd + "</td>"
-                        + "<td>" + newChecked + "</td>"
-                        + "<td>" + newExamined + "</td>"
-                        + "<td>" + newDrawnratio + "</td>"
-                        + "<td>" + newData + "</td>"
-                        + "<td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow(\""+rowId+"\")' /><input type='button' class='btn btn-default' name='update' value='提交' onclick='sendSelectedRow(\""+rowId+"\")' /></td>";  
-            $("#"+rowId).html(saveStr);//因为替换的时候只替换tr标签内的html 所以不用加上tr 
-            // 这里再提交到后台保存起来update 
-            if (newName)//如果返回的有内容  
-                {  
-                    $.ajax({
-                    type:"post",//这里是否一定要用post？？？
-                    url:"/achievement/modifycatalog",
-                    data: {Pnumber:newPnumber,Pname:newPname,Stage:newStage,Tnumber:newTnumber,Name:newName,Category:newCategory,Page:newPage,Count:newCount,Drawn:newDrawn,Designd:newDesignd,Checked:newChecked,Examined:newExamined,Drawnratio:newDrawnratio,Data:newData,CatalogId:rowId},
-                        success:function(data,status){//数据提交成功时返回数据
-                        alert("修改“"+data+"”成功！(status:"+status+".)");
-                        }
-                    });  
-                }
-          }
-          /*    
-          *修改-提交给审查-选中的行    
-          */ 
-         function updateSelectedRow2(rowId){
-            var oldIndex = $("#"+rowId+" td:eq(0)").html();
-            var oldPnumber = $("#"+rowId+" td:eq(1)").html();  
-            var oldPname = $("#"+rowId+" td:eq(2)").html();  
-            var oldStage = $("#"+rowId+" td:eq(3)").html();
-            var oldTnumber = $("#"+rowId+" td:eq(4)").html();
-            var oldName = $("#"+rowId+" td:eq(5)").html();
-            var oldCategory = $("#"+rowId+" td:eq(6)").html();
-            var oldPage = $("#"+rowId+" td:eq(7)").html();
-            var oldCount = $("#"+rowId+" td:eq(8)").html();
-            var oldDesignd = $("#"+rowId+" td:eq(9)").html();
-            var oldChecked = $("#"+rowId+" td:eq(10)").html();
-            var oldDesigndratio = $("#"+rowId+" td:eq(11)").html();
-            var oldCheckedratio = $("#"+rowId+" td:eq(12)").html();
-            var oldData = $("#"+rowId+" td:eq(13)").html();
-            // if(oldPrice != ""){//去掉第一个人民币符号  
-            //     oldPrice = oldPrice.substring(1);  
-            // }  
-            var uploadStr = "<td id='txtIndex"+flag+"'>"+oldIndex+"</td>"
-                        + "<td id='txtPnumber"+flag+"'>"+oldPnumber+"</td>"  
-                        + "<td id='txtPname"+flag+"'>"+oldPname+"</td>"  
-                        + "<td id='txtStage"+flag+"'>"+oldStage+"</td>"
-                        + "<td id='txtTnumber"+flag+"'>"+oldTnumber+"</td>"
-                        + "<td id='txtName"+flag+"'>"+oldName+"</td>"
-                        + "<td id='txtCategory"+flag+"'>"+oldCategory+"</td>"
-                        + "<td id='txtPage"+flag+"'>"+oldPage+"</td>"
-                        + "<td id='txtCount"+flag+"'>"+oldCount+"</td>"
+function import_xls_catalog(){
+  var form1 = window.document.getElementById("form1");//获取form1对象
+  form1.submit();
+  $.ajax({
+      success:function(data,status){//数据提交成功时返回数据
+      alert("导入数据成功！(status:"+status+".)");
+      window.location.reload();
+      // $('#table').bootstrapTable('refresh', {url:'/myself'});
+      }
+      });
+  return true;  //这个return必须放最后，前面的值才能传到后台    
+}
 
-                        + "<td id='txtDesignd"+flag+"'>"+oldDesignd+"</td>"
-                        + "<td id='txtChecked"+flag+"'>"+oldChecked+"</td>"
-                        + "<td><input type='text' id='txtDesigndratio"+flag+"' value='"+oldDesigndratio+"' size='1'/></td>"
-                        + "<td><input type='text' id='txtCheckedratio"+flag+"' value='"+oldCheckedratio+"' size='1'/></td>"
-                        + "<td id='txtData"+flag+"'>"+oldData+"</td>"
-                        + "<td><input type='button' class='btn btn-default' name='update' value='保存' onclick='saveUpdateRow2(\""+rowId+"\",\""+flag+"\")'/></td>";  
-            $("#"+rowId).html(uploadStr); 
+function saveAddRow(){
+            var newPnumber = $("#Pnumber").val();    
+            var newPname = $("#Pname").val();    
+            var newStage = $("#Stage option:selected").text();
+            var newTnumber = $("#Tnumber").val();
+            var newName = $("#Name").val();
+            var newCategory = $("#Category option:selected").text();
             
-         }    
-  
-         /*    
-          *保存提交给审查的修改行    
-          */
-        function saveUpdateRow2(rowId,flag){ 
-            var newIndex = $("#txtIndex"+flag).text();
-            var newPnumber = $("#txtPnumber"+flag).text();    
-            var newPname = $("#txtPname"+flag).text();    
-            var newStage = $("#txtStage"+flag).text();
-            var newTnumber = $("#txtTnumber"+flag).text();
-            var newName = $("#txtName"+flag).text();
-            var newCategory = $("#txtCategory"+flag).text();
-            var newPage = $("#txtPage"+flag).text();
-            var newCount = $("#txtCount"+flag).text();
-
-            var newDesignd = $("#txtDesignd"+flag).text();
-            var newChecked = $("#txtChecked"+flag).text();
-            var newDesigndratio = $("#txtDesigndratio"+flag).val();
-            var newCheckedratio = $("#txtCheckedratio"+flag).val();
-            var newData = $("#txtData"+flag).text();
-            var saveStr = "<td>" + newIndex + "</td>"
-                        + "<td>" + newPnumber + "</td>"  
-                        + "<td>" + newPname + "</td>"  
-                        + "<td>" + newStage + "</td>"
-                        + "<td>" + newTnumber + "</td>"
-                        + "<td>" + newName + "</td>"
-                        + "<td>" + newCategory + "</td>"
-                        + "<td>" + newPage + "</td>"
-                        + "<td>" + newCount + "</td>"
-
-                        + "<td>" + newDesignd + "</td>"
-                        + "<td>" + newChecked + "</td>"
-                        + "<td>" + newDesigndratio + "</td>"
-                        + "<td>" + newCheckedratio + "</td>"
-                        + "<td>" + newData + "</td>"
-                        + "<td><input type='button' class='btn btn-default' name='delete' value='退回' onclick='downsendSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow2(\""+rowId+"\")' /><input type='button' class='btn btn-default' name='update' value='提交' onclick='sendSelectedRow(\""+rowId+"\")' /></td>";  
-            $("#"+rowId).html(saveStr);//因为替换的时候只替换tr标签内的html 所以不用加上tr 
-            // 这里再提交到后台保存起来update 
-            if (newName)//如果返回的有内容  
-                {  
+            var newCount = $("#Count").val();
+            var newDrawn = $("#uname1").val();
+            var newDesignd = $("#uname2").val();
+            var newChecked = $("#uname3").val();
+            var newExamined = $("#uname4").val();
+            var newDrawnratio = $("#Drawnratio").val();
+            var newDesigndratio = $("#Designdratio").val();
+            var newDate = $("#Date").val();
+          if(confirm("确定提交该行吗？")){    
                     $.ajax({
                     type:"post",//这里是否一定要用post？？？
-                    url:"/achievement/modifycatalog",
-                    data: {Checked:newChecked,Designdratio:newDesigndratio,Checkedratio:newCheckedratio,CatalogId:rowId},
+                    url:"/achievement/addcatalog",
+                    data: {Pnumber:newPnumber,Pname:newPname,Stage:newStage,Tnumber:newTnumber,Name:newName,Category:newCategory,Count:newCount,Drawn:newDrawn,Designd:newDesignd,Checked:newChecked,Examined:newExamined,Drawnratio:newDrawnratio,Designdratio:newDesigndratio,Date:newDate},
                         success:function(data,status){//数据提交成功时返回数据
-                        alert("修改“"+data+"”成功！(status:"+status+".)");
+                        alert("添加“"+data+"”(status:"+status+".)");
+                        $('#table').bootstrapTable('refresh', {url:'/myself'});
                         }
                     });  
-                }
-          }
-          /*    
-          *修改-审查人员提交给统计-选中的行    
-          */ 
-         function updateSelectedRow3(rowId){
-            var oldIndex = $("#"+rowId+" td:eq(0)").html();
-            var oldPnumber = $("#"+rowId+" td:eq(1)").html();  
-            var oldPname = $("#"+rowId+" td:eq(2)").html();  
-            var oldStage = $("#"+rowId+" td:eq(3)").html();
-            var oldTnumber = $("#"+rowId+" td:eq(4)").html();
-            var oldName = $("#"+rowId+" td:eq(5)").html();
-            var oldCategory = $("#"+rowId+" td:eq(6)").html();
-            var oldPage = $("#"+rowId+" td:eq(7)").html();
-            var oldCount = $("#"+rowId+" td:eq(8)").html();
-            var oldComplex = $("#"+rowId+" td:eq(9)").html();
-            var oldChecked = $("#"+rowId+" td:eq(10)").html();
-            var oldExamined = $("#"+rowId+" td:eq(11)").html();  
-            var oldCheckedratio = $("#"+rowId+" td:eq(12)").html();
-            var oldExaminedratio = $("#"+rowId+" td:eq(13)").html();
-            var oldData = $("#"+rowId+" td:eq(14)").html();
-            // if(oldPrice != ""){//去掉第一个人民币符号  
-            //     oldPrice = oldPrice.substring(1);  
-            // }  
-            var uploadStr = "<td id='txtIndex"+flag+"'>"+oldIndex+"</td>"
-                        + "<td id='txtPnumber"+flag+"'>"+oldPnumber+"</td>"  
-                        + "<td id='txtPname"+flag+"'>"+oldPname+"</td>"  
-                        + "<td id='txtStage"+flag+"'>"+oldStage+"</td>"
-                        + "<td id='txtTnumber"+flag+"'>"+oldTnumber+"</td>"
-                        + "<td id='txtName"+flag+"'>"+oldName+"</td>"
-                        + "<td id='txtCategory"+flag+"'>"+oldCategory+"</td>"
-                        + "<td id='txtPage"+flag+"'>"+oldPage+"</td>"
-                        + "<td id='txtCount"+flag+"'>"+oldCount+"</td>"
-                        + "<td><input type='text' id='txtComplex"+flag+"' value='"+oldComplex+"' size='1'/></td>"
-                        + "<td id='txtChecked"+flag+"'>"+oldChecked+"</td>"
-                        + "<td id='txtExamined"+flag+"'>"+oldExamined+"</td>"  
-                        + "<td><input type='text' id='txtCheckedratio"+flag+"' value='"+oldCheckedratio+"' size='1'/></td>"
-                        + "<td><input type='text' id='txtExaminedratio"+flag+"' value='"+oldExaminedratio+"' size='1'/></td>"
-                        + "<td><input type='text' id='txtData"+flag+"' class='datepicker' value='"+oldData+"'/></td>"
-                        + "<td><input type='button' class='btn btn-default' name='update' value='保存' onclick='saveUpdateRow3(\""+rowId+"\",\""+flag+"\")'/></td>";  
-            $("#"+rowId).html(uploadStr);
-            $(".datepicker").datepicker({
+            }   
+         }
+</script>         
+<!-- </div> -->
+<script type="text/javascript">
+    // $(".datepicker").datepicker({
+      $("#Date").datepicker({
             language: "zh-CN",
             autoclose: true,//选中之后自动隐藏日期选择框
             clearBtn: true,//清除按钮
             todayBtn: 'linked',//今日按钮
             format: "yyyy-mm-dd"//日期格式，详见 http://bootstrap-datepicker.readthedocs.org/en/release/options.html#format
-            });  
-         }    
-  
-         /*    
-          *审查人员保存修改行    
-          */
-        function saveUpdateRow3(rowId,flag){ 
-            var newIndex = $("#txtIndex"+flag).text();
-            var newPnumber = $("#txtPnumber"+flag).text();    
-            var newPname = $("#txtPname"+flag).text();    
-            var newStage = $("#txtStage"+flag).text();
-            var newTnumber = $("#txtTnumber"+flag).text();
-            var newName = $("#txtName"+flag).text();
-            var newCategory = $("#txtCategory"+flag).text();
-            var newPage = $("#txtPage"+flag).text();
-            var newCount = $("#txtCount"+flag).text();
-            var newComplex = $("#txtComplex"+flag).val();
-            var newChecked = $("#txtChecked"+flag).text();
-            var newExamined = $("#txtExamined"+flag).text();    
-            var newCheckedratio = $("#txtCheckedratio"+flag).val();
-            var newExaminedratio = $("#txtExaminedratio"+flag).val();
-            var newData = $("#txtData"+flag).val();
-            var saveStr = "<td>" + newIndex + "</td>"
-                        + "<td>"+newPnumber+"</td>"  
-                        + "<td>"+newPname+"</td>"  
-                        + "<td>"+newStage+"</td>"
-                        + "<td>"+newTnumber+"</td>"
-                        + "<td>"+newName+"</td>"
-                        + "<td>"+newCategory+"</td>"
-                        + "<td>"+newPage+"</td>"
-                        + "<td>"+newCount+"</td>"
-                        + "<td>" + newComplex + "</td>"
-                        + "<td>" + newChecked + "</td>"
-                        + "<td>" + newExamined + "</td>"
-                        + "<td>" + newCheckedratio + "</td>"
-                        + "<td>" + newExaminedratio + "</td>"
-                        + "<td>" + newData + "</td>"
-                        + "<td><input type='button' class='btn btn-default' name='delete' value='退回' onclick='downsendSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow3(\""+rowId+"\")' /><input type='button' class='btn btn-default' name='update' value='提交' onclick='sendSelectedRow(\""+rowId+"\")' /></td>";  
-            $("#"+rowId).html(saveStr);//因为替换的时候只替换tr标签内的html 所以不用加上tr 
-            // 这里再提交到后台保存起来update 
-            if (newName)//如果返回的有内容  
-                {  
-                    $.ajax({
-                    type:"post",//这里是否一定要用post？？？
-                    url:"/achievement/modifycatalog",
-                    data: {Complex:newComplex,Examined:newExamined,Checkedratio:newCheckedratio,Examinedratio:newExaminedratio,Data:newData,CatalogId:rowId},
-                        success:function(data,status){//数据提交成功时返回数据
-                        alert("修改“"+data+"”成功！(status:"+status+".)");
-                        }
-                    });  
-                }
-          }
-</script>
+        });
+  </script>
 
+<h3>我发起，待提交</h3>
+<div id="toolbar" class="btn-group">
+        <!-- <select class="form-control">
+        <option value="">Export Basic</option>
+        <option value="all">Export All</option>
+        <option value="selected">Export Selected</option>
+        </select>
+        -->
+        <button type="button" class="btn btn-default"> <i class="glyphicon    glyphicon-plus"></i>
+        </button>
+        <button type="button" class="btn btn-default"> <i class="glyphicon        glyphicon-heart"></i>
+        </button>
+        <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-trash"></i>
+        </button>
+    </div>
+<table id="table"
+      data-query-params="queryParams"
+      data-toolbar="#toolbar"
+      data-search="true"
+      data-show-refresh="true"
+      data-show-toggle="true"
+      data-show-columns="true"
+      data-striped="true"
+      data-clickToSelect="true"
+      data-show-export="true"
+      data-filter-control="true"
+  ></table>
 
+<h3>别人发起，我设计</h3>
+<div id="designd" class="btn-group">
+        <button type="button" class="btn btn-default"> <i class="glyphicon    glyphicon-plus"></i>
+        </button>
+        <button type="button" class="btn btn-default"> <i class="glyphicon        glyphicon-heart"></i>
+        </button>
+        <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-trash"></i>
+        </button>
+</div>
+<table id="table1" 
+      data-query-params="queryParams"
+      data-toolbar="#designd"
+      data-search="true"
+      data-show-refresh="true"
+      data-show-toggle="true"
+      data-show-columns="true"
+      data-striped="true"
+      data-clickToSelect="true"
+      data-show-export="true"
+      data-filter-control="true"
+       >
+</table>
 
+<h3>别人发起，我校核</h3>
+<div id="checked" class="btn-group">
+        <button type="button" class="btn btn-default"> <i class="glyphicon    glyphicon-plus"></i>
+        </button>
+        <button type="button" class="btn btn-default"> <i class="glyphicon        glyphicon-heart"></i>
+        </button>
+        <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-trash"></i>
+        </button>
+</div>
+<table id="table2" 
+      data-query-params="queryParams"
+      data-toolbar="#checked"
+      data-search="true"
+      data-show-refresh="true"
+      data-show-toggle="true"
+      data-show-columns="true"
+      data-striped="true"
+      data-clickToSelect="true"
+      data-show-export="true"
+      data-filter-control="true"
+       >
+</table>
+<h3>别人发起，我审查</h3>
+<div id="examined" class="btn-group">
+        <button type="button" class="btn btn-default"> <i class="glyphicon    glyphicon-plus"></i>
+        </button>
+        <button type="button" class="btn btn-default"> <i class="glyphicon        glyphicon-heart"></i>
+        </button>
+        <button type="button" class="btn btn-default">
+        <i class="glyphicon glyphicon-trash"></i>
+        </button>
+</div>
+<table id="table3" 
+      data-query-params="queryParams"
+      data-toolbar="#examined"
+      data-search="true"
+      data-show-refresh="true"
+      data-show-toggle="true"
+      data-show-columns="true"
+      data-striped="true"
+      data-clickToSelect="true"
+      data-show-export="true"
+      data-filter-control="true"
+       >
+</table>
+<br/>
+<br/>
+</div>
 
 <script type="text/javascript">
-// $(function() {
-         // $('#treeview').treeview('collapseAll', { silent: true });
-          // $('#treeview').treeview({
-          // data: [{{.json}}],//defaultData,
-          // data:alternateData,
-          // levels: 5,// expanded to 5 levels
-          // enableLinks:true,
-          // showTags:true,
-          // collapseIcon:"glyphicon glyphicon-chevron-up",
-          // expandIcon:"glyphicon glyphicon-chevron-down",
-//         });
+function actionFormatter(value, row, index) {
+    return [
+        '<a class="send" href="javascript:void(0)" title="提交">',
+        '<i class="glyphicon glyphicon-step-forward"></i>',
+        '</a>',
+        '<a class="downsend" href="javascript:void(0)" title="退回">',
+        '<i class="glyphicon glyphicon-step-backward"></i>',
+        '</a>',
+        
+        '<a class="remove" href="javascript:void(0)" title="删除">',
+        '<i id="delete" class="glyphicon glyphicon-remove"></i>',
+        '</a>'
+    ].join('');
+}
+// '<a class="edit ml10" href="javascript:void(0)" title="退回">','<i class="glyphicon glyphicon-edit"></i>','</a>'
+window.actionEvents = {
+    'click .send': function (e, value, row, index) {
+        // alert('You click send icon, row: ' + JSON.stringify(row.Id));
+        // alert(e);无值
+        // alert(value);无值
+        // alert(row);
+        // alert(index);0~
+        // console.log(value, row, index);
+        if(confirm("确定提交该行吗？")){
+          var removeline=$(this).parents("tr")
+          //提交到后台进行修改数据库状态修改
+            $.ajax({
+            type:"post",//这里是否一定要用post？？？
+            url:"/achievement/sendcatalog",
+            data: {CatalogId:row.Id},
+                success:function(data,status){//数据提交成功时返回数据
+                removeline.remove();
+                alert("提交“"+data+"”成功！(status:"+status+".)");
+                }
+            });  
+        }
+    },
+    'click .downsend': function (e, value, row, index) {
+        // alert('You click send icon, row: ' + JSON.stringify(row.Id));
+        // alert(e);无值
+        // alert(value);无值
+        // alert(row);
+        // alert(index);0~
+        // console.log(value, row, index);
+        if(confirm("确定退回该行吗？")){
+        var removeline=$(this).parents("tr")
+          //提交到后台进行修改数据库状态修改
+            $.ajax({
+            type:"post",//这里是否一定要用post？？？
+            url:"/achievement/downsendcatalog",
+            data: {CatalogId:row.Id},
+                success:function(data,status){//数据提交成功时返回数据
+                removeline.remove();
+                alert("退回“"+data+"”成功！(status:"+status+".)");
+                }
+            });  
+        }
+    },
+
+    // 'click .edit': function (e, value, row, index) {
+    //     alert('You click edit icon, row: ' + JSON.stringify(row));
+    //     console.log(value, row, index);
+    // },
+    'click .remove': function (e, value, row, index) {
+        // alert('You click remove icon, row: ' + JSON.stringify(row));
+        // console.log(value, row, index);
+        if(confirm("确定删除该行吗？")){  
+        var removeline=$(this).parents("tr")
+        //提交到后台进行删除数据库
+         // alert("欢迎您：" + name) 
+            $.ajax({
+            type:"post",//这里是否一定要用post？？？
+            url:"/achievement/delete",
+            data: {CatalogId:row.Id},
+                success:function(data,status){//数据提交成功时返回数据
+                removeline.remove();
+                alert("删除“"+data+"”成功！(status:"+status+".)");
+                }
+            });  
+        }
+    }
+};
+
+//不提供删除功能的操作
+function actionFormatter1(value, row, index) {
+    return [
+        '<a class="send" href="javascript:void(0)" title="提交">',
+        '<i class="glyphicon glyphicon-step-forward"></i>',
+        '</a>',
+        '<a class="downsend" href="javascript:void(0)" title="退回">',
+        '<i class="glyphicon glyphicon-step-backward"></i>',
+        '</a>',
+    ].join('');
+}
+//不提供删除功能的操作
+window.actionEvents1 = {
+    'click .send': function (e, value, row, index) {
+        if(confirm("确定提交该行吗？")){
+          var removeline=$(this).parents("tr")
+          //提交到后台进行修改数据库状态修改
+            $.ajax({
+            type:"post",//这里是否一定要用post？？？
+            url:"/achievement/sendcatalog",
+            data: {CatalogId:row.Id},
+                success:function(data,status){//数据提交成功时返回数据
+                removeline.remove();
+                alert("提交“"+data+"”成功！(status:"+status+".)");
+                }
+            });  
+        }
+    },
+    'click .downsend': function (e, value, row, index) {
+        if(confirm("确定退回该行吗？")){
+        var removeline=$(this).parents("tr")
+          //提交到后台进行修改数据库状态修改
+            $.ajax({
+            type:"post",//这里是否一定要用post？？？
+            url:"/achievement/downsendcatalog",
+            data: {CatalogId:row.Id},
+                success:function(data,status){//数据提交成功时返回数据
+                removeline.remove();
+                alert("退回“"+data+"”成功！(status:"+status+".)");
+                }
+            });  
+        }
+    }
+};
+//这个是指定哪几个不能选的
+function stateFormatter(value, row, index) {
+    if (index === 2) {
+        return {
+            disabled: true
+        };
+    }
+    if (index === 0) {
+        return {
+            disabled: true,
+            checked: true
+        }
+    }
+    return value;
+}
+
+//这个是导出的
+// $(function () {
+//   var $table = $('#table');
+//   $('#toolbar').find('select').change(function () {
+//     $table.bootstrapTable('refreshOptions', {
+//       exportDataType: $(this).val()
+//     });
+//   });
 // });
-  $(document).ready(function() {
-  $("table").tablesorter({sortList: [[13,0]]});
-  // $("#ajax-append").click(function() {
-  //    $.get("assets/ajax-content.html", function(html) {
-  //     // append the "ajax'd" data to the table body
-  //     $("table tbody").append(html);
-  //     // let the plugin know that we made a update
-  //     $("table").trigger("update");
-  //     // set sorting column and direction, this will sort on the first and third column
-  //     var sorting = [[2,1],[0,0]];
-  //     // sort on the first column
-  //     $("table").trigger("sorton",[sorting]);
-  //   });
-  //   return false;
-  // });
+//这个是编辑表-2方法
+// $(function () {
+//     $('#table').bootstrapTable({
+//         idField: 'ProjectNumber',
+//         // pagination: true,
+//         // search: true,
+//         url: '/addinline',
+//         columns: [{
+//             field: 'Id',
+//             title: '编号'
+//         },
+//         {
+//             field: 'ProjectNumber',
+//             title: '项目编号'
+//         }, {
+//             field: 'ProjectName',
+//             title: '项目名称'
+//         }],
+//         onPostBody: function () {
+//             $('#table').editableTableWidget({editor: $('<textarea>')});
+//         }
+//     });
+// });
+//在线编辑
+// $(function () {
+//   $('#table').bootstrapTable({
+//     idField: 'ProjectNumber',
+//     url: '/addinline',
+//     columns: [{
+//       field: 'Id',
+//             title: '编号'
+//         },
+//         {
+//       field: 'ProjectNumber',
+//       title: 'ProjectNumber',
+//       editable: {
+//         type: 'text'
+//       }
+//     }, {
+//       field: 'ProjectName',
+//       title: 'ProjectName',
+//       editable: {
+//         type: 'address',
+//         // var value={{.Ratio}}
+//         display: function(value) {
+//           if(!value) {
+//             $(this).empty();
+//             return; 
+//           }
+//           var html = '<b>' + $('<div>').text(value.Category).html() + '</b>, ' + $('<div>').text(value.Category).html() + ' st., bld. ' + $('<div>').text(value.Category).html();
+//           $(this).html(html); 
+//         }
+//       }
+//     }, {
+//       field: 'description',
+//       title: 'Description'
+//     }]
+//   });
+// });
+//待选择的修改*******不要删除
+//我发起
+$(function () {
+    $('#table').bootstrapTable({
+        idField: 'Id',
+        url: '/myself',
+        // striped: "true",
+        columns: [
+          {
+            // field: 'Number',
+            title: '序号',
+            formatter:function(value,row,index){
+            return index+1
+          }
+          },{
+            field: 'ProjectNumber',
+            title: '项目编号',
+            sortable:'true',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter ProjectNumber' 
+            }
+          },{
+            field: 'ProjectName',
+            title: '项目名称',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter ProjectName'  
+            }
+          },{
+            field: 'DesignStage',
+            title: '阶段',
+            editable: {
+                type: 'select',
+                source: ["规划", "项目建议书", "可行性研究", "初步设计", "招标设计", "施工图"],
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter DesignStage'  
+            }
+          },{
+            field: 'Tnumber',
+            title: '成果编号',
+            sortable:'true',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter number'  
+            }
+          },{
+            field: 'Name',
+            title: '成果名称',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Name'  
+            }
+          },{
+            field: 'Category',
+            title: '成果类型',
+            sortable:'true',
+            editable: {
+                type: 'select',
+                source: {{.Select2}},//["$1", "$2", "$3"],
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Category' 
+            }
+          },{
+            field: 'Count',
+            title: '数量',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Count'  
+            }
+          },{
+            field: 'Drawn',
+            title: '制图/编制',
+            editable: {
+                type: 'select2', 
+                source:{{.Userselect}},//'/regist/getuname1',
+        // source: [
+        //       {id: 'gb', text: 'Great Britain'},
+        //       {id: 'us', text: 'United States'},
+        //       {id: 'ru', text: 'Russia'}
+        //    ],
+
+        //'[{"id": "1", "text": "One"}, {"id": "2", "text": "Two"}]'
+
+                select2: {
+                  allowClear: true,
+                  width: '150px',
+                  placeholder: '请选择人名',
+                  // multiple: true
+                },//'/regist/getuname1',//这里用get方法，所以要换一个
+                
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Drawn'  
+            }
+          },{
+            field: 'Designd',
+            title: '设计',
+            editable: {
+                type: 'select2', 
+                source:{{.Userselect}},
+                select2: {
+                  allowClear: true,
+                  width: '150px',
+                  placeholder: '请选择人名',
+                },
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Designd'  
+            }
+          },{
+            field: 'Checked',
+            title: '校核',
+            editable: {
+                type: 'select2', 
+                source:{{.Userselect}},
+                select2: {
+                  allowClear: true,
+                  width: '150px',
+                  placeholder: '请选择人名',
+                },
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Checked'  
+            }
+          },{
+            field: 'Examined',
+            title: '审查',
+            editable: {
+                type: 'select2', 
+                source:{{.Userselect}},
+                select2: {
+                  allowClear: true,
+                  width: '150px',
+                  placeholder: '请选择人名',
+                },
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Examined'  
+            }
+          },{
+            field: 'Drawnratio',
+            title: '制图比例',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Drawnratio'  
+            }
+          },{
+            field: 'Designdratio',
+            title: '设计比例',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Designdratio'  
+            }
+          },{
+            field: 'Datestring',
+            title: '出版(日/月/年)',
+            // formatter:localDateFormatter,
+            editable: {
+                type: 'date',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                // title: 'Enter ProjectNumber' 
+                format: 'yyyy-mm-dd',    
+                viewformat: 'dd/mm/yyyy',    
+                datepicker: {
+                    weekStart: 1,
+                    todayBtn: 'linked'
+                   }
+                }
+        },{
+            field:'action',
+            title: '操作',
+            formatter:'actionFormatter',
+            events:'actionEvents',
+        }
+        ]
+    });
 });
+//我设计
+$(function () {
+    $('#table1').bootstrapTable({
+        idField: 'Id',
+        url: '/designd',
+        // striped: "true",
+        columns: [
+          {
+            // field: 'Number',
+            title: '序号',
+            formatter:function(value,row,index){
+            return index+1
+          }
+          },{
+            field: 'ProjectNumber',
+            title: '项目编号',
+            sortable:'true',
+          },{
+            field: 'ProjectName',
+            title: '项目名称',
+          },{
+            field: 'DesignStage',
+            title: '阶段',
+          },{
+            field: 'Tnumber',
+            title: '成果编号',
+            sortable:'true',
+          },{
+            field: 'Name',
+            title: '成果名称',
+          },{
+            field: 'Category',
+            title: '成果类型',
+            sortable:'true',
+          },{
+            field: 'Count',
+            title: '数量',
+          },{
+            field: 'Drawn',
+            title: '制图/编制',
+          },{
+            field: 'Designd',
+            title: '设计',
+          },{
+            field: 'Checked',
+            title: '校核',
+            editable: {
+                type: 'select2', 
+                source:{{.Userselect}},
+                select2: {
+                  allowClear: true,
+                  width: '150px',
+                  placeholder: '请选择人名',
+                },
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Checked'  
+            }
+          },{
+            field: 'Examined',
+            title: '审查',
+            editable: {
+                type: 'select2', 
+                source:{{.Userselect}},
+                select2: {
+                  allowClear: true,
+                  width: '150px',
+                  placeholder: '请选择人名',
+                },
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Examined'  
+            }
+          },{
+            field: 'Drawnratio',
+            title: '制图比例',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Drawnratio'  
+            }
+          },{
+            field: 'Designdratio',
+            title: '设计比例',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Designdratio'  
+            }
+          },{
+            field: 'Complex',
+            title: '难度系数',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Complex'  
+            }
+          },{
+            field: 'Datestring',
+            title: '出版',
+            // formatter:localDateFormatter,
+            editable: {
+                type: 'date',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                // title: 'Enter ProjectNumber' 
+                format: 'yyyy-mm-dd',    
+                viewformat: 'dd/mm/yyyy',    
+                datepicker: {
+                    weekStart: 1,
+                    todayBtn: 'linked'
+                   }
+                }
+        },{
+            field:'action',
+            title: '操作',
+            formatter:'actionFormatter1',
+            events:'actionEvents1',
+        }
+        ]
+    });
+});
+
+//我校核
+$(function () {
+    $('#table2').bootstrapTable({
+        idField: 'Id',
+        url: '/checked',
+        // striped: "true",
+        columns: [
+          {
+            // field: 'Number',
+            title: '序号',
+            formatter:function(value,row,index){
+            return index+1
+          }
+          },{
+            field: 'ProjectNumber',
+            title: '项目编号',
+            sortable:'true',
+          },{
+            field: 'ProjectName',
+            title: '项目名称',
+          },{
+            field: 'DesignStage',
+            title: '阶段',
+          },{
+            field: 'Tnumber',
+            title: '成果编号',
+            sortable:'true',
+          },{
+            field: 'Name',
+            title: '成果名称',
+          },{
+            field: 'Category',
+            title: '成果类型',
+            sortable:'true',
+          },{
+            field: 'Count',
+            title: '数量',
+          },{
+            field: 'Designd',
+            title: '设计',
+          },{
+            field: 'Checked',
+            title: '校核',
+          },{
+            field: 'Examined',
+            title: '审查',
+            editable: {
+                type: 'select2', 
+                source:{{.Userselect}},
+                select2: {
+                  allowClear: true,
+                  width: '150px',
+                  placeholder: '请选择人名',
+                },
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Examined'  
+            }
+          },{
+            field: 'Designdratio',
+            title: '设计比例',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Designdratio'  
+            }
+          },{
+            field: 'Checkedratio',
+            title: '校核比例',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Checkedratio'  
+            }
+          },{
+            field: 'Complex',
+            title: '难度系数',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Complex'  
+            }
+          },{
+            field: 'Datestring',
+            title: '出版',
+            // formatter:localDateFormatter,
+            editable: {
+                type: 'date',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                // title: 'Enter ProjectNumber' 
+                format: 'yyyy-mm-dd',    
+                viewformat: 'dd/mm/yyyy',    
+                datepicker: {
+                    weekStart: 1,
+                    todayBtn: 'linked'
+                   }
+                }
+        },{
+            field:'action',
+            title: '操作',
+            formatter:'actionFormatter1',
+            events:'actionEvents1',
+        }
+        ]
+    });
+});
+
+//我审查
+$(function () {
+    $('#table3').bootstrapTable({
+        idField: 'Id',
+        url: '/examined',
+        // striped: "true",
+        columns: [
+          {
+            // field: 'Number',
+            title: '序号',
+            formatter:function(value,row,index){
+            return index+1
+          }
+          },{
+            field: 'ProjectNumber',
+            title: '项目编号',
+            sortable:'true',
+          },{
+            field: 'ProjectName',
+            title: '项目名称',
+          },{
+            field: 'DesignStage',
+            title: '阶段',
+          },{
+            field: 'Tnumber',
+            title: '成果编号',
+            sortable:'true',
+          },{
+            field: 'Name',
+            title: '成果名称',
+          },{
+            field: 'Category',
+            title: '成果类型',
+            sortable:'true',
+          },{
+            field: 'Count',
+            title: '数量',
+          },{
+            field: 'Checked',
+            title: '校核',
+          },{
+            field: 'Examined',
+            title: '审查',
+          },{
+            field: 'Checkedratio',
+            title: '校核比例',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Checkedratio'  
+            }
+          },{
+            field: 'Examinedratio',
+            title: '审查比例',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Examinedratio'  
+            }
+          },{
+            field: 'Complex',
+            title: '难度系数',
+            editable: {
+                type: 'text',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                title: 'Enter Complex'  
+            }
+          },{
+            field: 'Datestring',
+            title: '出版',
+            // formatter:localDateFormatter,
+            editable: {
+            type: 'date',
+                pk: 1,
+                url: '/achievement/modifycatalog',
+                // title: 'Enter ProjectNumber' 
+                format: 'yyyy-mm-dd',    
+                viewformat: 'dd/mm/yyyy',    
+                datepicker: {
+                    weekStart: 1,
+                    todayBtn: 'linked'
+                }
+            }
+        },{
+            field:'action',
+            title: '操作',
+            formatter:'actionFormatter1',
+            events:'actionEvents1',
+        }
+        ]
+    });
+});
+
+// var date={{.Starttime}};
+// function list(value, row, index) {
+             // return '<i class="glyphicon ' + icon + '"></i> ' + value;
+            // return "<select data-index='row'><option>成果类型：</option></select>";
+        // }
+function localDateFormatter(value) {
+                return moment(value, 'YYYY-MM-DD').format('L');
+            }
+function nameFormatter(value) {
+    return '<a href="https://github.com/wenzhixin/' + value + '">' + value + '</a>';
+}
+//这个是显示时间选择
+function datepicker(value) {
+$(".datepicker").datepicker({
+               language: "zh-CN",
+               autoclose: true,//选中之后自动隐藏日期选择框
+               clearBtn: true,//清除按钮
+               todayBtn: 'linked',//今日按钮
+               format: "yyyy-mm-dd"//日期格式，详见 http://bootstrap-datepicker.readthedocs.org/en/release/options.html#format
+            });
+}
+
+function queryParams(params) {
+  // var newPage = $("#txtPage").val();
+  var date=$("#datefilter").val();
+  params.datefilter=date;//"2016-09-10 - 2016-09-15";
+        // params.your_param1 = 1; // add param1
+        // params.your_param2 = 2; // add param2
+        // console.log(JSON.stringify(params));
+        // {"limit":10,"offset":0,"order":"asc","your_param1":1,"your_param2":2}
+        return params;
+    }
+
+    // var $table = $('#table'),
+    // $button = $('#button');
+    $(function () {
+        $('#button').click(function () {
+            $('#table').bootstrapTable('refresh', {url:'/myself'});
+            $('#table1').bootstrapTable('refresh', {url:'/designd'});
+            $('#table2').bootstrapTable('refresh', {url:'/checked'});
+            $('#table3').bootstrapTable('refresh', {url:'/examined'});
+        });
+    });    
+// $(function () {
+ // $('#button').click(function () {
+      // var newPage = $("#txtPage").val();
+            // var date=$("#datefilter").val();
+            // params.datefilter=date;
+            // alert( "Date Loaded: " + newPage);
+            // $table.bootstrapTable('refresh', {url:'/addinline2'});
+            // return params;
+    // }); 
+// });
+// function queryParams() {
+//         var params = {};
+//         $('#toolbar').find('input[name]').each(function () {
+//             params[$(this).attr('name')] = $(this).val();
+//         });
+//         return params;
+//     }
+
+// function queryParams(params) {
+//             return {
+//                 pageSize: params.pageSize,
+//                 pageIndex: params.pageNumber,
+//                 UserName: $("#txtName").val(),
+//                 Birthday: $("#txtBirthday").val(),
+//                 Gender: $("#Gender").val(),
+//                 Address: $("#txtAddress").val(),
+//                 name: params.sortName,
+//                 order: params.sortOrder
+//             };
+//         }        
+// 使用jQuery.post()方法传修改的数据到后台，这实际上是小菜一碟。
+
+// $('#editable td').on('change', function(evt, newValue) {
+//     $.post( "script.php", { value: newValue })
+//     .done(function( data ) {
+//         alert( "Data Loaded: " + data );
+//     });
+// });
+
+// <input id="uname" name="uname" type="text" value="" class="form-control" placeholder="Enter account" list="cars"></div>
+//         <div id='datalistDiv'>
+//           <datalist id="cars" name="cars">//           </datalist>
+//         </div>
+$(document).ready(function(){
+        $("#sel_Province").change(function(){
+            $.ajax({
+                url: '<%=basePath%>areaAjax/getCity.do',
+                data: "procode="+$("#sel_Province").val(),
+                type: 'get',
+                dataType:'json',
+                error: function(data)
+                {
+                    alert("加载json 文件出错！");
+                },
+                success: function(data)
+                {
+                    for (var one in data)
+                    {
+                        var name = data[one].name;
+                        var code = data[one].code;
+                        $("#sel_City").append("<option value="+code+">"+name+"</option>");
+                    }
+                },
+            });
+       });
+});
+
+$(document).ready(function(){
+//   $(array).each(function(index){
+//     alert(this);
+// });
+ 
+// $.each(array,function(index){
+//     alert(this);
+// });
+$.each({{.Select2}},function(i,d){
+  // alert(this);
+  // alert(i);
+  // alert(d);
+   $("#Category").append('<option value="' + i + '">'+d+'</option>');
+   });
+});
+
+$('#uname1').attr("autocomplete","off"); 
+$(document).ready(function(){
+  $("#uname1").keyup(function(event){
+    // alert(event.keyCode);
+    var uname1=document.getElementById("uname1");
+  // if (uname.value.length==0)
+   if (event.keyCode != 38 && event.keyCode != 40 && uname1.value.length==2){
+    $.ajax({
+                type:"post",//这里是否一定要用post？？？
+                url:"/regist/getuname",
+                data: { uname: $("#uname").val()},
+                dataType:'json',//dataType:JSON,这种是jquerylatest版本的表达方法。不支持新版jquery。
+                success:function(data,status){
+                  $(".option").remove();
+                  $.each(data,function(i,d){
+                      $("#cars1").append('<option class="option" value="' + data[i].Username + '">' + data[i].Nickname + '</option>');
+                  });
+                }
+      });
+                // $("#uname1").keydown(function(){
+                //   $("option").remove();
+                // }); 
+    }
+ });
+});  
+$('#uname2').attr("autocomplete","off"); 
+$(document).ready(function(){
+  $("#uname2").keyup(function(event){
+    var uname2=document.getElementById("uname2");
+    // alert(event.keyCode);
+   if (event.keyCode != 38 && event.keyCode != 40 && uname2.value.length==2){
+    $.ajax({
+                type:"post",//这里是否一定要用post？？？
+                url:"/regist/getuname",
+                data: { uname: $("#uname").val()},
+                dataType:'json',//dataType:JSON,这种是jquerylatest版本的表达方法。不支持新版jquery。
+                success:function(data,status){
+                  $(".option").remove();
+                  $.each(data,function(i,d){
+                      $("#cars2").append('<option class="option" value="' + data[i].Username + '">' + data[i].Nickname + '</option>');
+                  });
+                }
+      });
+                // $("#uname2").keydown(function(){
+                //   $("option").remove();
+                // }); 
+    }
+ });
+}); 
+$('#uname3').attr("autocomplete","off"); 
+$(document).ready(function(){
+  $("#uname3").keyup(function(event){
+    var uname3=document.getElementById("uname3");
+    // alert(event.keyCode);
+   if (event.keyCode != 38 && event.keyCode != 40 && uname3.value.length==2){
+    $.ajax({
+                type:"post",//这里是否一定要用post？？？
+                url:"/regist/getuname",
+                data: { uname: $("#uname").val()},
+                dataType:'json',//dataType:JSON,这种是jquerylatest版本的表达方法。不支持新版jquery。
+                success:function(data,status){
+                  $(".option").remove();
+                  $.each(data,function(i,d){
+                      $("#cars3").append('<option class="option" value="' + data[i].Username + '">' + data[i].Nickname + '</option>');
+                  });
+                }
+      });
+                // $("#uname3").keydown(function(){
+                //   $("option").remove();
+                // }); 
+    }
+ });
+}); 
+$('#uname4').attr("autocomplete","off"); 
+$(document).ready(function(){
+  $("#uname4").keyup(function(event){
+    var uname4=document.getElementById("uname4");
+    // alert(event.keyCode);
+   if (event.keyCode != 38 && event.keyCode != 40 && uname4.value.length==2){
+    $.ajax({
+                type:"post",//这里是否一定要用post？？？
+                url:"/regist/getuname",
+                data: { uname: $("#uname").val()},
+                dataType:'json',//dataType:JSON,这种是jquerylatest版本的表达方法。不支持新版jquery。
+                success:function(data,status){
+                  $(".option").remove();
+                  $.each(data,function(i,d){
+                      $("#cars4").append('<option class="option" value="' + data[i].Username + '">' + data[i].Nickname + '</option>');
+                  });
+                }
+      });
+    //             $("#uname4").keydown(function(){
+    //               $("option").remove();
+    //             }); 
+    }
+ });
+}); 
 </script>
+
 </body>
 </html>

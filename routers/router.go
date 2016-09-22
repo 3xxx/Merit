@@ -65,6 +65,8 @@ func init() {
 	// beego.Router("/registerr", &controllers.RegistController{}, "get:RegistErr")
 	beego.Router("/regist/checkuname", &controllers.RegistController{}, "post:CheckUname")
 	beego.Router("/regist/getuname", &controllers.RegistController{}, "post:GetUname")
+	//get方法用于x-editable的select2方法_作废，select2不支持动态数据
+	beego.Router("/regist/getuname1", &controllers.RegistController{}, "get:GetUname1")
 
 	//成果登记系统
 	//管理员登录查看分院整体情况
@@ -73,6 +75,18 @@ func init() {
 	beego.Router("/import_xls_catalog", &controllers.Achievement{}, "post:Import_Xls_Catalog")
 	// 主页里显示iframe——科室总体情况
 	beego.Router("/secofficeshow", &controllers.Achievement{}, "get:Secofficeshow")
+	//用户在线登记时，自己发起的成果，还未提交
+	beego.Router("/myself", &controllers.Achievement{}, "get:Myself")
+	//自己发起的成果，已经提交
+	beego.Router("/running", &controllers.Achievement{}, "get:Running")
+	//别人传来，自己处于设计位置
+	beego.Router("/designd", &controllers.Achievement{}, "get:Designd")
+	//别人传来，自己处于设计位置
+	beego.Router("/checked", &controllers.Achievement{}, "get:Checked")
+	//别人传来，自己处于设计位置
+	beego.Router("/examined", &controllers.Achievement{}, "get:Examined")
+	//查看用户个人时，获取已经完成的数据
+	beego.Router("/completed", &controllers.Achievement{}, "get:Completed")
 
 	//人员管理
 	beego.Router("/user/AddUser", &controllers.UserController{}, "*:AddUser")

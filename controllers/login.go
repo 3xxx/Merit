@@ -17,13 +17,18 @@ type LoginController struct {
 
 func (c *LoginController) Get() {
 	isExit := c.Input().Get("exit") == "true"
+	// secofficeshow?secid=1643&level=3&key=modify
 	url1 := c.Input().Get("url") //这里不支持这样的url，http://192.168.9.13/login?url=/topic/add?id=955&mid=3
-	url2 := c.Input().Get("mid")
+	url2 := c.Input().Get("level")
+	url3 := c.Input().Get("key")
+	beego.Info(url1)
+	beego.Info(url2)
+	beego.Info(url3)
 	var url string
 	if url2 == "" {
 		url = url1
 	} else {
-		url = url1 + "&mid=" + url2
+		url = url1 + "&level=" + url2 + "&key=" + url3
 	}
 
 	c.Data["Url"] = url
@@ -60,7 +65,15 @@ func (c *LoginController) Get() {
 }
 
 func (c *LoginController) Loginerr() {
-	url := c.Input().Get("url")
+	url1 := c.Input().Get("url") //这里不支持这样的url，http://192.168.9.13/login?url=/topic/add?id=955&mid=3
+	url2 := c.Input().Get("level")
+	url3 := c.Input().Get("key")
+	var url string
+	if url2 == "" {
+		url = url1
+	} else {
+		url = url1 + "&level=" + url2 + "&key=" + url3
+	}
 	// port := strconv.Itoa(c.Ctx.Input.Port())
 	// url := c.Ctx.Input.Site() + ":" + port + c.Ctx.Request.URL.String()
 	c.Data["Url"] = url
@@ -70,8 +83,17 @@ func (c *LoginController) Loginerr() {
 
 func (c *LoginController) Post() {
 	// uname := c.Input().Get("uname")
-	url := c.Input().Get("returnUrl")
-
+	// url := c.Input().Get("returnUrl")
+	url1 := c.Input().Get("url") //这里不支持这样的url，http://192.168.9.13/login?url=/topic/add?id=955&mid=3
+	url2 := c.Input().Get("level")
+	url3 := c.Input().Get("key")
+	var url string
+	if url2 == "" {
+		url = url1
+	} else {
+		url = url1 + "&level=" + url2 + "&key=" + url3
+	}
+	beego.Info(url)
 	//（4）获取当前的请求会话，并返回当前请求会话的对象
 	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
 	defer sess.SessionRelease(c.Ctx.ResponseWriter)

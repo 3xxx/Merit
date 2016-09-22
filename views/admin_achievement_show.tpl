@@ -34,9 +34,24 @@ color:#DC143C;
     <!-- <div class="form-group"> -->
         <!-- <label class="control-label" id="regis" for="LoginForm-UserName"></label> 显示部门名称  -->
     <!-- </div> -->
-        <iframe src="/secofficeshow" name='main' id="iframepage" frameborder="0" width="100%" scrolling="no" marginheight="0" marginwidth="0" onLoad="iFrameHeight()"></iframe>
+        <!-- <iframe src="/secofficeshow" name='main' id="iframepage" frameborder="0" width="100%" scrolling="no" marginheight="0" marginwidth="0" onLoad="iFrameHeight()"></iframe> -->
+        <!-- <iframe src="/secofficeshow" name='main' id="iframepage" frameborder="0" width="100%" scrolling="no" marginheight="0" marginwidth="0" onload="changeFrameHeight()"></iframe> -->
+       <iframe src="/secofficeshow" name='main' frameborder="0"  width="100%" scrolling="no" marginheight="0" marginwidth="0" id="iframepage" onload="this.height=100"></iframe> 
 </div>  
 
+
+<script type="text/javascript">
+ function reinitIframe(){//http://caibaojian.com/frame-adjust-content-height.html
+  var iframe = document.getElementById("iframepage");
+   try{
+    var bHeight = iframe.contentWindow.document.body.scrollHeight;
+     var dHeight = iframe.contentWindow.document.documentElement.scrollHeight; var height = Math.max(bHeight, dHeight); iframe.height = height;
+      // console.log(height);//这个显示老是在变化
+       }catch (ex){
+        } 
+        } 
+        window.setInterval("reinitIframe()", 200);
+         </script>
 <!--   <div class="col-lg-9">
     <table class="table table-striped">
       <thead>
@@ -78,17 +93,27 @@ $(function() {
           document.getElementById("iframepage").src="/secofficeshow?secid="+data.Id+"&level="+data.Level;
         });   
 });
-
+// document.getElementById()返回对拥有指定 id 的第一个对象的引用。
+// document.getElementsByName()返回带有指定名称的对象集合。
+// document.getElementsByTagName()返回带有指定标签名的对象集合。
 // 自动适应高度 
 
-function iFrameHeight() {   
-var ifm= document.getElementById("iframepage");   
-var subWeb = document.frames ? document.frames["iframepage"].document : ifm.contentDocument;   
-if(ifm != null && subWeb != null) {
-   ifm.height = subWeb.body.scrollHeight;
-   ifm.width = subWeb.body.scrollWidth;
-}   
-}   
+// function iFrameHeight() {   
+// var ifm= document.getElementById("iframepage");   
+// var subWeb = document.frames ? document.frames["iframepage"].document : ifm.contentDocument;   
+// if(ifm != null && subWeb != null) {
+//    ifm.height = subWeb.body.scrollHeight;
+//    ifm.width = subWeb.body.scrollWidth;
+// }   
+// }   
+
+// function changeFrameHeight(){
+//     var ifm= document.getElementById("iframepage"); 
+//     ifm.height=document.documentElement.clientHeight;
+// }
+// window.onresize=function(){  
+//      changeFrameHeight();  
+// } 
 
 // document.getElementById("changeUrl").onclick = function(){
 //     document.getElementById("iframepage").src="http://www.baidu.com";

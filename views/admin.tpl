@@ -176,13 +176,13 @@ color: #E6E6FA;
         <div class="broad-feature feature2-box">
           <div class="col-480-12">
             <h3 class="col-480-12">导入成果数据</h3>
-         <form class="form-inline" method="post" action="/import_xls_catalog" enctype="multipart/form-data">
+         <form id="form1" class="form-inline" method="post" action="/import_xls_catalog" enctype="multipart/form-data">
             <div class="form-group">
               <label>选择成果登记数据文件(Excel)
               <input type="file" class="form-control" name="catalog" id="catalog"></label>
               <br/>
               </div>
-            <button type="submit" class="btn btn-default">提交</button>
+            <button type="submit" class="btn btn-default" onclick="return import_xls_catalog();">提交</button>
           </form>
           <br/>
           <div class="form-group">
@@ -301,6 +301,18 @@ $("#import").click(function(){//这里应该用button的id来区分按钮的哪�
             return true;//这里true和false结果都一样。不刷新页面的意思？
  });
 });
+
+function import_xls_catalog(){
+  var form1 = window.document.getElementById("form1");//获取form1对象
+  form1.submit();
+  $.ajax({
+                        success:function(data,status){//数据提交成功时返回数据
+                        // alert("添加“"+data+"”成功！(status:"+status+".)");
+                        window.location.reload();
+                        }
+                    });
+    return true;  //这个return必须放最后，前面的值才能传到后台    
+   }
   </script>
 </body>
 </html>

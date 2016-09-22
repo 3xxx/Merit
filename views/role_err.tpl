@@ -40,10 +40,14 @@
       -->
       <!-- <input type="hidden" name="_once" value="dRFmv4aizZ">
       -->
-      <span style="color: #ff0000;"><input type="hidden" name="returnUrl" value="{{.Url}}"/></span>
+      <span style="color: #ff0000;"><input type="hidden" name="url" value="{{.Url}}"/></span>
       <div class="form-group">
         <label class="control-label" for="LoginForm-UserName">用户名 或 邮箱</label>
-        <input id="uname" name="uname" type="text" value="" class="form-control" placeholder="Enter account"></div>
+        <input id="uname" name="uname" type="text" value="" class="form-control" placeholder="Enter account" list="cars"></div>
+        <div id='datalistDiv'>
+          <datalist id="cars" name="cars">
+          </datalist>
+        </div>
       <div class="form-group">
         <label class="control-label" for="LoginForm-Password">密码</label>
         <input id="pwd" name="pwd" type="password" value="" class="form-control" placeholder="Password"></div>
@@ -173,6 +177,30 @@ function backToHome(){
   window.location.href="/";
   return false;
 }
+$('#uname').attr("autocomplete","off"); 
+$(document).ready(function(){
+  $("#uname").keyup(function(event){
+    var uname1=document.getElementById("uname");
+    // alert(event.keyCode);
+   if (event.keyCode != 38 && event.keyCode != 40 && uname1.value.length==2){
+    $.ajax({
+                type:"post",//这里是否一定要用post？？？
+                url:"/regist/getuname",
+                data: { uname: $("#uname").val()},
+                dataType:'json',//dataType:JSON,这种是jquerylatest版本的表达方法。不支持新版jquery。
+                success:function(data,status){
+                  $(".option").remove();
+                  $.each(data,function(i,d){
+                      $("#cars").append('<option class="option" value="' + data[i].Username + '">' + data[i].Nickname + '</option>');
+                  });
+                }
+      });
+                // $("#uname").keydown(function(){
+                //   $("option").remove();
+                // }); 
+    }
+ });
+}); 
 </script>
 
 

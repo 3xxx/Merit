@@ -151,6 +151,7 @@ func (c *JsonController) GetPerson() {
 }
 
 //管理员登录显示所有价值结构，方便后面操作
+//没做权限处理#########****************
 func (c *JsonController) Get() {
 	// contents, _ := ioutil.ReadFile("./conf/json.json")
 	// var r List6
@@ -283,6 +284,7 @@ func (c *JsonController) Get() {
 
 	// b, err := json.Marshal(List7) //不需要转成json格式
 	c.Data["Input"] = List7
+	beego.Info(List7)
 	// beego.Info(string(b))
 	// fmt.Println(string(b))
 	if err != nil {
