@@ -43,7 +43,7 @@ type Catalog struct {
 //员工的编制、设计……分值——全部改成float浮点型小数
 type Employeeachievement struct {
 	Id       string  //员工Id
-	Name     string  //员工姓名
+	Name     string  //员工姓名nickname
 	Drawn    float64 //编制、绘制
 	Designd  float64 //设计
 	Checked  float64 //校核
@@ -58,6 +58,12 @@ type Secofficeachievement struct {
 	Id       int64  //科室Id
 	Name     string //科室
 	Employee []Employeeachievement
+}
+
+//echarts展示用
+type Specialty struct {
+	Name  string  `json:"name"`
+	Value float64 `json:"value"`
 }
 
 func init() {
@@ -411,11 +417,7 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 	o := orm.NewOrm()
 	qs := o.QueryTable("catalog")
 	qs = qs.SetCond(cond1)
-	//1、查制图工作量
-	_, err = qs.Filter("Drawn", uname).Filter("State", "5").All(&catalogs) //而这个字段parentid为何又不用呢
-	if err != nil {
-		return nil, err
-	}
+
 	// slice1 := make([]Person, 0)
 	var Drawnvalue float64
 	var drawn float64
@@ -425,6 +427,11 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 	var checked float64
 	var Examinedvalue float64
 	var examined float64
+	//1、查制图工作量
+	_, err = qs.Filter("Drawn", uname).Filter("State", "5").All(&catalogs) //而这个字段parentid为何又不用呢
+	if err != nil {
+		return nil, err
+	}
 	aa := make([]Employeeachievement, 1)
 	// var aa *Employeeachievement
 	for _, v := range catalogs {
@@ -436,42 +443,6 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 			return nil, err
 		}
 		Drawnvalue = v.Count * ratio * v.Complex * v.Drawnratio
-		// Category      string    //成果类型
-		// Page          string    //成果计量单位
-		// Count         int       //成果数量
-		// Drawn         string    //编制、绘制
-		// Designd       string    //设计
-		// Checked       string    //校核
-		// Examined      string    //审查
-		// Verified      string    //核定
-		// Approved      string    //批准
-		// Complex       int       //难度系数
-		// Drawnratio    int       //编制、绘制占比系数
-		// Designdratio  int       //设计系数
-		// Checkedratio  int       //校核系数
-		// Examinedratio int       //审查系数
-		// mark, err := strconv.Atoi(v.Count)
-		// if err != nil {
-		// 	return nil, err
-		// }
-
-		//成果数量*难度系数*绘制占比
-		//成果数量*难度系数*设计占比
-		//如果是图纸
-		// switch v.Category {
-		// case "图纸":
-		// 	Drawnvalue = v.Count * v.Complex * v.Drawnratio
-		// case "报告":
-		// 	Drawnvalue = v.Count / 5 * v.Complex * v.Drawnratio
-		// case "大纲":
-		// 	Drawnvalue = v.Count / 5 * v.Complex * v.Drawnratio
-		// case "计算书":
-		// 	Drawnvalue = v.Count / 5 * v.Complex * v.Drawnratio
-		// case "修改单":
-		// 	Drawnvalue = v.Count * v.Complex * v.Drawnratio
-		// default:
-		// 	Drawnvalue = v.Count * v.Complex * v.Drawnratio
-		// }
 		drawn = drawn + Drawnvalue
 	}
 	aa[0].Drawn = Round(drawn, 1)
@@ -489,23 +460,6 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 			return nil, err
 		}
 		Designdvalue = v.Count * ratio * v.Complex * v.Designdratio
-		//成果数量*难度系数*绘制占比
-		//成果数量*难度系数*设计占比
-		//如果是图纸
-		// switch v.Category {
-		// case "图纸":
-		// 	Designdvalue = v.Count * v.Complex * v.Designdratio
-		// case "报告":
-		// 	Designdvalue = v.Count / 5 * v.Complex * v.Designdratio
-		// case "大纲":
-		// 	Designdvalue = v.Count / 5 * v.Complex * v.Designdratio
-		// case "计算书":
-		// 	Designdvalue = v.Count / 5 * v.Complex * v.Designdratio
-		// case "修改单":
-		// 	Designdvalue = v.Count * v.Complex * v.Designdratio
-		// default:
-		// 	Designdvalue = v.Count * v.Complex * v.Designdratio
-		// }
 		designd = designd + Designdvalue
 	}
 	aa[0].Designd = Round(designd, 1)
@@ -523,23 +477,6 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 			return nil, err
 		}
 		Checkedvalue = v.Count * ratio * v.Complex * v.Checkedratio
-		//成果数量*难度系数*绘制占比
-		//成果数量*难度系数*设计占比
-		//如果是图纸
-		// switch v.Category {
-		// case "图纸":
-		// 	Checkedvalue = v.Count * v.Complex * v.Checkedratio
-		// case "报告":
-		// 	Checkedvalue = v.Count / 5 * v.Complex * v.Checkedratio
-		// case "大纲":
-		// 	Checkedvalue = v.Count / 5 * v.Complex * v.Checkedratio
-		// case "计算书":
-		// 	Checkedvalue = v.Count / 5 * v.Complex * v.Checkedratio
-		// case "修改单":
-		// 	Checkedvalue = v.Count * v.Complex * v.Checkedratio
-		// default:
-		// 	Checkedvalue = v.Count * v.Complex * v.Checkedratio
-		// }
 		checked = checked + Checkedvalue
 	}
 	aa[0].Checked = Round(checked, 1)
@@ -556,23 +493,6 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 			return nil, err
 		}
 		Examinedvalue = v.Count * ratio * v.Complex * v.Examinedratio
-		//成果数量*难度系数*绘制占比
-		//成果数量*难度系数*设计占比
-		//如果是图纸
-		// switch v.Category {
-		// case "图纸":
-		// 	Examinedvalue = v.Count * v.Complex * v.Examinedratio
-		// case "报告":
-		// 	Examinedvalue = v.Count / 5 * v.Complex * v.Examinedratio
-		// case "大纲":
-		// 	Examinedvalue = v.Count / 5 * v.Complex * v.Examinedratio
-		// case "计算书":
-		// 	Examinedvalue = v.Count / 5 * v.Complex * v.Examinedratio
-		// case "修改单":
-		// 	Examinedvalue = v.Count * v.Complex * v.Examinedratio
-		// default:
-		// 	Examinedvalue = v.Count * v.Complex * v.Examinedratio
-		// }
 		examined = examined + Examinedvalue
 	}
 	aa[0].Examined = Round(examined, 1)
@@ -680,6 +600,43 @@ func Getcatalog2byuserid(id string, t1, t2 time.Time) (catalogs []*Catalog, err 
 	// }
 	// catalogs = append(catalogs, dd...)
 	return aa, err
+}
+
+//由用户Id取得所有成果_得到参与的项目和阶段——去重
+//不返回重复的值
+func Getparticipatebyuserid(id string, t1, t2 time.Time) (catalogs []*Catalog, err error) {
+	Id, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	user := GetUserByUserId(Id)
+	aa := make([]*Catalog, 0)
+	cond := orm.NewCondition()
+	cond1 := cond.And("Date__gt", t1).And("Date__lte", t2).And("State", "5")
+	cond2 := cond.AndCond(cond1).AndCond(cond.Or("Drawn", user.Nickname).Or("Designd", user.Nickname).Or("Checked", user.Nickname).Or("Examined", user.Nickname))
+
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond2)
+
+	_, err = qs.Distinct().All(&aa, "Id", "ProjectNumber", "ProjectName", "DesignStage", "Section")
+	if err != nil {
+		return nil, err
+	}
+	//对成果进行去重
+	Rm_duplicate(aa)
+	return aa, err
+}
+
+//根据项目编号、项目名称和项目阶段、专业，查出所有成果
+func GetProjectAchievement(projectnumber, designstage, section string) (catalogs []*Catalog, err error) {
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	_, err = qs.Filter("ProjectNumber", projectnumber).Filter("DesignStage", designstage).Filter("Section", section).All(&catalogs)
+	if err != nil {
+		return nil, err
+	}
+	return catalogs, err
 }
 
 //我发起，待提交
@@ -1004,8 +961,183 @@ func GetcatalogExamined(id string, t1, t2 time.Time) (catalogs []*Catalog, err e
 	return aa, err
 }
 
+//查出一个项目(阶段、专业)时间段内某个类型的总分值
+func Getspecialty(ProjectNumber, DesignStage, Section, Category string, t1, t2 time.Time) (value float64, err error) {
+	var Drawnvalue float64
+	var Designdvalue float64
+	var Checkedvalue float64
+	var Examinedvalue float64
+	catalogs := make([]*Catalog, 0)
+	cond := orm.NewCondition()
+	// cond1 := cond.And("Date__gte", t1).And("Date__lt", t2).Or("Drawn", user.Nickname).And("State", "1").Or("Designd", user.Nickname).And("State", "2").Or("Checked", user.Nickname).And("State", "3")
+	cond1 := cond.And("Date__gt", t1).And("Date__lte", t2).And("ProjectNumber", ProjectNumber).And("DesignStage", DesignStage).And("Section", Section).And("Category", Category).And("State", "5")
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond1)
+	// 	cond := NewCondition()
+	// 	cond1 := cond.And("profile__isnull", false).AndNot("status__in", 1).Or("profile__age__gt", 2000)
+	// 	qs := orm.QueryTable("user")
+	// 	qs = qs.SetCond(cond1)
+	// 	// WHERE ... AND ... AND NOT ... OR ...
+	// 	cond2 := cond.AndCond(cond1).OrCond(cond.And("name", "slene"))
+	// 	qs = qs.SetCond(cond2).Count()
+	// 	// WHERE (... AND ... AND NOT ... OR ...) OR ( ... )
+	// qs.Distinct()
+	_, err = qs.Distinct().All(&catalogs) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	if err != nil {
+		return 0, err
+	}
+	//查类型折标系数——在controllers中乘了
+	// ratio, err := GetRationumbycategory(Category)
+	// if err == orm.ErrNoRows {
+	// 	ratio = 0
+	// } else if err != nil {
+	// 	return 0, err
+	// }
+	for _, v := range catalogs {
+		Drawnvalue = v.Count * v.Complex * v.Drawnratio
+		Designdvalue = v.Count * v.Complex * v.Designdratio
+		Checkedvalue = v.Count * v.Complex * v.Checkedratio
+		Examinedvalue = v.Count * v.Complex * v.Examinedratio
+		value = value + Drawnvalue + Designdvalue + Checkedvalue + Examinedvalue
+	}
+	return Round(value, 1), err
+}
+
+//查出一个人时间段内某个类型的总分值
+func Getuserspecialty(Id int64, Category string, t1, t2 time.Time) (value float64, err error) {
+	user := GetUserByUserId(Id)
+	catalogs := make([]*Catalog, 0)
+	cond := orm.NewCondition()
+	cond1 := cond.And("Date__gt", t1).And("Date__lte", t2).And("State", "5").And("Category", Category)
+	cond2 := cond.AndCond(cond1).AndCond(cond.Or("Drawn", user.Nickname).Or("Designd", user.Nickname).Or("Checked", user.Nickname).Or("Examined", user.Nickname))
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond2)
+	_, err = qs.Distinct().All(&catalogs)
+	if err != nil {
+		return 0, err
+	}
+
+	var Drawnvalue float64
+	var Designdvalue float64
+	var Checkedvalue float64
+	var Examinedvalue float64
+	//查类型折标系数——在controllers中乘了
+	// ratio, err := GetRationumbycategory(Category)
+	// if err == orm.ErrNoRows {
+	// 	ratio = 0
+	// } else if err != nil {
+	// 	return 0, err
+	// }
+	for _, v := range catalogs {
+
+		Drawnvalue = v.Count * v.Complex * v.Drawnratio
+		Designdvalue = v.Count * v.Complex * v.Designdratio
+		Checkedvalue = v.Count * v.Complex * v.Checkedratio
+		Examinedvalue = v.Count * v.Complex * v.Examinedratio
+		value = value + Drawnvalue + Designdvalue + Checkedvalue + Examinedvalue
+	}
+	return Round(value, 1), err
+}
+
+//查出一个项目(阶段、专业)时间段内总分值和某个用户的总分值
+func Getprojuserspecialty(Id int64, ProjectNumber, DesignStage, Section string, t1, t2 time.Time) (value1, value2 float64, err error) {
+	var Drawnvalue float64
+	var Designdvalue float64
+	var Checkedvalue float64
+	var Examinedvalue float64
+	var Drawnvalue2 float64
+	var Designdvalue2 float64
+	var Checkedvalue2 float64
+	var Examinedvalue2 float64
+	var drawn float64
+	var designd float64
+	var checked float64
+	var examined float64
+	user := GetUserByUserId(Id)
+	catalogs := make([]*Catalog, 0)
+	cond := orm.NewCondition()
+	cond1 := cond.And("Date__gt", t1).And("Date__lte", t2).And("ProjectNumber", ProjectNumber).And("DesignStage", DesignStage).And("Section", Section).And("State", "5")
+	cond2 := cond.AndCond(cond1).AndCond(cond.Or("Drawn", user.Nickname).Or("Designd", user.Nickname).Or("Checked", user.Nickname).Or("Examined", user.Nickname))
+
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond2)
+	_, err = qs.Distinct().All(&catalogs) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	for _, v := range catalogs {
+		//查类型折标系数
+		ratio, err := GetRationumbycategory(v.Category)
+		if err == orm.ErrNoRows {
+			ratio = 0
+		} else if err != nil {
+			return 0, 0, err
+		}
+		Drawnvalue = v.Count * ratio * v.Complex * v.Drawnratio
+		Designdvalue = v.Count * ratio * v.Complex * v.Designdratio
+		Checkedvalue = v.Count * ratio * v.Complex * v.Checkedratio
+		Examinedvalue = v.Count * ratio * v.Complex * v.Examinedratio
+		value1 = value1 + Drawnvalue + Designdvalue + Checkedvalue + Examinedvalue
+	}
+
+	//1、查制图工作量
+	for _, v := range catalogs {
+		//根据catalogs的category，再查出ratio中的系数
+		ratio, err := GetRationumbycategory(v.Category)
+		if err == orm.ErrNoRows {
+			ratio = 0
+		} else if err != nil {
+			return 0, 0, err
+		}
+		if v.Drawn == user.Nickname {
+			Drawnvalue2 = v.Count * ratio * v.Complex * v.Drawnratio
+			drawn = drawn + Drawnvalue2
+		} else if v.Designd == user.Nickname {
+			Designdvalue2 = v.Count * ratio * v.Complex * v.Designdratio
+			designd = designd + Designdvalue2
+		} else if v.Checked == user.Nickname {
+			Checkedvalue2 = v.Count * ratio * v.Complex * v.Checkedratio
+			checked = checked + Checkedvalue2
+		} else if v.Examined == user.Nickname {
+			Examinedvalue2 = v.Count * ratio * v.Complex * v.Examinedratio
+			examined = examined + Examinedvalue2
+		}
+	}
+
+	Sigma := Round(drawn+designd+checked+examined, 1)
+
+	return Round(value1, 1), Sigma, err
+}
+
 //四舍五入
 func Round(f float64, n int) float64 {
 	pow10_n := math.Pow10(n)
 	return math.Trunc((f+0.5/pow10_n)*pow10_n) / pow10_n
+}
+
+//struct去重——根据指定字段
+//ProjectNumber string //项目编号
+//ProjectName   string //项目名称
+//DesignStage   string //阶段
+func Rm_duplicate(list []*Catalog) []*Catalog {
+	var x []*Catalog = []*Catalog{}
+	for _, v := range list {
+		if len(x) == 0 {
+			x = append(x, v)
+		} else {
+			for k, w := range x {
+				if v.ProjectNumber == w.ProjectNumber && v.ProjectName == w.ProjectName && v.DesignStage == w.DesignStage {
+					break
+				}
+				if k == len(x)-1 {
+					x = append(x, v)
+				}
+			}
+		}
+	}
+	return x
 }

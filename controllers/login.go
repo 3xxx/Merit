@@ -21,9 +21,9 @@ func (c *LoginController) Get() {
 	url1 := c.Input().Get("url") //这里不支持这样的url，http://192.168.9.13/login?url=/topic/add?id=955&mid=3
 	url2 := c.Input().Get("level")
 	url3 := c.Input().Get("key")
-	beego.Info(url1)
-	beego.Info(url2)
-	beego.Info(url3)
+	// beego.Info(url1)
+	// beego.Info(url2)
+	// beego.Info(url3)
 	var url string
 	if url2 == "" {
 		url = url1
@@ -93,7 +93,7 @@ func (c *LoginController) Post() {
 	} else {
 		url = url1 + "&level=" + url2 + "&key=" + url3
 	}
-	beego.Info(url)
+	// beego.Info(url)
 	//（4）获取当前的请求会话，并返回当前请求会话的对象
 	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
 	defer sess.SessionRelease(c.Ctx.ResponseWriter)

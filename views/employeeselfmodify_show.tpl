@@ -37,6 +37,9 @@
 <!-- <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-combined.min.css"/> -->
 <link rel="stylesheet" type="text/css" href="/static/css/select2.css"/>
 <script type="text/javascript" src="/static/js/select2.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/static/font-awesome/css/font-awesome.min.css"/>
+<script src="/static/js/tableExport.js"></script>
 <!-- <script type="text/javascript" src="/static/js/select2.js"></script>
 -->
 <!-- <script type="text/javascript" src="/static/js/mindmup-editabletable.js"></script>
@@ -45,6 +48,7 @@
 -->
 <!-- <script src="/static/js/bootstrap-table-filter-control.js"></script>
 -->
+
 <style>
 i#delete
 {
@@ -111,16 +115,24 @@ color:#C71585;
         <option>招标设计</option>
         <option>施工图</option>
       </select>
+      <select class="form-control" id='Section'>
+        <option>专业：</option>
+        <option>水工</option>
+        <option>施工</option>
+        <option>预算</option>
+      </select>
       <input type='text' placeholder='成果编号' class="form-control" id='Tnumber' value='' size='10'/>
       <input type='text' placeholder='成果名称' class="form-control" id='Name' value='' size='25'/>
+      
+      <!-- <input type='text' placeholder='单位' class="form-control" id='txtPage' value='' size='1'/> -->
+      
+</div>
+  <br/>
+<div class="form-inline">
       <select class="form-control" id='Category'>
         <option>成果类型：</option>
       </select>
-      <!-- <input type='text' placeholder='单位' class="form-control" id='txtPage' value='' size='1'/> -->
       <input type='text' placeholder='数量' class="form-control" id='Count' value='' size='2'/>
-</div>
-  <br/>
-<div class="form-inline">     
       <input type='text' placeholder='绘制/编制' class="form-control" id="uname1" value='' list="cars1" size='7'/>
       <input type='text' placeholder='设计' class="form-control" id="uname2" value='' list="cars2" size='7'/>
       <input type='text' placeholder='校核' class="form-control" id="uname3" value='' list="cars3" size='7'/>
@@ -161,7 +173,7 @@ function import_xls_catalog(){
   form1.submit();
   $.ajax({
       success:function(data,status){//数据提交成功时返回数据
-      alert("导入数据成功！(status:"+status+".)");
+      // alert("导入数据成功！(status:"+status+".)");
       window.location.reload();
       // $('#table').bootstrapTable('refresh', {url:'/myself'});
       }
@@ -173,6 +185,7 @@ function saveAddRow(){
             var newPnumber = $("#Pnumber").val();    
             var newPname = $("#Pname").val();    
             var newStage = $("#Stage option:selected").text();
+            var newSection = $("#Section option:selected").text();
             var newTnumber = $("#Tnumber").val();
             var newName = $("#Name").val();
             var newCategory = $("#Category option:selected").text();
@@ -189,7 +202,7 @@ function saveAddRow(){
                     $.ajax({
                     type:"post",//这里是否一定要用post？？？
                     url:"/achievement/addcatalog",
-                    data: {Pnumber:newPnumber,Pname:newPname,Stage:newStage,Tnumber:newTnumber,Name:newName,Category:newCategory,Count:newCount,Drawn:newDrawn,Designd:newDesignd,Checked:newChecked,Examined:newExamined,Drawnratio:newDrawnratio,Designdratio:newDesigndratio,Date:newDate},
+                    data: {Pnumber:newPnumber,Pname:newPname,Stage:newStage,Section:newSection,Tnumber:newTnumber,Name:newName,Category:newCategory,Count:newCount,Drawn:newDrawn,Designd:newDesignd,Checked:newChecked,Examined:newExamined,Drawnratio:newDrawnratio,Designdratio:newDesigndratio,Date:newDate},
                         success:function(data,status){//数据提交成功时返回数据
                         alert("添加“"+data+"”(status:"+status+".)");
                         $('#table').bootstrapTable('refresh', {url:'/myself'});
@@ -218,9 +231,9 @@ function saveAddRow(){
         <option value="selected">Export Selected</option>
         </select>
         -->
-        <button type="button" class="btn btn-default"> <i class="glyphicon    glyphicon-plus"></i>
+        <button type="button" class="btn btn-default"> <i class="glyphicon glyphicon-plus"></i>
         </button>
-        <button type="button" class="btn btn-default"> <i class="glyphicon        glyphicon-heart"></i>
+        <button type="button" class="btn btn-default"> <i class="glyphicon glyphicon-heart"></i>
         </button>
         <button type="button" class="btn btn-default">
         <i class="glyphicon glyphicon-trash"></i>
@@ -265,9 +278,9 @@ function saveAddRow(){
 
 <h3>别人发起，我校核</h3>
 <div id="checked" class="btn-group">
-        <button type="button" class="btn btn-default"> <i class="glyphicon    glyphicon-plus"></i>
+        <button type="button" class="btn btn-default"> <i class="glyphicon glyphicon-plus"></i>
         </button>
-        <button type="button" class="btn btn-default"> <i class="glyphicon        glyphicon-heart"></i>
+        <button type="button" class="btn btn-default"> <i class="glyphicon glyphicon-heart"></i>
         </button>
         <button type="button" class="btn btn-default">
         <i class="glyphicon glyphicon-trash"></i>
@@ -288,9 +301,9 @@ function saveAddRow(){
 </table>
 <h3>别人发起，我审查</h3>
 <div id="examined" class="btn-group">
-        <button type="button" class="btn btn-default"> <i class="glyphicon    glyphicon-plus"></i>
+        <button type="button" class="btn btn-default"> <i class="glyphicon glyphicon-plus"></i>
         </button>
-        <button type="button" class="btn btn-default"> <i class="glyphicon        glyphicon-heart"></i>
+        <button type="button" class="btn btn-default"> <i class="glyphicon glyphicon-heart"></i>
         </button>
         <button type="button" class="btn btn-default">
         <i class="glyphicon glyphicon-trash"></i>
@@ -1055,12 +1068,12 @@ $(function () {
 
 // var date={{.Starttime}};
 // function list(value, row, index) {
-             // return '<i class="glyphicon ' + icon + '"></i> ' + value;
-            // return "<select data-index='row'><option>成果类型：</option></select>";
-        // }
+ // return '<i class="glyphicon ' + icon + '"></i> ' + value;
+    // return "<select data-index='row'><option>成果类型：</option></select>";
+ // }
 function localDateFormatter(value) {
-                return moment(value, 'YYYY-MM-DD').format('L');
-            }
+     return moment(value, 'YYYY-MM-DD').format('L');
+  }
 function nameFormatter(value) {
     return '<a href="https://github.com/wenzhixin/' + value + '">' + value + '</a>';
 }

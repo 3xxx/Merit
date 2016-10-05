@@ -123,6 +123,9 @@ func (this *RegistController) GetUname1() {
 	if err != nil {
 		beego.Error(err)
 	}
+	beego.Info(uname1) //[0xc08214b880 0xc08214b960 0xc08214ba40
+
+	beego.Info(slice1) //[{1471  admin} {1475  cai.wc} {1476  zeng.cw}
 	// this.Data["Userselect"] = slice1
 	this.Data["json"] = slice1 //string(b)
 	this.ServeJSON()
@@ -131,4 +134,22 @@ func (this *RegistController) GetUname1() {
 	// 	// return uname1[0].Username
 	// }
 	// return uname1[0].Username
+
+	//结果如下：
+	// [
+	//  {
+	//    "Id": 1471,
+	//    "id": "",
+	//    "text": "admin"
+	//  },
+	//  {
+	//    "Id": 1475,
+	//    "id": "",
+	//    "text": "cai.wc"
+	//  },
+	//  {
+	//    "Id": 1476,
+	//    "id": "",
+	//    "text": "zeng.cw"
+	//  },
 }

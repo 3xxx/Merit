@@ -14,7 +14,7 @@
 
   <script type="text/javascript" src="/static/js/moment.min.js"></script>
   <script type="text/javascript" src="/static/js/daterangepicker.js"></script>
-  <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css" />
+  <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css"/>
   <!-- <style type="text/css">
   a:active{text:expression(target="_blank");}
 i#delete
@@ -34,6 +34,15 @@ allLinks[i].target="_blank";
 
 <div class="col-lg-12">
 <h2>{{.Deptitle}}</h2>
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#employee" data-toggle="tab">月份</a></li>
+  <li><a href="#year" data-toggle="tab">年度</a></li>
+  <li><a href="#proj" data-toggle="tab">项目</a></li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade in active" id="employee">
+<br>
+
 <div>
 <form class="form-inline" method="get" action="/secofficeshow" enctype="multipart/form-data">
   <input type="hidden" id="secid" name="secid" value="{{.Secid}}"/>
@@ -105,6 +114,17 @@ $(function() {
 
 </table>
 {{end}}
+</div>
+
+    <div class="tab-pane fade" id="year">
+      <p>这里将显示全年人员情况。</p>
+    </div>
+
+    <div class="tab-pane fade" id="proj">
+      <p>这里将显示所有项目列表，每个项目的成本分布。</p>
+    </div>
+
+  </div>
 </div>
 
 <script type="text/javascript">

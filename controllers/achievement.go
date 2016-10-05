@@ -16,10 +16,45 @@ import (
 	// "io/ioutil"
 	"github.com/astaxie/beego/logs"
 	"merit/models"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
+
+//个人参与的项目列表
+type Project struct {
+	Id            int64
+	ProjectNumber string //项目编号
+	ProjectName   string //项目名称
+	DesignStage   string //阶段
+	Value         float64
+	Myvalue       float64
+	Percent       float64
+}
+
+//struct排序
+type graphictopics []m.Employeeachievement
+
+func (list graphictopics) Len() int {
+	return len(list)
+}
+
+func (list graphictopics) Less(i, j int) bool {
+	if list[i].Sigma > list[j].Sigma {
+		return true
+	} else if list[i].Sigma < list[j].Sigma {
+		return false
+	} else {
+		return list[i].Name > list[j].Name
+	}
+}
+
+func (list graphictopics) Swap(i, j int) {
+	var temp m.Employeeachievement = list[i]
+	list[i] = list[j]
+	list[j] = temp
+}
 
 type Userselect struct { //
 	Id   int64  //`json:"id"`
@@ -586,9 +621,12 @@ func (c *Achievement) Secofficeshow() {
 					}
 					employeevalue = append(employeevalue, employee...)
 				}
-				aa[0].Id = v1.Id      //科室Id
-				aa[0].Name = v1.Title //科室名称
-				aa[0].Employee = employeevalue
+				//排序
+				pList := graphictopics(employeevalue)
+				sort.Sort(pList)
+				aa[0].Id = v1.Id       //科室Id
+				aa[0].Name = v1.Title  //科室名称
+				aa[0].Employee = pList //employeevalue
 				Secofficevalue = append(Secofficevalue, aa...)
 				aa = make([]models.Secofficeachievement, 0) //再把slice置0
 				employeevalue = make([]models.Employeeachievement, 0)
@@ -626,7 +664,7 @@ func (c *Achievement) Secofficeshow() {
 			// users, count, err := models.GetUsersbySec(category1.Title, category2.Title) //得到员工姓名
 			//根据科室id查所有员工
 			users, _, err := models.GetUsersbySecId(secid) //得到员工姓名
-			beego.Info(users)
+			// beego.Info(users)
 			if err != nil {
 				beego.Error(err)
 			}
@@ -638,12 +676,15 @@ func (c *Achievement) Secofficeshow() {
 				}
 				employeevalue = append(employeevalue, employee...)
 			}
+			//排序
+			pList := graphictopics(employeevalue)
+			sort.Sort(pList)
 			c.Data["Starttime"] = t1
 			c.Data["Endtime"] = t2
 			c.Data["Secid"] = secid
 			c.Data["Sectitle"] = categoryname.Title
 			c.Data["Level"] = level
-			c.Data["Employee"] = employeevalue
+			c.Data["Employee"] = pList //employeevalue
 			c.TplName = "secoffice_show.tpl"
 		} else {
 			// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
@@ -653,7 +694,8 @@ func (c *Achievement) Secofficeshow() {
 			// c.Redirect("/roleerr", 302)
 			return
 		}
-	case "3": //如果是个人，则显示个人详细情况
+	default:
+		// case "3": //如果是个人，则显示个人详细情况
 		//分2部分，一部分是已经完成状态的，state是4，另一部分是状态分别是3待审查通过,2，1的
 		usernickname := models.GetUserByUserId(secid1)
 		//1.进行权限读取，室主任以上并且属于这个科室，或者或本人
@@ -672,42 +714,66 @@ func (c *Achievement) Secofficeshow() {
 				slice1 = append(slice1, aa...)
 			}
 			c.Data["Select2"] = slice1
-			//下面这些没有用
-			// for _, v := range category {
-			// 	catalog, err := models.Getcatalogbyuserid(secid, v.Category, t1, t2)
-			// }
 
-			// catalogtuzhi, err := models.Getcatalogbyuserid(secid, "图纸", t1, t2)
-			// if err != nil {
-			// 	beego.Error(err)
-			// }
-			// catalogbaogao, err := models.Getcatalogbyuserid(secid, "报告", t1, t2)
+			//查自己每个月的工作量和排名
+			employeevalue := make([]models.Employeeachievement, 0)
+			//查自己所在科室
+			//根据分院和科室查所有员工
+			users, _, err := models.GetUsersbySec(usernickname.Department, usernickname.Secoffice) //得到员工姓名
+			if err != nil {
+				beego.Error(err)
+			}
+			// beego.Info(users)
+			//现在的月份
+			const MMM = "2006-01"
+			// date := time.Now()
+			//	fmt.Println(date)
+			month1 := time.Now().Format(MMM)
+			// fmt.Println(convdate)
+			month2, err := time.Parse(MMM, month1)
+			if err != nil {
+				beego.Error(err)
+			}
+			var slice2 []float64
+			var slice3 []int
+			var slice4 []time.Month
+			//往前12个月循环每个月
+			for i4 := 0; i4 < 12; i4++ {
+				for _, v3 := range users {
+					//由username查出所有编制成果总分、设计总分……合计
+					employee, err := models.Getemployeevalue(v3.Nickname, month2.AddDate(0, -11+i4, 0), month2.AddDate(0, -11+i4+1, 0))
+					if err != nil {
+						beego.Error(err)
+					}
+					employeevalue = append(employeevalue, employee...)
+				}
+				// beego.Info(employeevalue)
+				//排序
+				pList := graphictopics(employeevalue)
+				sort.Sort(pList)
+				// beego.Info(pList)
+				for i5, v5 := range pList {
+					if v5.Name == usernickname.Nickname {
+						aa := make([]float64, 1)
+						bb := make([]int, 1)
+						cc := make([]time.Month, 1)
+						aa[0] = v5.Sigma                             //工作量
+						bb[0] = i5 + 1                               //排名
+						cc[0] = month2.AddDate(0, -11+i4, 0).Month() //月份
+						slice2 = append(slice2, aa...)
+						slice3 = append(slice3, bb...)
+						slice4 = append(slice4, cc...)
+						break
+					}
+				}
+				employeevalue = make([]models.Employeeachievement, 0)
+			}
+			c.Data["Value1"] = slice2 //工作量
+			c.Data["Value2"] = slice3 //排名
+			c.Data["Value3"] = slice4 //月份
 
-			// if err != nil {
-			// 	beego.Error(err)
-			// }
-			// catalogjisuanshu, err := models.Getcatalogbyuserid(secid, "计算书", t1, t2)
-			// if err != nil {
-			// 	beego.Error(err)
-			// }
-			// catalogxiugaidan, err := models.Getcatalogbyuserid(secid, "修改单", t1, t2)
-			// if err != nil {
-			// 	beego.Error(err)
-			// }
-			// catalogdagang, err := models.Getcatalogbyuserid(secid, "大纲", t1, t2)
-			// if err != nil {
-			// 	beego.Error(err)
-			// }
-			// catalogbiaoshu, err := models.Getcatalogbyuserid(secid, "标书", t1, t2)
-			// if err != nil {
-			// 	beego.Error(err)
-			// }
-			//根据userid得到user
-			// Id, err := strconv.ParseInt(secid, 10, 64)
-			// if err != nil {
-			// 	beego.Error(err)
-			// }
-			// user := models.GetUserByUserId(Id)
+			//参与的项目列表——检索、去重
+
 			//根据userid得到所有成果,时间段，在模板里，根据catalogs的类型与category匹配进行显示即可
 			//查出所有名单，传给json结构，再传给前端修改人名时选择
 			var user22 models.User //这里修改[]*models.User(uname string)
@@ -745,31 +811,23 @@ func (c *Achievement) Secofficeshow() {
 			c.Data["Secid"] = secid
 			c.Data["Level"] = level
 			c.Data["UserNickname"] = usernickname.Nickname
-			//下面这个分类显示用于employee_show.tpl
-			// c.Data["Catalogtuzhi"] = catalogtuzhi
-			// c.Data["Catalogbaogao"] = catalogbaogao
-			// c.Data["Catalogjisuanshu"] = catalogjisuanshu
-			// c.Data["Catalogxiugaidan"] = catalogxiugaidan
-			// c.Data["Catalogdagang"] = catalogdagang
-			// c.Data["Catalogbiaoshu"] = catalogbiaoshu
-			//如果在线编辑则显示self_show
-			// if key == "editor" { //新窗口显示添加页面
-			// 	c.TplName = "employeeself_show.tpl"
-			// } else
+
 			if key == "modify" { //新窗口显示处理页面
 				//如果是本人，则显示
-				if usernickname.Nickname == user.Nickname {
-					c.TplName = "employeeselfmodify_show.tpl"
-				} else { //别人查看，只能显示结果页面，不显示处理页面
-					c.TplName = "employee_show2.tpl"
-				}
+				// if usernickname.Nickname == user.Nickname {
+				c.TplName = "employeeselfmodify_show.tpl"
+				// } else { //别人查看，只能显示结果页面，不显示处理页面
+				// 	c.TplName = "employee_show2.tpl"
+				// }
 			} else { //直接查看页面
 				//如果是本人，则显示带处理按钮的
 				if usernickname.Nickname == user.Nickname {
-					c.TplName = "employee_show.tpl"
+					c.Data["IsMe"] = true
 				} else { //别人查看，不显示处理按钮
-					c.TplName = "employee_show2.tpl"
+					// c.TplName = "employee_show2.tpl"
+					c.Data["IsMe"] = false
 				}
+				c.TplName = "employee_show.tpl"
 			}
 		} else {
 			// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
@@ -785,25 +843,122 @@ func (c *Achievement) Secofficeshow() {
 		// } else {
 		// 	c.TplName = "employee_show.tpl"
 		// }
-	default: //默认显示个人
-		usernickname := models.GetUserByUserId(secid1)
-		ratios, err := models.GetRatios()
-		//根据userid得到所有成果,时间段，在模板里，根据catalogs的类型与category匹配进行显示即可
-		catalogs, err := models.Getcatalog2byuserid(secid, t1, t2)
+
+		// default: //默认显示个人
+		// 	usernickname := models.GetUserByUserId(secid1)
+		// 	ratios, err := models.GetRatios()
+		// 	//根据userid得到所有成果,时间段，在模板里，根据catalogs的类型与category匹配进行显示即可
+		// 	catalogs, err := models.Getcatalog2byuserid(secid, t1, t2)
+		// 	if err != nil {
+		// 		beego.Error(err)
+		// 	}
+		// 	c.Data["Starttime"] = t1
+		// 	c.Data["Endtime"] = t2
+		// 	c.Data["Ratio"] = ratios //定义的成果类型
+		// 	//下面这个catalogs用于employee_show.tpl
+		// 	c.Data["Catalogs"] = catalogs
+		// 	c.Data["Secid"] = secid
+		// 	c.Data["Level"] = "3"
+		// 	c.Data["UserNickname"] = usernickname.Nickname
+		// 	c.Data["IsMe"] = true
+		// 	c.TplName = "employee_show.tpl"
+	}
+}
+
+//用户参与的项目列表
+func (c *Achievement) Participate() {
+	//1.首先判断是否注册
+	if !checkAccount(c.Ctx) {
+		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/login?url="+route, 302)
+		// c.Redirect("/login", 302)
+		return
+	}
+	//4.取得客户端用户名
+	var uname string
+	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
+	defer sess.SessionRelease(c.Ctx.ResponseWriter)
+	v := sess.Get("uname")
+	if v != nil {
+		uname = v.(string)
+		c.Data["Uname"] = v.(string)
+	}
+	//由uname取得user
+	user, err := models.GetUserByUsername(uname)
+	if err != nil {
+		beego.Error(err)
+	}
+	secid := c.Input().Get("secid")
+	if secid == "" { //如果为空，则用登录的
+		secid = strconv.FormatInt(user.Id, 10)
+	}
+	secid1, err := strconv.ParseInt(secid, 10, 64)
+	if err != nil {
+		beego.Error(err)
+	}
+	//现在的月份
+	const MMM = "2006-01"
+	// date := time.Now()
+	//	fmt.Println(date)
+	month1 := time.Now().Format(MMM)
+	// fmt.Println(convdate)
+	month2, err := time.Parse(MMM, month1)
+	if err != nil {
+		beego.Error(err)
+	}
+	catalogs, err := models.Getparticipatebyuserid(secid, month2.AddDate(0, -11, 0), month2.AddDate(0, +1, 0))
+	if err != nil {
+		beego.Error(err)
+	}
+
+	slice1 := make([]Project, 0)
+	for _, v := range catalogs {
+		value1, value2, err := models.Getprojuserspecialty(secid1, v.ProjectNumber, v.DesignStage, v.Section, month2.AddDate(0, -11, 0), month2.AddDate(0, +1, 0))
 		if err != nil {
 			beego.Error(err)
 		}
-		c.Data["Starttime"] = t1
-		c.Data["Endtime"] = t2
-		c.Data["Ratio"] = ratios //定义的成果类型
-		//下面这个catalogs用于employee_show.tpl
-		c.Data["Catalogs"] = catalogs
-		c.Data["Secid"] = secid
-		c.Data["Level"] = "3"
-		c.Data["UserNickname"] = usernickname.Nickname
-		c.TplName = "employee_show.tpl"
+		aa := make([]Project, 1)
+		aa[0].Id = v.Id //没这个Id，将导致点击表格详细，无法传递项目id号
+		aa[0].ProjectNumber = v.ProjectNumber
+		aa[0].ProjectName = v.ProjectName
+		aa[0].DesignStage = v.DesignStage
+		aa[0].Value = value1                           //项目（阶段、专业）总分值
+		aa[0].Myvalue = value2                         //用户参与的分值
+		aa[0].Percent = models.Round(value2/value1, 1) //用户分值占比
+		slice1 = append(slice1, aa...)
 	}
 
+	c.Data["json"] = slice1
+	c.ServeJSON()
+}
+
+//点击个人参与的项目，弹出模态框，显示这个项目所有成果
+//没有区分时间
+//没有按时间排序！！！
+func (c *Achievement) ProjectAchievement() {
+	cid := c.Input().Get("CatalogId")
+	// var id string
+	// var cidNum int64
+	var err error
+	// cidNum, err = strconv.ParseInt(cid, 10, 64)
+	// if err != nil {
+	// 	beego.Error(err)
+	// }
+	//查出项目特性:
+	catalog, err := m.GetCatalog(cid)
+	if err != nil {
+		beego.Error(err)
+	}
+	//根据项目编号和项目阶段、专业，查出所有成果
+	achievements, err := m.GetProjectAchievement(catalog.ProjectNumber, catalog.DesignStage, catalog.Section)
+	if err != nil {
+		beego.Error(err)
+	}
+	// beego.Info(achievements)
+	c.Data["json"] = achievements
+	c.ServeJSON()
 }
 
 //自己发起的成果,还没提交
@@ -862,18 +1017,22 @@ func (c *Achievement) Myself() {
 		endtime, _ := time.Parse(lll, endtime1)
 		t1 = starttime.Add(-time.Duration(hours) * time.Hour)
 		t2 = endtime.Add(+time.Duration(16) * time.Hour) //因为数据库存的时间晚8小时，所以整个时间段像前退8小时，但是，最后一天加24小时，所以是16
-		beego.Info(t1)
-		beego.Info(t2)
+		// beego.Info(t1)
+		// beego.Info(t2)
 	} else {
 		t2 = time.Now()
 		t1 = t2.Add(-time.Duration(720) * time.Hour) //往前一个月时间
-		beego.Info(t1)
-		beego.Info(t2)
+		// beego.Info(t1)
+		// beego.Info(t2)
 	}
 	// convdate1 = t1.Format(lll)
 	// convdate2 = t2.Format(lll)
 	// usernickname := models.GetUserByUserId(secid1)
+	//取得成果类型
 	ratios, err := models.GetRatios()
+	if err != nil {
+		beego.Error(err)
+	}
 	var select2 string
 	for i, v := range ratios {
 		if i == 0 {
@@ -953,13 +1112,13 @@ func (c *Achievement) Running() {
 		endtime, _ := time.Parse(lll, endtime1)
 		t1 = starttime.Add(-time.Duration(hours) * time.Hour)
 		t2 = endtime.Add(+time.Duration(16) * time.Hour)
-		beego.Info(t1)
-		beego.Info(t2)
+		// beego.Info(t1)
+		// beego.Info(t2)
 	} else {
 		t2 = time.Now()
 		t1 = t2.Add(-time.Duration(720) * time.Hour) //往前一个月时间
-		beego.Info(t1)
-		beego.Info(t2)
+		// beego.Info(t1)
+		// beego.Info(t2)
 	}
 	// convdate1 = t1.Format(lll)
 	// convdate2 = t2.Format(lll)
@@ -1044,13 +1203,13 @@ func (c *Achievement) Completed() {
 		endtime, _ := time.Parse(lll, endtime1)
 		t1 = starttime //.Add(-time.Duration(hours) * time.Hour)
 		t2 = endtime.Add(+time.Duration(hours) * time.Hour)
-		beego.Info(t1)
-		beego.Info(t2)
+		// beego.Info(t1)
+		// beego.Info(t2)
 	} else {
 		t2 = time.Now()
 		t1 = t2.Add(-time.Duration(720) * time.Hour) //往前一个月时间
-		beego.Info(t1)
-		beego.Info(t2)
+		// beego.Info(t1)
+		// beego.Info(t2)
 	}
 	// convdate1 = t1.Format(lll)
 	// convdate2 = t2.Format(lll)
@@ -1138,8 +1297,8 @@ func (c *Achievement) Designd() {
 	} else {
 		t2 = time.Now()
 		t1 = t2.Add(-time.Duration(720) * time.Hour) //往前一个月时间
-		beego.Info(t1)
-		beego.Info(t2)
+		// beego.Info(t1)
+		// beego.Info(t2)
 	}
 	// convdate1 = t1.Format(lll)
 	// convdate2 = t2.Format(lll)
@@ -1224,13 +1383,13 @@ func (c *Achievement) Checked() {
 		endtime, _ := time.Parse(lll, endtime1)
 		t1 = starttime.Add(-time.Duration(hours) * time.Hour)
 		t2 = endtime.Add(+time.Duration(16) * time.Hour)
-		beego.Info(t1)
-		beego.Info(t2)
+		// beego.Info(t1)
+		// beego.Info(t2)
 	} else {
 		t2 = time.Now()
 		t1 = t2.Add(-time.Duration(720) * time.Hour) //往前一个月时间
-		beego.Info(t1)
-		beego.Info(t2)
+		// beego.Info(t1)
+		// beego.Info(t2)
 	}
 	// convdate1 = t1.Format(lll)
 	// convdate2 = t2.Format(lll)
@@ -1315,13 +1474,13 @@ func (c *Achievement) Examined() {
 		endtime, _ := time.Parse(lll, endtime1)
 		t1 = starttime.Add(-time.Duration(hours) * time.Hour)
 		t2 = endtime.Add(+time.Duration(16) * time.Hour)
-		beego.Info(t1)
-		beego.Info(t2)
+		// beego.Info(t1)
+		// beego.Info(t2)
 	} else {
 		t2 = time.Now()
 		t1 = t2.Add(-time.Duration(720) * time.Hour) //往前一个月时间
-		beego.Info(t1)
-		beego.Info(t2)
+		// beego.Info(t1)
+		// beego.Info(t2)
 	}
 	// convdate1 = t1.Format(lll)
 	// convdate2 = t2.Format(lll)
@@ -1475,7 +1634,7 @@ func (c *Achievement) Import_Xls_Catalog() {
 	}
 	j := 0
 	// var err error
-	var news string
+	// var news string
 	for _, sheet := range xlFile.Sheets {
 		for i, row := range sheet.Rows { //行数,第一行从0开始
 			if i != 0 { //忽略第一行标题
@@ -1495,7 +1654,6 @@ func (c *Achievement) Import_Xls_Catalog() {
 				// 14Created       time.Time `orm:"index;auto_now_add;type(datetime)"`
 				// 15Updated       time.Time `orm:"index;auto_now_add;type(datetime)"`
 				// 16Author        string    //上传者
-
 				if len(row.Cells) >= 2 { //总列数，从1开始
 					catalog.ProjectNumber, err = row.Cells[j+1].String() //第一列从0开始,忽略第一列序号
 					if err != nil {
@@ -1546,9 +1704,13 @@ func (c *Achievement) Import_Xls_Catalog() {
 					}
 				}
 				if len(row.Cells) >= 10 {
-					catalog.Count, err = row.Cells[j+9].Float()
-					if err != nil {
-						beego.Error(err)
+					if row.Cells[j+9].Value != "" {
+						catalog.Count, err = row.Cells[j+9].Float()
+						if err != nil {
+							beego.Error(err)
+						}
+					} else {
+						catalog.Count = 1.0
 					}
 				}
 
@@ -1590,47 +1752,66 @@ func (c *Achievement) Import_Xls_Catalog() {
 				}
 
 				if len(row.Cells) >= 17 {
-					catalog.Complex, err = row.Cells[j+16].Float()
-					if err != nil {
-						beego.Error(err)
+					if row.Cells[j+16].Value != "" {
+						catalog.Complex, err = row.Cells[j+16].Float()
+						if err != nil {
+							beego.Error(err)
+						}
+					} else {
 						catalog.Complex = 1
 					}
 				}
 				if len(row.Cells) >= 18 {
-					catalog.Drawnratio, err = row.Cells[j+17].Float()
-					if err != nil {
-						beego.Error(err)
+					if row.Cells[j+17].Value != "" {
+						catalog.Drawnratio, err = row.Cells[j+17].Float()
+						if err != nil {
+							beego.Error(err)
+						}
+					} else {
 						catalog.Drawnratio = 0
 					}
 				}
 				if len(row.Cells) >= 19 {
-					catalog.Designdratio, err = row.Cells[j+18].Float()
-					if err != nil {
-						beego.Error(err)
+					if row.Cells[j+18].Value != "" {
+						catalog.Designdratio, err = row.Cells[j+18].Float()
+						if err != nil {
+							beego.Error(err)
+						}
+					} else {
 						catalog.Designdratio = 0
 					}
 				}
 				if len(row.Cells) >= 20 {
-					catalog.Checkedratio, err = row.Cells[j+19].Float()
-					if err != nil {
-						beego.Error(err)
+					if row.Cells[j+19].Value != "" {
+						catalog.Checkedratio, err = row.Cells[j+19].Float()
+						if err != nil {
+							beego.Error(err)
+						}
+					} else {
 						catalog.Checkedratio = 0
 					}
 				}
 				if len(row.Cells) >= 21 {
-					catalog.Examinedratio, err = row.Cells[j+20].Float()
-					if err != nil {
-						beego.Error(err)
+					if row.Cells[j+20].Value != "" {
+						catalog.Examinedratio, err = row.Cells[j+20].Float()
+						if err != nil {
+							beego.Error(err)
+						}
+					} else {
 						catalog.Examinedratio = 0
 					}
 				}
 				if len(row.Cells) >= 22 {
-					endtime2, err := row.Cells[j+21].Float()
-					if err != nil {
-						beego.Error(err)
-						date = time.Now()
+					if row.Cells[j+21].Value != "" {
+						endtime2, err := row.Cells[j+21].Float()
+						if err != nil {
+							beego.Error(err)
+
+						} else {
+							date = xlsx.TimeFromExcelTime(endtime2, false)
+						}
 					} else {
-						date = xlsx.TimeFromExcelTime(endtime2, false)
+						date = time.Now()
 					}
 					convdate = date.Format(lll)
 					catalog.Datestring = convdate
@@ -1645,51 +1826,57 @@ func (c *Achievement) Import_Xls_Catalog() {
 				catalog.Updated = time.Now() //.Add(+time.Duration(hours) * time.Hour)
 				catalog.Author = uname
 				if len(row.Cells) >= 23 {
-					catalog.State, err = row.Cells[j+22].Int()
-					if err != nil {
-						beego.Error(err)
+					if row.Cells[j+22].Value != "" {
+						catalog.State, err = row.Cells[j+22].Int()
+						if err != nil {
+							beego.Error(err)
+						}
+					} else { //如果没填，则默认为5
+						catalog.State = 5
 					}
+					// text1, _ := row.Cells[j+22].String()
+					// beego.Info(text1)
 				}
 				if user.Role == 1 {
 					// catalog.State = 5
-					_, err, news = m.SaveCatalog(catalog)
+					_, err, _ = m.SaveCatalog(catalog)
 					if err != nil {
 						beego.Error(err)
-					} else {
-						data := news
-						c.Ctx.WriteString(data)
-					}
+					} //else {
+					// 	data := news
+					// 	c.Ctx.WriteString(data)
+					// }
 				} else { //如果不是管理员，根据自己的位置判断状态
 					if catalog.Checked == user.Nickname && catalog.Examined != user.Nickname && catalog.Examined != "" {
 						// beego.Info(catalog.Checked)
 						catalog.State = 3
-						_, err, news = m.SaveCatalog(catalog)
+						_, err, _ = m.SaveCatalog(catalog)
 						if err != nil {
 							beego.Error(err)
-						} else {
-							data := news
-							c.Ctx.WriteString(data)
-						}
+						} //else {
+						// 	data := news
+						// 	c.Ctx.WriteString(data)
+						// }
 					} else if catalog.Designd == user.Nickname && catalog.Checked != user.Nickname && catalog.Checked != "" || catalog.Designd == user.Nickname && catalog.Examined != user.Nickname && catalog.Examined != "" {
 						// beego.Info(catalog.Designd)
 						catalog.State = 2
-						_, err, news = m.SaveCatalog(catalog)
+						_, err, _ = m.SaveCatalog(catalog)
 						if err != nil {
 							beego.Error(err)
-						} else {
-							data := news
-							c.Ctx.WriteString(data)
-						}
-					} else if catalog.Drawn == user.Nickname && catalog.Drawn != user.Nickname && catalog.Designd != "" || catalog.Drawn == user.Nickname && catalog.Checked != user.Nickname && catalog.Checked != "" || catalog.Drawn == user.Nickname && catalog.Examined != user.Nickname && catalog.Examined != "" {
+						} //else {
+						// 	data := news
+						// 	c.Ctx.WriteString(data)
+						// }
+					} else if catalog.Drawn == user.Nickname && catalog.Designd != user.Nickname && catalog.Designd != "" || catalog.Drawn == user.Nickname && catalog.Checked != user.Nickname && catalog.Checked != "" || catalog.Drawn == user.Nickname && catalog.Examined != user.Nickname && catalog.Examined != "" {
 						// beego.Info(catalog.Drawn)
 						catalog.State = 1
-						_, err, news = m.SaveCatalog(catalog)
+						_, err, _ = m.SaveCatalog(catalog)
 						if err != nil {
 							beego.Error(err)
-						} else {
-							data := news
-							c.Ctx.WriteString(data)
-						}
+						} //else {
+						// 	data := news
+						// 	c.Ctx.WriteString(data)
+						// }
 					} else {
 						data := "缺少下级 或 自己与下级同名 或 不能发起审查"
 						c.Ctx.WriteString(data)
@@ -1707,7 +1894,7 @@ func (c *Achievement) Import_Xls_Catalog() {
 	if err != nil {
 		beego.Error(err)
 	} else {
-		data := news
+		data := "ok"
 		c.Ctx.WriteString(data)
 	}
 	//上传后应该返回ok字样即可
@@ -1734,6 +1921,7 @@ func (c *Achievement) AddCatalog() {
 	catalog.ProjectNumber = c.Input().Get("Pnumber")
 	catalog.ProjectName = c.Input().Get("Pname")
 	catalog.DesignStage = c.Input().Get("Stage")
+	catalog.Section = c.Input().Get("Section")
 	catalog.Tnumber = c.Input().Get("Tnumber")
 	catalog.Name = c.Input().Get("Name")
 	catalog.Category = c.Input().Get("Category")
@@ -1830,7 +2018,7 @@ func (c *Achievement) AddCatalog() {
 	)
 	// hours := 8
 	inputdate := c.Input().Get("Date")
-	beego.Info(inputdate)
+	// beego.Info(inputdate)
 	var t1 time.Time
 	// var convdate1, convdate2 string
 	const lll = "2006-01-02"
@@ -1880,7 +2068,7 @@ func (c *Achievement) AddCatalog() {
 			data := news
 			c.Ctx.WriteString(data)
 		}
-	} else if catalog.Drawn == user.Nickname && catalog.Drawn != user.Nickname && catalog.Designd != "" || catalog.Drawn == user.Nickname && catalog.Checked != user.Nickname && catalog.Checked != "" || catalog.Drawn == user.Nickname && catalog.Examined != user.Nickname && catalog.Examined != "" {
+	} else if catalog.Drawn == user.Nickname && catalog.Designd != user.Nickname && catalog.Designd != "" || catalog.Drawn == user.Nickname && catalog.Checked != user.Nickname && catalog.Checked != "" || catalog.Drawn == user.Nickname && catalog.Examined != user.Nickname && catalog.Examined != "" {
 		// beego.Info(catalog.Drawn)
 		catalog.State = 1
 		_, err, news = m.SaveCatalog(catalog)
@@ -2236,6 +2424,209 @@ func (c *Achievement) ModifyRatio() {
 	logs.EnableFuncCallDepth(true)
 	logs.Info(c.Ctx.Input.IP() + " " + "修改ratio" + id)
 	logs.Close()
+}
+
+//显示某个专业内成本分布情况
+func (c *Achievement) Specialty() {
+	ratios, err := models.GetRatios()
+	if err != nil {
+		beego.Error(err)
+	}
+	var select2 []string
+	for _, v := range ratios {
+		aa := make([]string, 1)
+		aa[0] = v.Category
+		select2 = append(select2, aa...)
+	}
+
+	c.Data["Select2"] = select2
+	c.Data["Ratio"] = ratios //定义的成果类型
+	// c.Data["specialty"] = slice1
+	c.TplName = "specialty_show.tpl"
+}
+
+//显示自己一个月内成果类型情况
+func (c *Achievement) Echarts() {
+	//1.首先判断是否注册
+	if !checkAccount(c.Ctx) {
+		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/login?url="+route, 302)
+		return
+	}
+	//4.取得客户端用户名
+	var uname string
+	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
+	defer sess.SessionRelease(c.Ctx.ResponseWriter)
+	v := sess.Get("uname")
+	if v != nil {
+		uname = v.(string)
+		c.Data["Uname"] = v.(string)
+	}
+	//由uname取得user
+	user, err := models.GetUserByUsername(uname)
+	if err != nil {
+		beego.Error(err)
+	}
+	//4.取出用户的权限等级
+	role, _ := checkRole(c.Ctx) //login里的
+	if role > 4 {               //
+		// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/roleerr?url="+route, 302)
+		return
+	}
+	//分院——科室——人员甲（乙、丙……）——绘制——设计——校核——审查——合计——排序
+	secid := c.Input().Get("secid")
+	if secid == "" { //如果为空，则用登录的
+		secid = strconv.FormatInt(user.Id, 10)
+	}
+	secid1, err := strconv.ParseInt(secid, 10, 64)
+	if err != nil {
+		beego.Error(err)
+	}
+
+	type Duration int64
+	const (
+		Nanosecond  Duration = 1
+		Microsecond          = 1000 * Nanosecond
+		Millisecond          = 1000 * Microsecond
+		Second               = 1000 * Millisecond
+		Minute               = 60 * Second
+		Hour                 = 60 * Minute
+	)
+
+	var t1, t2 time.Time
+	t2 = time.Now()
+	t1 = t2.Add(-time.Duration(720) * time.Hour) //往前一个月时间
+	slice1 := make([]m.Specialty, 0)
+	ratios, err := models.GetRatios()
+	if err != nil {
+		beego.Error(err)
+	}
+	for _, v := range ratios {
+		value1, err := models.Getuserspecialty(secid1, v.Category, t1, t2)
+		if err != nil {
+			beego.Error(err)
+		}
+		aa := make([]m.Specialty, 1)
+		aa[0].Value = m.Round(value1*v.Rationum, 1)
+		aa[0].Name = v.Category
+		slice1 = append(slice1, aa...)
+	}
+	c.Data["json"] = slice1
+	c.ServeJSON()
+}
+
+//显示自己一年来，成果类型情况
+func (c *Achievement) Echarts2() {
+	//1.首先判断是否注册
+	if !checkAccount(c.Ctx) {
+		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/login?url="+route, 302)
+		return
+	}
+	//4.取得客户端用户名
+	var uname string
+	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
+	defer sess.SessionRelease(c.Ctx.ResponseWriter)
+	v := sess.Get("uname")
+	if v != nil {
+		uname = v.(string)
+		c.Data["Uname"] = v.(string)
+	}
+	//由uname取得user
+	user, err := models.GetUserByUsername(uname)
+	if err != nil {
+		beego.Error(err)
+	}
+	//4.取出用户的权限等级
+	role, _ := checkRole(c.Ctx) //login里的
+	if role > 4 {               //
+		// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/roleerr?url="+route, 302)
+		return
+	}
+	//分院——科室——人员甲（乙、丙……）——绘制——设计——校核——审查——合计——排序
+	secid := c.Input().Get("secid")
+	if secid == "" { //如果为空，则用登录的
+		secid = strconv.FormatInt(user.Id, 10)
+	}
+	secid1, err := strconv.ParseInt(secid, 10, 64)
+	if err != nil {
+		beego.Error(err)
+	}
+
+	//现在的月份
+	const MMM = "2006-01"
+	month1 := time.Now().Format(MMM)
+	month2, err := time.Parse(MMM, month1)
+	if err != nil {
+		beego.Error(err)
+	}
+
+	slice1 := make([]m.Specialty, 0)
+	ratios, err := models.GetRatios()
+	if err != nil {
+		beego.Error(err)
+	}
+	for _, v := range ratios {
+		value1, err := models.Getuserspecialty(secid1, v.Category, month2.AddDate(0, -11, 0), month2.AddDate(0, +1, 0))
+		if err != nil {
+			beego.Error(err)
+		}
+		aa := make([]m.Specialty, 1)
+		aa[0].Value = m.Round(value1*v.Rationum, 1)
+		aa[0].Name = v.Category
+		slice1 = append(slice1, aa...)
+	}
+	c.Data["json"] = slice1
+	c.ServeJSON()
+}
+
+//显示某个项目（阶段和专业）一年来，成果类型情况
+func (c *Achievement) Echarts3() {
+	cid := c.Input().Get("CatalogId")
+	var err error
+	//查出项目特性:
+	catalog, err := m.GetCatalog(cid)
+	if err != nil {
+		beego.Error(err)
+	}
+	//获取项目编号
+	//获取阶段
+	//获取专业
+	//根据项目编号阶段和专业名称，查出图纸、报告、计算书等各类型分值
+	//现在的月份
+	const MMM = "2006-01"
+	month1 := time.Now().Format(MMM)
+	month2, err := time.Parse(MMM, month1)
+	if err != nil {
+		beego.Error(err)
+	}
+	slice1 := make([]m.Specialty, 0)
+	ratios, err := models.GetRatios()
+	if err != nil {
+		beego.Error(err)
+	}
+	for _, v := range ratios {
+		value1, err := models.Getspecialty(catalog.ProjectNumber, catalog.DesignStage, catalog.Section, v.Category, month2.AddDate(0, -11, 0), month2.AddDate(0, +1, 0))
+		if err != nil {
+			beego.Error(err)
+		}
+		aa := make([]m.Specialty, 1)
+		aa[0].Value = m.Round(value1*v.Rationum, 1)
+		aa[0].Name = v.Category
+		slice1 = append(slice1, aa...)
+	}
+	c.Data["json"] = slice1
+	c.ServeJSON()
 }
 
 //参考时间的转换：由string转成time data

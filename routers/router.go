@@ -34,6 +34,18 @@ func init() {
 	beego.Router("/achievement/ratio", &controllers.Achievement{}, "get:Ratio")
 	beego.Router("/achievement/addratio", &controllers.Achievement{}, "post:AddRatio")
 	beego.Router("/achievement/modifyratio", &controllers.Achievement{}, "post:ModifyRatio")
+	//测试某个专业下总成本分布情况
+	beego.Router("/achievement/specialty", &controllers.Achievement{}, "get:Specialty")
+	//个人当月成果类型组成
+	beego.Router("/achievement/echarts", &controllers.Achievement{}, "get:Echarts")
+	//beego.Router("/achievement/echarts1", &controllers.Achievement{}, "get:Echarts1")
+	//个人当年成果类型组成
+	beego.Router("/achievement/echarts2", &controllers.Achievement{}, "get:Echarts2")
+	//项目阶段专业，全年成果类型组成
+	beego.Router("/achievement/echarts3", &controllers.Achievement{}, "get:Echarts3")
+
+	//点击个人参与的项目，弹出模态框，显示这个项目所有成果
+	beego.Router("/achievement/projectachievement", &controllers.Achievement{}, "*:ProjectAchievement")
 
 	beego.Router("/test", &controllers.MainController{}, "get:Test")
 	beego.Router("/test1", &controllers.MainController{}, "get:Test1")
@@ -65,7 +77,7 @@ func init() {
 	// beego.Router("/registerr", &controllers.RegistController{}, "get:RegistErr")
 	beego.Router("/regist/checkuname", &controllers.RegistController{}, "post:CheckUname")
 	beego.Router("/regist/getuname", &controllers.RegistController{}, "post:GetUname")
-	//get方法用于x-editable的select2方法_作废，select2不支持动态数据
+	//get方法用于x-editable的select2方法_作废，select2不必须要动态数据
 	beego.Router("/regist/getuname1", &controllers.RegistController{}, "get:GetUname1")
 
 	//成果登记系统
@@ -87,6 +99,8 @@ func init() {
 	beego.Router("/examined", &controllers.Achievement{}, "get:Examined")
 	//查看用户个人时，获取已经完成的数据
 	beego.Router("/completed", &controllers.Achievement{}, "get:Completed")
+	//获取自己参与的项目列表
+	beego.Router("/participate", &controllers.Achievement{}, "get:Participate")
 
 	//人员管理
 	beego.Router("/user/AddUser", &controllers.UserController{}, "*:AddUser")
