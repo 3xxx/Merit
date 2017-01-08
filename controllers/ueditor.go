@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	// "net/http"
-	"merit/models" //这里开始直接拷贝过来quick/models,程序总是提示出错：<orm.RegisterModel> table name `category` repeat register, must be unique
+	// "merit/models" //这里开始直接拷贝过来quick/models,程序总是提示出错：<orm.RegisterModel> table name `category` repeat register, must be unique
 	"os"
 	"path"
 	"regexp"
@@ -60,21 +60,21 @@ func (c *UeditorController) ControllerUE() {
 	case "uploadimage", "uploadfile", "uploadvideo":
 
 		if key == "diary" { //添加文章
-			categoryid := c.Input().Get("categoryid")
+			// categoryid := c.Input().Get("categoryid")
 			//保存上传的图片
 			_, h, err := c.GetFile("upfile")
 			if err != nil {
 				beego.Error(err)
 			}
-			idNum, err := strconv.ParseInt(categoryid, 10, 64)
-			if err != nil {
-				beego.Error(err)
-			}
-			category1, err := models.GetCategory(idNum) //2016-3-5这里修改为int64
-			if err != nil {
-				beego.Error(err)
-				return
-			}
+			// idNum, err := strconv.ParseInt(categoryid, 10, 64)
+			// if err != nil {
+			// 	beego.Error(err)
+			// }
+			// category1, err := models.GetCategory(idNum) //2016-3-5这里修改为int64
+			// if err != nil {
+			// 	beego.Error(err)
+			// 	return
+			// }
 			// var filesize int64
 			path1 := h.Filename                 // 2016-3-5这里修改category1.DiskDirectory +
 			err = c.SaveToFile("upfile", path1) //.Join("attachment", attachment)) //存文件    WaterMark(path)    //给文件加水印
@@ -83,7 +83,7 @@ func (c *UeditorController) ControllerUE() {
 			}
 			// filesize, _ = FileSize(path1)
 			// filesize = filesize / 1000.0
-			c.Data["json"] = map[string]interface{}{"state": "SUCCESS", "url": category1.Url + h.Filename, "title": h.Filename, "original": h.Filename}
+			c.Data["json"] = map[string]interface{}{"state": "SUCCESS", "url": h.Filename, "title": h.Filename, "original": h.Filename}
 			c.ServeJSON()
 		} else {
 			number := c.Input().Get("number")

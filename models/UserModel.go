@@ -219,12 +219,12 @@ func GetUsersbySecId(secofficeid string) (users []*User, count int, err error) {
 		return nil, 0, err
 	}
 	//由secid查自身科室名称
-	secoffice, err := GetCategory(secid)
+	secoffice, err := GetAdminDepartbyId(secid)
 	if err != nil {
 		return nil, 0, err
 	}
 	//由secoffice的pid查分院名称
-	department, err := GetCategory(secoffice.ParentId)
+	department, err := GetAdminDepartbyId(secoffice.ParentId)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -1,4 +1,5 @@
- <!DOCTYPE html>
+<!-- 权限不够界面 -->
+<!DOCTYPE html>
 <html>
 <head>
  <meta charset="UTF-8">

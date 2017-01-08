@@ -42,15 +42,24 @@ type Catalog struct {
 
 //员工的编制、设计……分值——全部改成float浮点型小数
 type Employeeachievement struct {
-	Id       string  //员工Id
-	Name     string  //员工姓名nickname
-	Drawn    float64 //编制、绘制
-	Designd  float64 //设计
-	Checked  float64 //校核
+	Id    string  //员工Id
+	Name  string  //员工姓名nickname
+	Drawn float64 //编制、绘制
+
+	Designd float64 //设计
+
+	Checked float64 //校核
+
 	Examined float64 //审查
+
 	Verified float64 //核定
+
 	Approved float64 //批准
-	Sigma    float64 //合计
+
+	Sigma float64 //合计
+
+	//增加实物工作量合计
+	MaterialSigma float64 //实物工作量合计
 }
 
 //分院里各个科室人员结构
@@ -368,7 +377,7 @@ func DeletCatalog(cid string) error { //应该在controllers中显示警告
 		if err != nil {
 			return err
 		}
-	}
+	} //这样写不对，如果没读到记录，也不返回错误，那么似乎是删除成功了。
 	return err
 }
 
@@ -410,8 +419,11 @@ func GetCatalog(tid string) (*Catalog, error) {
 // }
 
 //由用户姓名取得所有编制、设计、校核分值
-func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeeachievement, err error) {
+func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue, employeerealvalue []Employeeachievement, err error) {
 	catalogs := make([]*Catalog, 0)
+	catalogs1 := make([]*Catalog, 0)
+	catalogs2 := make([]*Catalog, 0)
+	catalogs3 := make([]*Catalog, 0)
 	cond := orm.NewCondition()
 	cond1 := cond.And("date__gt", t1).And("Date__lte", t2)
 	o := orm.NewOrm()
@@ -427,84 +439,122 @@ func Getemployeevalue(uname string, t1, t2 time.Time) (employeevalue []Employeea
 	var checked float64
 	var Examinedvalue float64
 	var examined float64
+
+	var Drawnrealvalue float64
+	var drawnreal float64
+	var Designdrealvalue float64
+	var designdreal float64
+	var Checkedrealvalue float64
+	var checkedreal float64
+	var Examinedrealvalue float64
+	var examinedreal float64
 	//1、查制图工作量
 	_, err = qs.Filter("Drawn", uname).Filter("State", "5").All(&catalogs) //而这个字段parentid为何又不用呢
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	aa := make([]Employeeachievement, 1)
+	aa := make([]Employeeachievement, 1)        //全部工作量
+	realvalue := make([]Employeeachievement, 1) //实物工作量
 	// var aa *Employeeachievement
 	for _, v := range catalogs {
-		//根据catalogs的category，再查出ratio中的系数
-		ratio, err := GetRationumbycategory(v.Category)
+		//根据catalogs的category，再查出ratio中的系数和
+		ratio, err := GetAchcatebycate(v.Category)
 		if err == orm.ErrNoRows {
-			ratio = 0
+			ratio.Rationum = 0
 		} else if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		Drawnvalue = v.Count * ratio * v.Complex * v.Drawnratio
+		//总工作量
+		Drawnvalue = v.Count * ratio.Rationum * v.Complex * v.Drawnratio
 		drawn = drawn + Drawnvalue
+		//实物工作量
+		if ratio.Ismaterial == true {
+			Drawnrealvalue = v.Count * ratio.Rationum * v.Complex * v.Drawnratio
+			drawnreal = drawnreal + Drawnrealvalue
+		}
 	}
 	aa[0].Drawn = Round(drawn, 1)
-
+	realvalue[0].Drawn = Round(drawnreal, 1)
 	//2、查设计工作量
-	_, err = qs.Filter("Designd", uname).Filter("State", "5").All(&catalogs) //而这个字段parentid为何又不用呢
+	_, err = qs.Filter("Designd", uname).Filter("State", "5").All(&catalogs1) //而这个字段parentid为何又不用呢
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	for _, v := range catalogs {
-		ratio, err := GetRationumbycategory(v.Category)
+	for _, v := range catalogs1 {
+		ratio, err := GetAchcatebycate(v.Category)
 		if err == orm.ErrNoRows {
-			ratio = 0
+			ratio.Rationum = 0
 		} else if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		Designdvalue = v.Count * ratio * v.Complex * v.Designdratio
+		Designdvalue = v.Count * ratio.Rationum * v.Complex * v.Designdratio
 		designd = designd + Designdvalue
+		//实物工作量
+		if ratio.Ismaterial == true {
+			Designdrealvalue = v.Count * ratio.Rationum * v.Complex * v.Designdratio
+			designdreal = designdreal + Designdrealvalue
+		}
 	}
 	aa[0].Designd = Round(designd, 1)
-
+	realvalue[0].Designd = Round(designdreal, 1)
 	//3、查校核工作量
-	_, err = qs.Filter("Checked", uname).Filter("State", "5").All(&catalogs) //而这个字段parentid为何又不用呢
+	_, err = qs.Filter("Checked", uname).Filter("State", "5").All(&catalogs2) //而这个字段parentid为何又不用呢
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	for _, v := range catalogs {
-		ratio, err := GetRationumbycategory(v.Category)
+	for _, v := range catalogs2 {
+		ratio, err := GetAchcatebycate(v.Category)
 		if err == orm.ErrNoRows {
-			ratio = 0
+			ratio.Rationum = 0
 		} else if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		Checkedvalue = v.Count * ratio * v.Complex * v.Checkedratio
+		Checkedvalue = v.Count * ratio.Rationum * v.Complex * v.Checkedratio
 		checked = checked + Checkedvalue
+		//实物工作量
+		if ratio.Ismaterial == true {
+			Checkedrealvalue = v.Count * ratio.Rationum * v.Complex * v.Checkedratio
+			checkedreal = checkedreal + Checkedrealvalue
+		}
 	}
 	aa[0].Checked = Round(checked, 1)
+	realvalue[0].Checked = Round(checkedreal, 1)
 	//4、查审查工作量
-	_, err = qs.Filter("Examined", uname).Filter("State", "5").All(&catalogs) //而这个字段parentid为何又不用呢
+	_, err = qs.Filter("Examined", uname).Filter("State", "5").All(&catalogs3) //而这个字段parentid为何又不用呢
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	for _, v := range catalogs {
-		ratio, err := GetRationumbycategory(v.Category)
+	for _, v := range catalogs3 {
+		ratio, err := GetAchcatebycate(v.Category)
 		if err == orm.ErrNoRows {
-			ratio = 0
+			ratio.Rationum = 0
 		} else if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		Examinedvalue = v.Count * ratio * v.Complex * v.Examinedratio
+		Examinedvalue = v.Count * ratio.Rationum * v.Complex * v.Examinedratio
 		examined = examined + Examinedvalue
+		//实物工作量
+		if ratio.Ismaterial == true {
+			Examinedrealvalue = v.Count * ratio.Rationum * v.Complex * v.Examinedratio
+			examinedreal = examinedreal + Examinedrealvalue
+		}
 	}
 	aa[0].Examined = Round(examined, 1)
+	realvalue[0].Examined = Round(examinedreal, 1)
 
 	aa[0].Name = uname //这个是nickname，千万注意
+	realvalue[0].Name = uname
 	user1 := GetUserByNickname(uname)
 	id := strconv.FormatInt(user1.Id, 10)
 	aa[0].Id = id
+	realvalue[0].Id = id
 	aa[0].Sigma = Round(drawn+designd+checked+examined, 1)
+	realvalue[0].Sigma = Round(drawnreal+designdreal+checkedreal+examinedreal, 1)
+	aa[0].MaterialSigma = Round(drawnreal+designdreal+checkedreal+examinedreal, 1)
 	employeevalue = aa
-	// employeevalue = append(employeevalue, aa...)
-	return employeevalue, err
+	employeerealvalue = realvalue
+	// 这里增加实物工作量的返回值。
+	return employeevalue, employeerealvalue, err
 }
 
 //由用户Id取得所有编制、设计、校核详细catalog，按成果类型排列
@@ -624,8 +674,8 @@ func Getparticipatebyuserid(id string, t1, t2 time.Time) (catalogs []*Catalog, e
 		return nil, err
 	}
 	//对成果进行去重
-	Rm_duplicate(aa)
-	return aa, err
+	bb := Rm_duplicate(aa)
+	return bb, err
 }
 
 //根据项目编号、项目名称和项目阶段、专业，查出所有成果
@@ -988,7 +1038,7 @@ func Getspecialty(ProjectNumber, DesignStage, Section, Category string, t1, t2 t
 		return 0, err
 	}
 	//查类型折标系数——在controllers中乘了
-	// ratio, err := GetRationumbycategory(Category)
+	// ratio, err := GetRatiobycategory(Category)
 	// if err == orm.ErrNoRows {
 	// 	ratio = 0
 	// } else if err != nil {
@@ -1024,7 +1074,7 @@ func Getuserspecialty(Id int64, Category string, t1, t2 time.Time) (value float6
 	var Checkedvalue float64
 	var Examinedvalue float64
 	//查类型折标系数——在controllers中乘了
-	// ratio, err := GetRationumbycategory(Category)
+	// ratio, err := GetRatiobycategory(Category)
 	// if err == orm.ErrNoRows {
 	// 	ratio = 0
 	// } else if err != nil {
@@ -1071,39 +1121,39 @@ func Getprojuserspecialty(Id int64, ProjectNumber, DesignStage, Section string, 
 
 	for _, v := range catalogs {
 		//查类型折标系数
-		ratio, err := GetRationumbycategory(v.Category)
+		ratio, err := GetAchcatebycate(v.Category)
 		if err == orm.ErrNoRows {
-			ratio = 0
+			ratio.Rationum = 0
 		} else if err != nil {
 			return 0, 0, err
 		}
-		Drawnvalue = v.Count * ratio * v.Complex * v.Drawnratio
-		Designdvalue = v.Count * ratio * v.Complex * v.Designdratio
-		Checkedvalue = v.Count * ratio * v.Complex * v.Checkedratio
-		Examinedvalue = v.Count * ratio * v.Complex * v.Examinedratio
+		Drawnvalue = v.Count * ratio.Rationum * v.Complex * v.Drawnratio
+		Designdvalue = v.Count * ratio.Rationum * v.Complex * v.Designdratio
+		Checkedvalue = v.Count * ratio.Rationum * v.Complex * v.Checkedratio
+		Examinedvalue = v.Count * ratio.Rationum * v.Complex * v.Examinedratio
 		value1 = value1 + Drawnvalue + Designdvalue + Checkedvalue + Examinedvalue
 	}
 
-	//1、查制图工作量
+	//1、查制图、设计校核审查工作量
 	for _, v := range catalogs {
 		//根据catalogs的category，再查出ratio中的系数
-		ratio, err := GetRationumbycategory(v.Category)
+		ratio, err := GetAchcatebycate(v.Category)
 		if err == orm.ErrNoRows {
-			ratio = 0
+			ratio.Rationum = 0
 		} else if err != nil {
 			return 0, 0, err
 		}
 		if v.Drawn == user.Nickname {
-			Drawnvalue2 = v.Count * ratio * v.Complex * v.Drawnratio
+			Drawnvalue2 = v.Count * ratio.Rationum * v.Complex * v.Drawnratio
 			drawn = drawn + Drawnvalue2
 		} else if v.Designd == user.Nickname {
-			Designdvalue2 = v.Count * ratio * v.Complex * v.Designdratio
+			Designdvalue2 = v.Count * ratio.Rationum * v.Complex * v.Designdratio
 			designd = designd + Designdvalue2
 		} else if v.Checked == user.Nickname {
-			Checkedvalue2 = v.Count * ratio * v.Complex * v.Checkedratio
+			Checkedvalue2 = v.Count * ratio.Rationum * v.Complex * v.Checkedratio
 			checked = checked + Checkedvalue2
 		} else if v.Examined == user.Nickname {
-			Examinedvalue2 = v.Count * ratio * v.Complex * v.Examinedratio
+			Examinedvalue2 = v.Count * ratio.Rationum * v.Complex * v.Examinedratio
 			examined = examined + Examinedvalue2
 		}
 	}
@@ -1111,6 +1161,56 @@ func Getprojuserspecialty(Id int64, ProjectNumber, DesignStage, Section string, 
 	Sigma := Round(drawn+designd+checked+examined, 1)
 
 	return Round(value1, 1), Sigma, err
+}
+
+//查出一个项目(阶段、专业)时间段内某个用户的总分值
+func Getprojuserspecialty1(Uname string, ProjectNumber, DesignStage, Section string, t1, t2 time.Time) (value1 float64, err error) {
+	var Drawnvalue2 float64
+	var Designdvalue2 float64
+	var Checkedvalue2 float64
+	var Examinedvalue2 float64
+	var drawn float64
+	var designd float64
+	var checked float64
+	var examined float64
+
+	catalogs := make([]*Catalog, 0)
+	cond := orm.NewCondition()
+	cond1 := cond.And("Date__gt", t1).And("Date__lte", t2).And("ProjectNumber", ProjectNumber).And("DesignStage", DesignStage).And("Section", Section).And("State", "5")
+	cond2 := cond.AndCond(cond1).AndCond(cond.Or("Drawn", Uname).Or("Designd", Uname).Or("Checked", Uname).Or("Examined", Uname))
+
+	o := orm.NewOrm()
+	qs := o.QueryTable("catalog")
+	qs = qs.SetCond(cond2)
+	_, err = qs.Distinct().All(&catalogs) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	if err != nil {
+		return 0, err
+	}
+	//1、查制图工作量
+	for _, v := range catalogs {
+		//根据catalogs的category，再查出ratio中的系数
+		ratio, err := GetAchcatebycate(v.Category)
+		if err == orm.ErrNoRows {
+			ratio.Rationum = 0
+		} else if err != nil {
+			return 0, err
+		}
+		if v.Drawn == Uname {
+			Drawnvalue2 = v.Count * ratio.Rationum * v.Complex * v.Drawnratio
+			drawn = drawn + Drawnvalue2
+		} else if v.Designd == Uname {
+			Designdvalue2 = v.Count * ratio.Rationum * v.Complex * v.Designdratio
+			designd = designd + Designdvalue2
+		} else if v.Checked == Uname {
+			Checkedvalue2 = v.Count * ratio.Rationum * v.Complex * v.Checkedratio
+			checked = checked + Checkedvalue2
+		} else if v.Examined == Uname {
+			Examinedvalue2 = v.Count * ratio.Rationum * v.Complex * v.Examinedratio
+			examined = examined + Examinedvalue2
+		}
+	}
+	Sigma := Round(drawn+designd+checked+examined, 1)
+	return Sigma, err
 }
 
 //四舍五入
@@ -1122,6 +1222,7 @@ func Round(f float64, n int) float64 {
 //struct去重——根据指定字段
 //ProjectNumber string //项目编号
 //ProjectName   string //项目名称
+//Section专业
 //DesignStage   string //阶段
 func Rm_duplicate(list []*Catalog) []*Catalog {
 	var x []*Catalog = []*Catalog{}
@@ -1130,8 +1231,8 @@ func Rm_duplicate(list []*Catalog) []*Catalog {
 			x = append(x, v)
 		} else {
 			for k, w := range x {
-				if v.ProjectNumber == w.ProjectNumber && v.ProjectName == w.ProjectName && v.DesignStage == w.DesignStage {
-					break
+				if v.ProjectNumber == w.ProjectNumber && v.Section == w.Section && v.DesignStage == w.DesignStage {
+					break //continue?
 				}
 				if k == len(x)-1 {
 					x = append(x, v)

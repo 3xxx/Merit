@@ -1,4 +1,4 @@
-<!-- 编辑成果类型折标系数表-->
+<!--编辑成果类型折标系数表——作废-->
 <!DOCTYPE html>
 <html>
 <head>
@@ -13,35 +13,19 @@
 <script type="text/javascript" src="/static/js/moment.min.js"></script>
   <script type="text/javascript" src="/static/js/daterangepicker.js"></script>
   <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css" />
-<!-- <style type="text/css">
-a:active{text:expression(target="_blank");}
-i#delete
-{
-color:#DC143C;
-}
-</style>
-<script type="text/javascript">
-  var allLinks=document.getElementsByTagName("a");
-for(var i=0;i!=allLinks.length; i++){
-allLinks[i].target="_blank";
-}
-</script> -->
 </head>
-
-
-<!-- <div id="treeview" class="col-xs-3"></div> -->
 
 <div class="col-lg-12">
 <div class="form-group">
-        <label class="control-label" id="regis" for="LoginForm-UserName"></label><!-- 显示部门名称 -->
+        <label class="control-label" id="regis" for="LoginForm-UserName"></label>
 </div>
   <table class="table table-striped" id="orderTable" name="orderTable">
     <thead>
       <tr>
         <th>#</th>
         <th>成果类型</th>
-        <th>计量单位</th>
         <th>折算A2图纸系数</th>
+        <th>是否实物工作量</th>
         <th>操作</th>
       </tr>
     </thead>
@@ -51,8 +35,8 @@ allLinks[i].target="_blank";
       <tr id="row{{.Id}}">
         <td>{{$k|indexaddone}}</td>
         <td>{{.Category}}</td>
-        <td>{{.Unit}}</td>
         <td>{{.Rationum}}</td>
+        <td>{{.Ismaterial}}</td>
         <td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow("row{{.Id}}")'/> 
         <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow("row{{.Id}}")' /></td> 
       </tr>
@@ -84,11 +68,11 @@ var flag = 0;  //标志位，标志第几行
             //每次都往低flag+1的下标出添加tr，因为append是往标签内追加，所以用after
             //"<td>￥<input type='text' id='txtDrawn"+flag+"' value='' size='10'/></td>"  
             var insertStr = "<tr id="+rowId+">" 
-                         +      "<td><input type='text' placeholder='序号' id='txtIndex"+flag+"' value='' size='10'/></td>" 
-                         +      "<td><input type='text' placeholder='成果类型' id='txtCategory"+flag+"' value='' size='10'/></td>"  
-                         +      "<td><input type='text' placeholder='计量单位' id='txtUnit"+flag+"' value='' size='10'/></td>"  
-                         +      "<td><input type='text' placeholder='折算系数' id='txtRatio"+flag+"' value='' size='10'/></td>"
-                         +      "<td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='确定' onclick='saveAddRow(\""+rowId+"\",\""+flag+"\")' /></td>"                   
+                         + "<td><input type='text' placeholder='序号' id='txtIndex"+flag+"' value='' size='10'/></td>" 
+                         + "<td><input type='text' placeholder='成果类型' id='txtCategory"+flag+"' value='' size='10'/></td>"   
+                         + "<td><input type='text' placeholder='折算系数' id='txtRatio"+flag+"' value='' size='10'/></td>"
+                         + "<td><select id='txtIsMaterial"+flag+"'><option value='volvo'>是否实物工作量</option><option value='true'>true</option><option value='false'>false</option></select></td>"
+                         + "<td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='确定' onclick='saveAddRow(\""+rowId+"\",\""+flag+"\")' /></td>"                   
                          + "</tr>";  
             $("#orderTable tr:eq("+(rowLength-1)+")").after(insertStr);  //这里之所以减2 ，是因为减去底部的一行和顶部一行，剩下的为开始插入的索引。  
             flag++;  
@@ -100,15 +84,16 @@ var flag = 0;  //标志位，标志第几行
          function deleteSelectedRow(rowId){    
             //根据rowId查询出该行所在的行索引    
             if(confirm("确定删除该行吗？")){    
-                $("#"+rowId).remove();    //这里需要注意删除一行之后 我的标志位没有-1，因为如果减一，那么我再增加一行的话，可能会导致我的tr的id重复，不好维护。
+                // $("#"+rowId).remove();    //这里需要注意删除一行之后 我的标志位没有-1，因为如果减一，那么我再增加一行的话，可能会导致我的tr的id重复，不好维护。
                 // 提交到后台进行删除数据库
                     // alert("欢迎您：" + name) 
                     $.ajax({
                     type:"post",//这里是否一定要用post？？？
                     url:"/achievement/deleteratio",
-                    data: {CatalogId:rowId},
+                    data: {RatioId:rowId},
                         success:function(data,status){//数据提交成功时返回数据
                         alert("删除“"+data+"”成功！(status:"+status+".)");
+                        $("#"+rowId).remove();
                         }
                     });  
             }       
@@ -120,15 +105,17 @@ var flag = 0;  //标志位，标志第几行
          function updateSelectedRow(rowId){
             var oldIndex = $("#"+rowId+" td:eq(0)").html();
             var oldCategory = $("#"+rowId+" td:eq(1)").html();  
-            var oldUnit = $("#"+rowId+" td:eq(2)").html();  
-            var oldRatio = $("#"+rowId+" td:eq(3)").html();
+            // var oldUnit = $("#"+rowId+" td:eq(2)").html();  
+            var oldRatio = $("#"+rowId+" td:eq(2)").html();
+            var oldMaterial = $("#"+rowId+" td:eq(3)").html();
             // if(oldPrice != ""){//去掉第一个人民币符号  
             //     oldPrice = oldPrice.substring(1);  
             // }  
             var uploadStr = "<td><input type='text' id='txtIndex"+flag+"' value='"+oldIndex+"' size='10'/></td>"
                         + "<td><input type='text' id='txtCategory"+flag+"' value='"+oldCategory+"' size='10'/></td>"  
-                        + "<td><input type='text' id='txtUnit"+flag+"' value='"+oldUnit+"' size='10'/></td>"  
+                        // + "<td><input type='text' id='txtUnit"+flag+"' value='"+oldUnit+"' size='10'/></td>"  
                         + "<td><input type='text' id='txtRatio"+flag+"' value='"+oldRatio+"' size='10'/></td>"
+                        + "<td><select id='txtIsMaterial"+flag+"'><option value='volvo'>是否实物工作量</option><option value='true'>true</option><option value='false'>false</option></select></td>"
                         + "<td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='确定' onclick='saveUpdateRow(\""+rowId+"\",\""+flag+"\")' /></td>";  
             $("#"+rowId).html(uploadStr);  
          }    
@@ -139,12 +126,14 @@ var flag = 0;  //标志位，标志第几行
           function saveAddRow(rowId,flag){ 
             var newIndex = $("#txtIndex"+flag).val();
             var newCategory = $("#txtCategory"+flag).val();    
-            var newUnit = $("#txtUnit"+flag).val();    
+            // var newUnit = $("#txtUnit"+flag).val();    
             var newRatio = $("#txtRatio"+flag).val();
+            var newMaterial =$("#txtIsMaterial"+flag+" option:selected").text();
             var saveStr = "<td>" + newIndex + "</td>"
                         + "<td>" + newCategory + "</td>"  
-                        + "<td>" + newUnit + "</td>"  
+                        // + "<td>" + newUnit + "</td>"  
                         + "<td>" + newRatio + "</td>"
+                        + "<td>" + newMaterial + "</td>"
                         + "<td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow(\""+rowId+"\")' /></td>";  
             $("#"+rowId).html(saveStr);//因为替换的时候只替换tr标签内的html 所以不用加上tr 
             // 这里再提交到后台保存起来update 
@@ -155,7 +144,7 @@ var flag = 0;  //标志位，标志第几行
                     $.ajax({
                     type:"post",//这里是否一定要用post？？？
                     url:"/achievement/addratio",
-                    data: {Category:newCategory,Unit:newUnit,Ratio:newRatio},
+                    data: {Category:newCategory,Ratio:newRatio,IsMaterial:newMaterial},
                         success:function(data,status){//数据提交成功时返回数据
                         alert("添加“"+data+"”成功！(status:"+status+".)");
                         }
@@ -169,13 +158,15 @@ var flag = 0;  //标志位，标志第几行
         function saveUpdateRow(rowId,flag){ 
             var newIndex = $("#txtIndex"+flag).val();
             var newCategory = $("#txtCategory"+flag).val();    
-            var newUnit = $("#txtUnit"+flag).val();    
+            // var newUnit = $("#txtUnit"+flag).val();    
             var newRatio = $("#txtRatio"+flag).val();
+            var newMaterial =$("#txtIsMaterial"+flag+" option:selected").text();
             var saveStr = "<td>" + newIndex + "</td>"
                         + "<td>" + newCategory + "</td>"  
-                        + "<td>" + newUnit + "</td>"  
+                        // + "<td>" + newUnit + "</td>"  
                         + "<td>" + newRatio + "</td>"
-                        + "<td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow(\""+rowId+"\")' /></td>";  
+                        + "<td>" + newMaterial + "</td>"
+                        + "<td><input type='button' class='btn btn-default' name='delete' value='删除' onclick='deleteSelectedRow(\""+rowId+"\")'/> <input type='button' class='btn btn-default' name='update' value='修改' onclick='updateSelectedRow(\""+rowId+"\")'/></td>";  
             $("#"+rowId).html(saveStr);//因为替换的时候只替换tr标签内的html 所以不用加上tr 
             // 这里再提交到后台保存起来update 
             if (newCategory)//如果返回的有内容  
@@ -183,7 +174,7 @@ var flag = 0;  //标志位，标志第几行
                     $.ajax({
                     type:"post",//这里是否一定要用post？？？
                     url:"/achievement/modifyratio",
-                    data: {Category:newCategory,Unit:newUnit,Ratio:newRatio,RatioId:rowId},
+                    data: {Category:newCategory,Ratio:newRatio,IsMaterial:newMaterial,RatioId:rowId},
                         success:function(data,status){//数据提交成功时返回数据
                         alert("修改“"+data+"”成功！(status:"+status+".)");
                         }
@@ -193,22 +184,7 @@ var flag = 0;  //标志位，标志第几行
 
 </script>
 
-
-
-
 <script type="text/javascript">
-// $(function() {
-         // $('#treeview').treeview('collapseAll', { silent: true });
-          // $('#treeview').treeview({
-          // data: [{{.json}}],//defaultData,
-          // data:alternateData,
-          // levels: 5,// expanded to 5 levels
-          // enableLinks:true,
-          // showTags:true,
-          // collapseIcon:"glyphicon glyphicon-chevron-up",
-          // expandIcon:"glyphicon glyphicon-chevron-down",
-//         });
-// });
   $(document).ready(function() {
   $("table").tablesorter({sortList: [[13,0]]});
   // $("#ajax-append").click(function() {
@@ -228,10 +204,3 @@ var flag = 0;  //标志位，标志第几行
 </script>
 </body>
 </html>
-<!-- <button type="button" class="btn btn-primary btn-lg" style="color: rgb(212, 106, 64);">
-<span class="glyphicon glyphicon-user"></span> User
-</button>
-
-<button type="button" class="btn btn-primary btn-lg" style="text-shadow: black 5px 3px 3px;">
-<span class="glyphicon glyphicon-user"></span> User
-</button> -->

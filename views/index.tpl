@@ -117,7 +117,7 @@ color: #F5DEB3;
       <div class="hlp-box presentation home-how-box" id="home-presentation" style="cursor: pointer;">
         <h3>成果登记</h3>
         <p>
-          管理人员轻松进行设计人员的成果登记和分析。
+          设计人员轻松进行成果登记；管理人员轻松对成果进行分析。
         </p>
       </div>
     </div>
@@ -125,9 +125,9 @@ color: #F5DEB3;
     <div class="col-xs-6 col-sm-3 col-md-3 col-lg-3">
       <div class="hlp-box visual-pl home-how-box" id="visualpl" style="cursor: pointer;">
         <h3>价值管理</h3>
-        <p> 发现价值、展示价值<br/>
-        积累价值、提升价值<br/>
-        为价值自豪！
+        <p>基于自我维护的档案管理理念。<br/>
+        发现价值、展示价值<br/>
+        积累价值、提升价值
         </p>
       </div>
     </div>
@@ -139,9 +139,9 @@ color: #F5DEB3;
     </div>
     <div class="col-xs-6 col-sm-3 col-md-3 col-lg-3">
       <div class="hlp-box pitching home-how-box" id="home-pitching" style="cursor: pointer;">
-        <h3>HydroCMS</h3>
+        <h3>EngineerCMS</h3>
         <p>
-          工程师利用HydroCMS水利设计成果管理系统优雅地对个人项目和设计成果进行网络化管理。
+          基于工程师个人电脑的在线知识管理系统，优雅地对个人项目和设计成果进行网络化管理。
         </p>
       </div>
     </div>
@@ -226,7 +226,7 @@ color: #F5DEB3;
         <a href="https://github.com/3xxx/hydrows">HydroWS水利供水管线设计工具</a>
       </p>
       <p>
-        <a href="https://github.com/3xxx/hydrocms">HydroCMS水利设计成果管理系统</a>
+        <a href="https://github.com/3xxx/engineercms">EngineerCMS工程师知识管理系统</a>
       </p>
     </div>
   </div>

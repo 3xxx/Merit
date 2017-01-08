@@ -1,9 +1,4 @@
-// 注意：在Go的标准库encoding/json包中，允许使用
-// map[string]interface{}和[]interface{} 类型的值来分别存放未知结构的JSON对象或数组
-//本控制器用于侧栏的显示和修改等
-
-//侧栏是直接用user表生成：总院——分院——科室——姓名，这里还是要构造三层结构
-//还是用json表来生成？这里利用已有的三层结构，但是要专门的总院-分院-科室的数据表，即json表
+//在线成果登记
 package controllers
 
 import (
@@ -28,6 +23,7 @@ type Project struct {
 	ProjectNumber string //项目编号
 	ProjectName   string //项目名称
 	DesignStage   string //阶段
+	Section       string //专业
 	Value         float64
 	Myvalue       float64
 	Percent       float64
@@ -62,174 +58,60 @@ type Userselect struct { //
 	Name string `json:"text"`
 }
 
-// type JsonStruct struct { //空结构体？？
-// }
 type Select1 struct {
 	Title string `json:"title"`
 }
+
 type Achievement struct {
 	beego.Controller
 }
 
-type Sidebar1 struct {
-	Choose string `json:"choose"`
-	Mark1  string `json:"mark1"` //打分1
-}
-
-// type Sidebar2 struct { //项目负责人——链接——大、中、小
-// 	Project string `json:"text"`
-// 	Href    string
-// 	Mark2   string  //打分2
-// 	Xuanze  []Sidebar1 `json:"nodes"` //大型、中型……
-// }
-// type Sidebar2 struct { //项目负责人——链接——大、中、小
-// 	Id      int64  `form:"-"`
-// 	Pid     int64  `form:"-"`
-// 	Project string `json:"text"`
-// 	Href    string `json:"href"`
-// 	Tags    [2]int `json:"tags"`
-// 	Mark2   string `json:"mark2"` //打分2
-// 	Xuanze  string //大型、中型……
-// 	Mark1   string //对应列表打分
-// }
-type Sidebar3 struct { //员工姓名
+type AchEmployee struct { //员工姓名
 	Id       int64  `json:"Id"` //`form:"-"`
 	Pid      int64  `form:"-"`
 	Nickname string `json:"text"` //这个是侧栏显示的内容
 	Level    string `json:"Level"`
-	// Href     string `json:"href"`这个不能要，虽然没赋值，但是也导致返回根路径
-	// Selectable bool   `json:"selectable"`
-	// Tags       [2]int `json:"tags"`
-	// Mark2      string `json:"mark2"` //打分2
-	// Mark1      string //对应列表打分
-	// Xuanze     string //大型、中型……
 }
 
-type Sidebar4 struct { //专业室：水工、施工……
-	Id       int64      `json:"Id"` //`form:"-"`
-	Pid      int64      `form:"-"`
-	Keshi    string     `json:"text"`
-	Tags     [1]int     `json:"tags"` //显示员工数量
-	Yuangong []Sidebar3 `json:"nodes"`
-	Level    string     `json:"Level"`
+type AchSecoffice struct { //专业室：水工、施工……
+	Id       int64         `json:"Id"` //`form:"-"`
+	Pid      int64         `form:"-"`
+	Title    string        `json:"text"`
+	Tags     [1]int        `json:"tags"` //显示员工数量
+	Employee []AchEmployee `json:"nodes"`
+	Level    string        `json:"Level"`
 	// Href       string     `json:"href"` //点击科室，显示总体情况
 	// Selectable bool       `json:"selectable"`这个不能要，虽然没赋值。否则点击node，没反应，即默认false？？
 }
 
-type Sidebar5 struct { //分院：施工预算、水工分院……
-	Id         int64      `json:"Id"` //`form:"-"`
-	Pid        int64      `form:"-"`
-	Department string     `json:"text"` //这个后面json仅仅对于encode解析有用
-	Bumen      []Sidebar4 `json:"nodes"`
-	Level      string     `json:"Level"`
+type AchDepart struct { //分院：施工预算、水工分院……
+	Id int64 `json:"Id"` //`form:"-"`
+	// Pid       int64          `form:"-"`
+	Title     string         `json:"text"` //这个后面json仅仅对于encode解析有用
+	Secoffice []AchSecoffice `json:"nodes"`
+	Level     string         `json:"Level"`
 	// Selectable bool       `json:"selectable"`
-}
-
-type Sidebar6 struct { //总院：水利设计院……
-	Id      int64      `json:"Id"` //`form:"-"`
-	Pid     int64      `form:"-"`
-	Danwei  string     `json:"text"` //这个后面json仅仅对于encode解析有用
-	Fenyuan []Sidebar5 `json:"nodes"`
-	Level   string     `json:"Level"` //部门级别：总院0级，分院1级，科室2级，用户3级
-	// Selectable bool       `json:"selectable"`
-
 }
 
 type Employee struct { //职员的分院和科室属性
 	Id         int64  `form:"-"`
 	Name       string `json:"Name"`
 	Department string `json:"Department"` //分院
-	Keshi      string `json:"Keshi"`      //科室。当controller返回json给view的时候，必须用text作为字段
+	Secoffice  string `json:"Keshi"`      //科室。当controller返回json给view的时候，必须用text作为字段
 	Numbers    int    //分值
 	Marks      int    //记录个数
 }
 
-//管理员进行人员价值排序查看
-//排序第一排序为部门，第二排序为科室，第三排序为分值
-func (c *Achievement) GetEmployee() {
-	//1.首先判断是否注册
-	if !checkAccount(c.Ctx) {
-		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
-		route := c.Ctx.Request.URL.String()
-		c.Data["Url"] = route
-		c.Redirect("/login?url="+route, 302)
-		// c.Redirect("/login", 302)
-		return
-	}
-	//2.取得文章的作者
-	//3.由用户id取得用户名
-	//4.取得客户端用户名
-	// var uname string
-	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
-	defer sess.SessionRelease(c.Ctx.ResponseWriter)
-	v := sess.Get("uname")
-	if v != nil {
-		// uname = v.(string)
-		c.Data["Uname"] = v.(string)
-	}
-	// uname := v.(string) //ck.Value
-	//4.取出用户的权限等级
-	role, _ := checkRole(c.Ctx) //login里的
-	// beego.Info(role)
-	//5.进行逻辑分析：
-	// rolename, _ := strconv.ParseInt(role, 10, 64)
-	if role > 2 { //
-		// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
-		route := c.Ctx.Request.URL.String()
-		c.Data["Url"] = route
-		c.Redirect("/roleerr?url="+route, 302)
-		// c.Redirect("/roleerr", 302)
-		return
-	}
-
-	var numbers1, marks1 int
-	slice1 := make([]Employee, 0)
-	users, _ := models.GetAllusers(1, 2000, "Id")
-	for i1, _ := range users {
-		//根据价值id和用户id，得到成果，统计数量和分值
-		//取得用户的价值数量和分值
-		_, numbers, marks, err := models.GetAchievementTopic(0, users[i1].Id)
-		if err != nil {
-			beego.Error(err)
-		}
-		marks1 = marks1 + marks
-		numbers1 = numbers1 + numbers
-		aa := make([]Employee, 1)
-		aa[0].Id = users[i1].Id //这里用for i1,v1,然后用v1.Id一样的意思
-		aa[0].Name = users[i1].Nickname
-		aa[0].Department = users[i1].Department
-		aa[0].Keshi = users[i1].Secoffice
-		aa[0].Numbers = numbers1
-		aa[0].Marks = marks1
-		slice1 = append(slice1, aa...)
-		marks1 = 0
-		numbers1 = 0
-	}
-	c.Data["person"] = slice1
-	c.TplName = "admin_person.tpl"
-}
-
 //管理员登录显示侧栏结构，方便查看科室里员工总体情况，以及查看员工个人详细
 func (c *Achievement) GetAchievement() {
-	//从数据库取得parentid为0的单位名称和ID
-	//然后查询所有parentid为ID的名称——得到分院名称和分院id
-	//查询所有parentid为分院id的名称——得到科室名称和科室id
-	//查询所有pid为科室id的名称和id——得到价值分类名称和id
-	//查询所有pid为价值分类id——得到价值名称和id，分值
-	//查询所有pid为价值id——得到选择项和分值——进行字符串分割
-	//构造struct——转json数据b, err := json.Marshal(group) fmt.Println(string(b))
-	// slice1 := make([]Sidebar1, 0)
-	// slice2 := make([]Sidebar2, 0)
 	//1.首先判断是否注册
 	if !checkAccount(c.Ctx) {
-		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
 		route := c.Ctx.Request.URL.String()
 		c.Data["Url"] = route
 		c.Redirect("/login?url="+route, 302)
-		// c.Redirect("/login", 302)
 		return
 	}
-	//4.取得客户端用户名
+	//2.取得客户端用户名
 	var uname string
 	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
 	defer sess.SessionRelease(c.Ctx.ResponseWriter)
@@ -238,40 +120,17 @@ func (c *Achievement) GetAchievement() {
 		uname = v.(string)
 		c.Data["Uname"] = v.(string)
 	}
-	// uname := v.(string) //ck.Value
-	//4.取出用户的权限等级
+	//3.取出用户的权限等级
 	role, _ := checkRole(c.Ctx) //login里的
-	// beego.Info(role)
-	//5.进行逻辑分析：
-	// rolename, err := strconv.ParseInt(role, 10, 64)
-	// if err != nil {
-	// 	beego.Error(err)
-	// }
-	if role > 4 { //
-		// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
+	if role > 4 {               //
 		route := c.Ctx.Request.URL.String()
 		c.Data["Url"] = route
 		c.Redirect("/roleerr?url="+route, 302)
-		// c.Redirect("/roleerr", 302)
 		return
 	}
-	// user = models.GetUserByUsername(uname) //得到用户的id、分院和科室等
-	//基于Ip权限的控制：根据ip，查出姓名，得到科室、分院，得到权限等级，根据等级，显示不同侧栏
-	//然后交给iframe里结合权限进行内容显示，点击了无权访问的node，显示权限不够。
-
-	slice3 := make([]Sidebar3, 0)
-	slice4 := make([]Sidebar4, 0)
-	slice5 := make([]Sidebar5, 0)
-	// slice6 := make([]Sidebar6, 0)
-	category, err := models.GetPids(0) //得到单位
-	if err != nil {
-		beego.Error(err)
-	}
-	var Sidebar7 Sidebar6
-	Sidebar7.Id = category[0].Id
-	Sidebar7.Level = "0"
-	Sidebar7.Danwei = category[0].Title //单位名称
-	// Sidebar7.Selectable = false
+	achemployee := make([]AchEmployee, 0)
+	achsecoffice := make([]AchSecoffice, 0)
+	achdepart := make([]AchDepart, 0)
 	//由uname取得user,获得user的分院名称
 	user, err := models.GetUserByUsername(uname)
 	if err != nil {
@@ -279,227 +138,567 @@ func (c *Achievement) GetAchievement() {
 	}
 	switch role {
 	case 1: //管理员登录显示的侧栏是全部的
-		category1, err := models.GetPids(category[0].Id) //得到多个分院
-		// beego.Info(category[0].Id)
+		category1, err := models.GetAdminDepart(0) //得到多个分院
 		if err != nil {
 			beego.Error(err)
 		}
 		for i1, _ := range category1 {
-			aa := make([]Sidebar5, 1)
+			aa := make([]AchDepart, 1)
 			aa[0].Id = category1[i1].Id
 			aa[0].Level = "1"
-			aa[0].Pid = category[0].Id
-			aa[0].Department = category1[i1].Title //分院名称
-			// aa[0].Selectable = false
-			category2, err := models.GetPids(category1[i1].Id) //得到多个科室
-			// beego.Info(category1[i1].Id)
+			// aa[0].Pid = category[0].Id
+			aa[0].Title = category1[i1].Title //分院名称
+			// beego.Info(category1[i1].Title)
+			category2, err := models.GetAdminDepart(category1[i1].Id) //得到多个科室
 			if err != nil {
 				beego.Error(err)
 			}
 			for i2, _ := range category2 {
-				bb := make([]Sidebar4, 1)
+				bb := make([]AchSecoffice, 1)
 				bb[0].Id = category2[i2].Id
 				bb[0].Level = "2"
 				bb[0].Pid = category1[i1].Id
-				bb[0].Keshi = category2[i2].Title //科室名称
-				// bb[0].Selectable = false
+				bb[0].Title = category2[i2].Title //科室名称
+				// beego.Info(category2[i2].Title)
 				//根据分院和科室查所有员工
 				users, count, err := models.GetUsersbySec(category1[i1].Title, category2[i2].Title) //得到员工姓名
 				if err != nil {
 					beego.Error(err)
 				}
 				for i3, _ := range users {
-					cc := make([]Sidebar3, 1)
+					cc := make([]AchEmployee, 1)
 					cc[0].Id = users[i3].Id
 					cc[0].Level = "3"
 					cc[0].Pid = category2[i2].Id
 					cc[0].Nickname = users[i3].Nickname //名称
+					// beego.Info(users[i3].Nickname)
 					// cc[0].Selectable = false
-					slice3 = append(slice3, cc...)
+					achemployee = append(achemployee, cc...)
 				}
-				//64位转string
-				// bb[0].Href = "/secofficeshow?secid=" + strconv.FormatInt(category2[i2].Id, 10) + "&depid=" + strconv.FormatInt(category1[i1].Id, 10) //得到Id用于添加成果 + " target='_blank'"
 				bb[0].Tags[0] = count
-				bb[0].Yuangong = slice3
-				slice3 = make([]Sidebar3, 0) //再把slice置0
-				slice4 = append(slice4, bb...)
+				bb[0].Employee = achemployee
+				achemployee = make([]AchEmployee, 0) //再把slice置0
+				achsecoffice = append(achsecoffice, bb...)
 			}
-			aa[0].Bumen = slice4
-			slice4 = make([]Sidebar4, 0) //再把slice置0
-			slice5 = append(slice5, aa...)
+			aa[0].Secoffice = achsecoffice
+			achsecoffice = make([]AchSecoffice, 0) //再把slice置0
+			achdepart = append(achdepart, aa...)
 		}
-		Sidebar7.Fenyuan = slice5
-		slice5 = make([]Sidebar5, 0) //再把slice置0
-		// beego.Info(Sidebar7)
-		// beego.Info(contents)二进制的东西
 	case 2: //分院领导登录显示的侧栏是本分院的所有科室
 		//由分院名称取得分院属性
-		category1, err := models.GetCategorybyname(user.Department)
-		// category1, err := models.GetPids(category[0].Id) //得到多个分院
-		// beego.Info(category[0].Id)
+		category1, err := models.GetAdminDepartName(user.Department)
 		if err != nil {
 			beego.Error(err)
 		}
-		aa := make([]Sidebar5, 1)
+		aa := make([]AchDepart, 1)
 		aa[0].Id = category1.Id
 		aa[0].Level = "1"
-		aa[0].Pid = category[0].Id
-		aa[0].Department = category1.Title //分院名称
+		// aa[0].Pid = category[0].Id
+		aa[0].Title = category1.Title //分院名称
 		// aa[0].Selectable = false
-		category2, err := models.GetPids(category1.Id) //得到多个科室
-		// beego.Info(category1[i1].Id)
+		category2, err := models.GetAdminDepartTitle(user.Department) //得到多个科室
 		if err != nil {
 			beego.Error(err)
 		}
 		for i2, _ := range category2 {
-			bb := make([]Sidebar4, 1)
+			bb := make([]AchSecoffice, 1)
 			bb[0].Id = category2[i2].Id
 			bb[0].Level = "2"
 			bb[0].Pid = category1.Id
-			bb[0].Keshi = category2[i2].Title //科室名称
-			// bb[0].Selectable = false
+			bb[0].Title = category2[i2].Title //科室名称
 			//根据分院和科室查所有员工
 			users, count, err := models.GetUsersbySec(category1.Title, category2[i2].Title) //得到员工姓名
 			if err != nil {
 				beego.Error(err)
 			}
 			for i3, _ := range users {
-				cc := make([]Sidebar3, 1)
+				cc := make([]AchEmployee, 1)
 				cc[0].Id = users[i3].Id
 				cc[0].Level = "3"
 				cc[0].Pid = category2[i2].Id
 				cc[0].Nickname = users[i3].Nickname //名称
 				// cc[0].Selectable = false
-				slice3 = append(slice3, cc...)
+				achemployee = append(achemployee, cc...)
 			}
-			//64位转string
-			// bb[0].Href = "/secofficeshow?secid=" + strconv.FormatInt(category2[i2].Id, 10) + "&depid=" + strconv.FormatInt(category1[i1].Id, 10) //得到Id用于添加成果 + " target='_blank'"
 			bb[0].Tags[0] = count
-			bb[0].Yuangong = slice3
-			slice3 = make([]Sidebar3, 0) //再把slice置0
-			slice4 = append(slice4, bb...)
+			bb[0].Employee = achemployee
+			achemployee = make([]AchEmployee, 0) //再把slice置0
+			achsecoffice = append(achsecoffice, bb...)
 		}
-		aa[0].Bumen = slice4
-		slice4 = make([]Sidebar4, 0) //再把slice置0
-		slice5 = append(slice5, aa...)
-		Sidebar7.Fenyuan = slice5
-		slice5 = make([]Sidebar5, 0) //再把slice置0
+		aa[0].Secoffice = achsecoffice
+		achsecoffice = make([]AchSecoffice, 0) //再把slice置0
+		achdepart = append(achdepart, aa...)
 	case 3: //主任登录显示的侧栏是本科室的所有人
 		//由uname取得分院名称和科室名称
 		// user := models.GetUserByUsername(uname)
 		//由分院名称取得分院属性
-		category1, err := models.GetCategorybyname(user.Department)
+		category1, err := models.GetAdminDepartName(user.Department)
 		if err != nil {
 			beego.Error(err)
 		}
-		//由分院id和科室名称取得科室
-		category2, err := models.GetCategorybyidtitle(category1.Id, user.Secoffice)
-		if err != nil {
-			beego.Error(err)
-		}
-		aa := make([]Sidebar5, 1)
+		aa := make([]AchDepart, 1)
 		aa[0].Id = category1.Id
 		aa[0].Level = "1"
-		aa[0].Pid = category[0].Id
-		aa[0].Department = category1.Title //分院名称
-
-		bb := make([]Sidebar4, 1)
+		// aa[0].Pid = category[0].Id
+		aa[0].Title = category1.Title //分院名称
+		//由分院id和科室名称取得科室
+		category2, err := models.GetAdminDepartbyidtitle(category1.Id, user.Secoffice)
+		if err != nil {
+			beego.Error(err)
+		}
+		bb := make([]AchSecoffice, 1)
 		bb[0].Id = category2.Id
 		bb[0].Level = "2"
 		bb[0].Pid = category1.Id
-		bb[0].Keshi = category2.Title //科室名称
-		// bb[0].Selectable = false
+		bb[0].Title = category2.Title //科室名称
 		//根据分院和科室查所有员工
 		users, count, err := models.GetUsersbySec(category1.Title, category2.Title) //得到员工姓名
 		if err != nil {
 			beego.Error(err)
 		}
 		for i3, _ := range users {
-			cc := make([]Sidebar3, 1)
+			cc := make([]AchEmployee, 1)
 			cc[0].Id = users[i3].Id
 			cc[0].Level = "3"
 			cc[0].Pid = category2.Id
 			cc[0].Nickname = users[i3].Nickname //名称
 			// cc[0].Selectable = false
-			slice3 = append(slice3, cc...)
+			achemployee = append(achemployee, cc...)
 		}
-		//64位转string
-		// bb[0].Href = "/secofficeshow?secid=" + strconv.FormatInt(category2[i2].Id, 10) + "&depid=" + strconv.FormatInt(category1[i1].Id, 10) //得到Id用于添加成果 + " target='_blank'"
 		bb[0].Tags[0] = count
-		bb[0].Yuangong = slice3
-		slice3 = make([]Sidebar3, 0) //再把slice置0
-		slice4 = append(slice4, bb...)
-		aa[0].Bumen = slice4
-		slice4 = make([]Sidebar4, 0) //再把slice置0
-		slice5 = append(slice5, aa...)
-		Sidebar7.Fenyuan = slice5
-		slice5 = make([]Sidebar5, 0) //再把slice置0
+		bb[0].Employee = achemployee
+		achemployee = make([]AchEmployee, 0) //再把slice置0
+		achsecoffice = append(achsecoffice, bb...)
+		aa[0].Secoffice = achsecoffice
+		achsecoffice = make([]AchSecoffice, 0) //再把slice置0
+		achdepart = append(achdepart, aa...)
 	case 4: //个人登录显示自己
 		//由uname取得分院名称和科室名称
 		// user := models.GetUserByUsername(uname)
 		//由分院名称取得分院属性
-		category1, err := models.GetCategorybyname(user.Department)
+		category1, err := models.GetAdminDepartName(user.Department)
 		if err != nil {
 			beego.Error(err)
 		}
-		//由分院id和科室名称取得科室
-		category2, err := models.GetCategorybyidtitle(category1.Id, user.Secoffice)
-		if err != nil {
-			beego.Error(err)
-		}
-		aa := make([]Sidebar5, 1)
+		aa := make([]AchDepart, 1)
 		aa[0].Id = category1.Id
 		aa[0].Level = "1"
-		aa[0].Pid = category[0].Id
-		aa[0].Department = category1.Title //分院名称
-
-		bb := make([]Sidebar4, 1)
+		// aa[0].Pid = category[0].Id
+		aa[0].Title = category1.Title //分院名称
+		//由分院id和科室名称取得科室
+		category2, err := models.GetAdminDepartbyidtitle(category1.Id, user.Secoffice)
+		if err != nil {
+			beego.Error(err)
+		}
+		bb := make([]AchSecoffice, 1)
 		bb[0].Id = category2.Id
 		bb[0].Level = "2"
 		bb[0].Pid = category1.Id
-		bb[0].Keshi = category2.Title //科室名称
-		// bb[0].Selectable = false
-		//根据分院和科室查所有员工
-		// users, count, err := models.GetUsersbySec(category1.Title, category2.Title) //得到员工姓名
-		// if err != nil {
-		// 	beego.Error(err)
-		// }
-		// for i3, _ := range users {
-		cc := make([]Sidebar3, 1)
+		bb[0].Title = category2.Title //科室名称
+
+		cc := make([]AchEmployee, 1)
 		cc[0].Id = user.Id
 		cc[0].Level = "3"
 		cc[0].Pid = category2.Id
 		cc[0].Nickname = user.Nickname //名称
-		// cc[0].Selectable = false
-		slice3 = append(slice3, cc...)
-		// }
-		//64位转string
-		// bb[0].Href = "/secofficeshow?secid=" + strconv.FormatInt(category2[i2].Id, 10) + "&depid=" + strconv.FormatInt(category1[i1].Id, 10) //得到Id用于添加成果 + " target='_blank'"
+
+		achemployee = append(achemployee, cc...)
+
 		bb[0].Tags[0] = 1
-		bb[0].Yuangong = slice3
-		slice3 = make([]Sidebar3, 0) //再把slice置0
-		slice4 = append(slice4, bb...)
-		aa[0].Bumen = slice4
-		slice4 = make([]Sidebar4, 0) //再把slice置0
-		slice5 = append(slice5, aa...)
-		Sidebar7.Fenyuan = slice5
-		slice5 = make([]Sidebar5, 0) //再把slice置0
+		bb[0].Employee = achemployee
+		achemployee = make([]AchEmployee, 0) //再把slice置0
+		achsecoffice = append(achsecoffice, bb...)
+		aa[0].Secoffice = achsecoffice
+		achsecoffice = make([]AchSecoffice, 0) //再把slice置0
+		achdepart = append(achdepart, aa...)
 	}
-	// b, err := json.Marshal(Sidebar7) //不需要转成json格式
-	c.Data["Input"] = Sidebar7 //这个没用吧
-	// beego.Info(string(b))
-	// fmt.Println(string(b))
 	if err != nil {
 		beego.Error(err)
 	}
-	c.Data["json"] = Sidebar7
-	// c.ServeJSON()
-	c.TplName = "admin_achievement_show.tpl"
+	c.Data["json"] = achdepart
+	// beego.Info(achdepart)
+	c.TplName = "achievement.tpl"
 }
 
 //上面那个是显示侧栏
 //这个是显示右侧iframe框架内容——科室内人员成果情况统计
 func (c *Achievement) Secofficeshow() {
+	//1.首先判断是否注册
+	if !checkAccount(c.Ctx) {
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/login?url="+route, 302)
+		return
+	}
+	//2.取得客户端用户名
+	var uname string
+	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
+	defer sess.SessionRelease(c.Ctx.ResponseWriter)
+	v := sess.Get("uname")
+	if v != nil {
+		uname = v.(string)
+		c.Data["Uname"] = v.(string)
+	}
+	//由uname取得user
+	user, err := models.GetUserByUsername(uname)
+	if err != nil {
+		beego.Error(err)
+	}
+	//3.取出用户的权限等级
+	role, _ := checkRole(c.Ctx) //login里的
+	if role > 4 {               //
+		route := c.Ctx.Request.URL.String()
+		c.Data["Url"] = route
+		c.Redirect("/roleerr?url="+route, 302)
+		return
+	}
+	//分院——科室——人员甲（乙、丙……）——绘制——设计——校核——审查——合计——排序
+	secid := c.Input().Get("secid")
+	if secid == "" { //如果为空，则用登录的
+		secid = strconv.FormatInt(user.Id, 10)
+	}
+	secid1, err := strconv.ParseInt(secid, 10, 64)
+	if err != nil {
+		beego.Error(err)
+	}
+
+	level := c.Input().Get("level")
+	key := c.Input().Get("key")
+	daterange := c.Input().Get("datefilter")
+	// beego.Info(daterange)
+	type Duration int64
+	const (
+		Nanosecond  Duration = 1
+		Microsecond          = 1000 * Nanosecond
+		Millisecond          = 1000 * Microsecond
+		Second               = 1000 * Millisecond
+		Minute               = 60 * Second
+		Hour                 = 60 * Minute
+	)
+	hours := 0
+	var t1, t2 time.Time
+	if len(daterange) > 19 {
+		array := strings.Split(daterange, " - ")
+		starttime1 := array[0]
+		endtime1 := array[1]
+		const lll = "2006-01-02"
+		starttime, _ := time.Parse(lll, starttime1)
+		endtime, _ := time.Parse(lll, endtime1)
+		t1 = starttime.Add(-time.Duration(hours) * time.Hour)
+		// beego.Info(t1)：2016-08-19 00:00:00 +0000 UTC
+		t2 = endtime.Add(-time.Duration(hours) * time.Hour)
+		// beego.Info(t2)
+	} else {
+		t2 = time.Now()
+		// beego.Info(t1):2016-08-19 23:27:29.7463081 +0800 CST
+		// starttime, _ := time.Parse("2006-01-02", starttime1)
+		t1 = t2.Add(-time.Duration(720) * time.Hour) //往前一个月时间
+		// beego.Info(t2)
+	}
+
+	switch level {
+	case "0": //如果是总院，则显示全部分院情况
+		// c.Data["IsLogin"] = checkAccount(c.Ctx)
+		c.Data["Starttime"] = t1
+		c.Data["Endtime"] = t2
+		c.TplName = "institute_show.tpl"
+	case "1": //如果是分院，则显示全部科室
+		categoryname, err := models.GetAdminDepartbyId(secid1)
+		if err != nil {
+			beego.Error(err)
+		}
+		//权限判断，并且属于这个分院
+		if role == 1 || role == 2 && user.Department == categoryname.Title { //
+
+			c.Data["Starttime"] = t1
+			c.Data["Endtime"] = t2
+			c.Data["Secid"] = secid
+			c.Data["Level"] = level
+			c.Data["Deptitle"] = categoryname.Title
+			c.TplName = "achiev_depoffice.tpl"
+		} else {
+			route := c.Ctx.Request.URL.String()
+			c.Data["Url"] = route
+			c.Redirect("/roleerr?url="+route, 302)
+			// c.Redirect("/roleerr", 302)
+			return
+		}
+	case "2": //如果是科室，则显示全部人员情况
+		//取得科室名称
+		categoryname, err := models.GetAdminDepartbyId(secid1)
+		if err != nil {
+			beego.Error(err)
+		}
+		// 取得分院名称
+		categoryname1, err := models.GetAdminDepartbyId(categoryname.ParentId)
+		if err != nil {
+			beego.Error(err)
+		}
+		//1.进行权限读取,属于这个科室，或者属于这个分院
+		if role == 1 || role == 3 && user.Secoffice == categoryname.Title || role == 2 && user.Department == categoryname1.Title { //
+
+			c.Data["Starttime"] = t1
+			c.Data["Endtime"] = t2
+			c.Data["Secid"] = secid
+			c.Data["Sectitle"] = categoryname.Title
+			c.Data["Level"] = level
+
+			c.TplName = "achiev_secoffice.tpl"
+		} else {
+			// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
+			route := c.Ctx.Request.URL.String()
+			c.Data["Url"] = route
+			c.Redirect("/roleerr?url="+route, 302)
+			// c.Redirect("/roleerr", 302)
+			return
+		}
+	default:
+		// case "3": //如果是个人，则显示个人详细情况
+		//分2部分，一部分是已经完成状态的，state是4，另一部分是状态分别是3待审查通过,2，1的
+		usernickname := models.GetUserByUserId(secid1)
+		//1.进行权限读取，室主任以上并且属于这个科室，或者或本人
+		if role == 1 || role == 3 && user.Secoffice == usernickname.Secoffice || role == 2 && user.Department == usernickname.Department || user.Nickname == usernickname.Nickname { //
+			// employeecatalog := make([]models.Catalog, 0)
+			//根据员工id和成果类型查出所有成果，设计成果，校核成果，审查成果
+			//1、查图纸、报告……补充时间段secid即为userid
+			//这里根据成果类型表循环查找
+			//取得成果类型
+			var slice1 []string
+			ratios, err := models.GetAchievcategories()
+			for _, v := range ratios {
+				aa := make([]string, 1)
+				aa[0] = v.Category //名称
+				// cc[0].Selectable = false
+				slice1 = append(slice1, aa...)
+			}
+			c.Data["Select2"] = slice1
+
+			//查自己每个月的工作量和排名
+			employeevalue := make([]models.Employeeachievement, 0)
+			employeerealvalue := make([]models.Employeeachievement, 0)
+			//查自己所在科室
+			//根据分院和科室查所有员工
+			users, _, err := models.GetUsersbySec(usernickname.Department, usernickname.Secoffice) //得到员工姓名
+			if err != nil {
+				beego.Error(err)
+			}
+			// beego.Info(users)
+			//现在的月份
+			const MMM = "2006-01"
+			// date := time.Now()
+			//	fmt.Println(date)
+			month1 := time.Now().Format(MMM)
+			// fmt.Println(convdate)
+			month2, err := time.Parse(MMM, month1)
+			if err != nil {
+				beego.Error(err)
+			}
+			//全部工作量
+			var slice2 []float64
+			var slice3 []int
+			var slice4 []time.Month
+			//实物工作量
+			var slice5 []float64
+			var slice6 []int
+			var slice7 []time.Month
+			//往前12个月循环每个月
+			for i4 := 0; i4 < 12; i4++ {
+				for _, v3 := range users {
+					//由username查出所有编制成果总分、设计总分……合计
+					employee, employeereal, err := models.Getemployeevalue(v3.Nickname, month2.AddDate(0, -11+i4, 0), month2.AddDate(0, -11+i4+1, 0))
+					if err != nil {
+						beego.Error(err)
+					}
+					employeevalue = append(employeevalue, employee...)
+					employeerealvalue = append(employeerealvalue, employeereal...)
+				}
+				// beego.Info(employeevalue)
+				//排序
+				pList := graphictopics(employeevalue)
+				pListreal := graphictopics(employeerealvalue)
+				sort.Sort(pList)
+				sort.Sort(pListreal)
+				// beego.Info(pList)
+				for i5, v5 := range pList {
+					if v5.Name == usernickname.Nickname {
+						aa := make([]float64, 1)
+						bb := make([]int, 1)
+						cc := make([]time.Month, 1)
+						aa[0] = v5.Sigma                             //工作量
+						bb[0] = i5 + 1                               //排名
+						cc[0] = month2.AddDate(0, -11+i4, 0).Month() //月份
+						slice2 = append(slice2, aa...)
+						slice3 = append(slice3, bb...)
+						slice4 = append(slice4, cc...)
+						break
+					}
+				}
+				employeevalue = make([]models.Employeeachievement, 0)
+				for i6, v6 := range pListreal {
+					if v6.Name == usernickname.Nickname {
+						dd := make([]float64, 1)
+						ee := make([]int, 1)
+						ff := make([]time.Month, 1)
+						dd[0] = v6.Sigma                             //工作量
+						ee[0] = i6 + 1                               //排名
+						ff[0] = month2.AddDate(0, -11+i4, 0).Month() //月份
+						slice5 = append(slice5, dd...)
+						slice6 = append(slice6, ee...)
+						slice7 = append(slice7, ff...)
+						break
+					}
+				}
+				employeerealvalue = make([]models.Employeeachievement, 0)
+			}
+			c.Data["Value1"] = slice2     //工作量
+			c.Data["Value2"] = slice3     //排名
+			c.Data["Value3"] = slice4     //月份
+			c.Data["realValue1"] = slice5 //实物工作量
+			c.Data["realValue2"] = slice6 //实物工作量排名
+			c.Data["realValue3"] = slice7 //月份
+			//参与的项目列表——检索、去重
+
+			//根据userid得到所有成果,时间段，在模板里，根据catalogs的类型与category匹配进行显示即可
+			//查出所有名单，传给json结构，再传给前端修改人名时选择
+			var user22 models.User //这里修改[]*models.User(uname string)
+			inputs := c.Input()
+			user22.Username = inputs.Get("uname")
+			uname1, err := models.GetUname(user22)
+
+			if err != nil {
+				beego.Error(err)
+			}
+
+			slice11 := make([]Userselect, 0)
+
+			for _, v := range uname1 {
+				aa := make([]Userselect, 1)
+				aa[0].Id = v.Id //这里用for i1,v1,然后用v1.Id一样的意思
+				aa[0].Ad = v.Nickname
+				aa[0].Name = v.Nickname //v.Username + " " +
+				slice11 = append(slice11, aa...)
+			}
+			if err != nil {
+				beego.Error(err)
+			}
+			c.Data["Userselect"] = slice11
+
+			catalogs, err := models.Getcatalog2byuserid(secid, t1, t2)
+			if err != nil {
+				beego.Error(err)
+			}
+			c.Data["Starttime"] = t1
+			c.Data["Endtime"] = t2
+			c.Data["Ratio"] = ratios //定义的成果类型
+			//下面这个catalogs用于employee_show.tpl
+			c.Data["Catalogs"] = catalogs
+			c.Data["Secid"] = secid
+			c.Data["Level"] = level
+			c.Data["UserNickname"] = usernickname.Nickname
+
+			if key == "modify" { //新窗口显示处理页面
+				//如果是本人，则显示
+				c.TplName = "achiev_employeework.tpl"
+			} else { //直接查看页面
+				//如果是本人，则显示带处理按钮的
+				if usernickname.Nickname == user.Nickname {
+					c.Data["IsMe"] = true
+				} else { //别人查看，不显示处理按钮
+					c.Data["IsMe"] = false
+				}
+				c.TplName = "achiev_employee.tpl"
+			}
+		} else {
+			route := c.Ctx.Request.URL.String()
+			c.Data["Url"] = route
+			c.Redirect("/roleerr?url="+route, 302)
+			return
+		}
+	}
+}
+
+//上面那个是显示右侧页面
+//这个是填充数据——科室内人员成果情况统计
+func (c *Achievement) SecofficeData() {
+	//分院——科室——人员甲（乙、丙……）——绘制——设计——校核——审查——合计——排序
+	secid := c.Input().Get("secid")
+	secid1, err := strconv.ParseInt(secid, 10, 64)
+	if err != nil {
+		beego.Error(err)
+	}
+	level := c.Input().Get("level")
+	daterange := c.Input().Get("datefilter")
+	// beego.Info(daterange)
+	type Duration int64
+	const (
+		Nanosecond  Duration = 1
+		Microsecond          = 1000 * Nanosecond
+		Millisecond          = 1000 * Microsecond
+		Second               = 1000 * Millisecond
+		Minute               = 60 * Second
+		Hour                 = 60 * Minute
+	)
+	hours := 0
+	var t1, t2 time.Time
+	if len(daterange) > 19 {
+		array := strings.Split(daterange, " - ")
+		starttime1 := array[0]
+		endtime1 := array[1]
+		const lll = "2006-01-02"
+		starttime, _ := time.Parse(lll, starttime1)
+		endtime, _ := time.Parse(lll, endtime1)
+		t1 = starttime.Add(-time.Duration(hours) * time.Hour)
+		// beego.Info(t1)：2016-08-19 00:00:00 +0000 UTC
+		t2 = endtime.Add(-time.Duration(hours) * time.Hour)
+		beego.Info(t2)
+	} else {
+		t2 = time.Now()
+		// beego.Info(t1):2016-08-19 23:27:29.7463081 +0800 CST
+		// starttime, _ := time.Parse("2006-01-02", starttime1)
+		t1 = t2.Add(-time.Duration(720) * time.Hour) //往前一个月时间
+		// beego.Info(t2)
+	}
+
+	//取得科室名称
+	categoryname, err := models.GetAdminDepartbyId(secid1)
+	if err != nil {
+		beego.Error(err)
+	}
+
+	employeevalue := make([]models.Employeeachievement, 0)
+	employeerealvalue := make([]models.Employeeachievement, 0)
+	//根据科室id查所有员工
+	users, _, err := models.GetUsersbySecId(secid) //得到员工姓名
+	// beego.Info(users)
+	if err != nil {
+		beego.Error(err)
+	}
+	for _, v := range users {
+		//由username查出所有编制成果总分、设计总分……合计
+		employee, employeereal, err := models.Getemployeevalue(v.Nickname, t1, t2)
+		if err != nil {
+			beego.Error(err)
+		}
+		employeevalue = append(employeevalue, employee...)
+		employeerealvalue = append(employeerealvalue, employeereal...)
+	}
+	//排序
+	pList := graphictopics(employeevalue)
+	pListreal := graphictopics(employeerealvalue)
+	sort.Sort(pList)
+	sort.Sort(pListreal)
+	c.Data["Starttime"] = t1
+	c.Data["Endtime"] = t2
+	c.Data["Secid"] = secid
+	c.Data["Sectitle"] = categoryname.Title
+	c.Data["Level"] = level
+	c.Data["Employee"] = pList //employeevalue
+	c.Data["json"] = pList
+	c.ServeJSON()
+}
+
+//这个是填充数据——分院情况统计
+func (c *Achievement) DepartData() {
 	//1.首先判断是否注册
 	if !checkAccount(c.Ctx) {
 		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
@@ -575,7 +774,7 @@ func (c *Achievement) Secofficeshow() {
 		t1 = starttime.Add(-time.Duration(hours) * time.Hour)
 		// beego.Info(t1)：2016-08-19 00:00:00 +0000 UTC
 		t2 = endtime.Add(-time.Duration(hours) * time.Hour)
-		beego.Info(t2)
+		// beego.Info(t2)
 	} else {
 		t2 = time.Now()
 		// beego.Info(t1):2016-08-19 23:27:29.7463081 +0800 CST
@@ -591,7 +790,7 @@ func (c *Achievement) Secofficeshow() {
 		c.Data["Endtime"] = t2
 		c.TplName = "institute_show.tpl"
 	case "1": //如果是分院，则显示全部科室
-		categoryname, err := models.GetCategory(secid1)
+		categoryname, err := models.GetAdminDepartbyId(secid1)
 		if err != nil {
 			beego.Error(err)
 		}
@@ -600,13 +799,16 @@ func (c *Achievement) Secofficeshow() {
 			//根据分院id得到科室id
 			//循环构造分院数据，view中进行循环显示各个科室情况
 			Secofficevalue := make([]models.Secofficeachievement, 0)
+			Secofficerealvalue := make([]models.Secofficeachievement, 0)
 			category, err := models.GetPids(secid1) //得到多个科室
 			if err != nil {
 				beego.Error(err)
 			}
 			employeevalue := make([]models.Employeeachievement, 0)
+			employeerealvalue := make([]models.Employeeachievement, 0)
 			for _, v1 := range category {
 				aa := make([]models.Secofficeachievement, 1)
+				realvalue := make([]models.Secofficeachievement, 1)
 				//根据科室id查所有员工
 				secid2 := strconv.FormatInt(v1.Id, 10)
 				users, _, err := models.GetUsersbySecId(secid2) //得到员工姓名
@@ -615,21 +817,30 @@ func (c *Achievement) Secofficeshow() {
 				}
 				for _, v := range users {
 					//由username查出所有编制成果总分、设计总分……合计
-					employee, err := models.Getemployeevalue(v.Nickname, t1, t2)
+					employee, employeereal, err := models.Getemployeevalue(v.Nickname, t1, t2)
 					if err != nil {
 						beego.Error(err)
 					}
 					employeevalue = append(employeevalue, employee...)
+					employeerealvalue = append(employeerealvalue, employeereal...)
 				}
 				//排序
 				pList := graphictopics(employeevalue)
+				pListreal := graphictopics(employeerealvalue)
 				sort.Sort(pList)
-				aa[0].Id = v1.Id       //科室Id
-				aa[0].Name = v1.Title  //科室名称
+				sort.Sort(pListreal)
+				aa[0].Id = v1.Id //科室Id
+				realvalue[0].Id = v1.Id
+				aa[0].Name = v1.Title //科室名称
+				realvalue[0].Name = v1.Title
 				aa[0].Employee = pList //employeevalue
+				realvalue[0].Employee = pListreal
 				Secofficevalue = append(Secofficevalue, aa...)
+				Secofficerealvalue = append(Secofficerealvalue, realvalue...)
 				aa = make([]models.Secofficeachievement, 0) //再把slice置0
+				realvalue = make([]models.Secofficeachievement, 0)
 				employeevalue = make([]models.Employeeachievement, 0)
+				employeerealvalue = make([]models.Employeeachievement, 0)
 			}
 			c.Data["Starttime"] = t1
 			c.Data["Endtime"] = t2
@@ -647,18 +858,19 @@ func (c *Achievement) Secofficeshow() {
 		}
 	case "2": //如果是科室，则显示全部人员情况
 		//取得科室名称
-		categoryname, err := models.GetCategory(secid1)
+		categoryname, err := models.GetAdminDepartbyId(secid1)
 		if err != nil {
 			beego.Error(err)
 		}
 		// 取得分院名称
-		categoryname1, err := models.GetCategory(categoryname.ParentId)
+		categoryname1, err := models.GetAdminDepartbyId(categoryname.ParentId)
 		if err != nil {
 			beego.Error(err)
 		}
 		//1.进行权限读取,属于这个科室，或者属于这个分院
 		if role == 1 || role == 3 && user.Secoffice == categoryname.Title || role == 2 && user.Department == categoryname1.Title { //
 			employeevalue := make([]models.Employeeachievement, 0)
+			employeerealvalue := make([]models.Employeeachievement, 0)
 			// depid := c.Input().Get("depid")
 			//根据分院和科室查所有员工
 			// users, count, err := models.GetUsersbySec(category1.Title, category2.Title) //得到员工姓名
@@ -670,21 +882,27 @@ func (c *Achievement) Secofficeshow() {
 			}
 			for _, v := range users {
 				//由username查出所有编制成果总分、设计总分……合计
-				employee, err := models.Getemployeevalue(v.Nickname, t1, t2)
+				employee, employeereal, err := models.Getemployeevalue(v.Nickname, t1, t2)
 				if err != nil {
 					beego.Error(err)
 				}
 				employeevalue = append(employeevalue, employee...)
+				employeerealvalue = append(employeerealvalue, employeereal...)
 			}
 			//排序
 			pList := graphictopics(employeevalue)
+			pListreal := graphictopics(employeerealvalue)
 			sort.Sort(pList)
+			sort.Sort(pListreal)
 			c.Data["Starttime"] = t1
 			c.Data["Endtime"] = t2
 			c.Data["Secid"] = secid
 			c.Data["Sectitle"] = categoryname.Title
 			c.Data["Level"] = level
 			c.Data["Employee"] = pList //employeevalue
+			c.Data["json"] = pList
+			c.ServeJSON()
+			c.Data["Employeereal"] = pListreal
 			c.TplName = "secoffice_show.tpl"
 		} else {
 			// port := strconv.Itoa(c.Ctx.Input.Port()) //c.Ctx.Input.Site() + ":" + port +
@@ -706,7 +924,7 @@ func (c *Achievement) Secofficeshow() {
 			//这里根据成果类型表循环查找
 			//取得成果类型
 			var slice1 []string
-			ratios, err := models.GetRatios()
+			ratios, err := models.GetAchievcategories()
 			for _, v := range ratios {
 				aa := make([]string, 1)
 				aa[0] = v.Category //名称
@@ -717,6 +935,7 @@ func (c *Achievement) Secofficeshow() {
 
 			//查自己每个月的工作量和排名
 			employeevalue := make([]models.Employeeachievement, 0)
+			employeerealvalue := make([]models.Employeeachievement, 0)
 			//查自己所在科室
 			//根据分院和科室查所有员工
 			users, _, err := models.GetUsersbySec(usernickname.Department, usernickname.Secoffice) //得到员工姓名
@@ -734,23 +953,31 @@ func (c *Achievement) Secofficeshow() {
 			if err != nil {
 				beego.Error(err)
 			}
+			//全部工作量
 			var slice2 []float64
 			var slice3 []int
 			var slice4 []time.Month
+			//实物工作量
+			var slice5 []float64
+			var slice6 []int
+			var slice7 []time.Month
 			//往前12个月循环每个月
 			for i4 := 0; i4 < 12; i4++ {
 				for _, v3 := range users {
 					//由username查出所有编制成果总分、设计总分……合计
-					employee, err := models.Getemployeevalue(v3.Nickname, month2.AddDate(0, -11+i4, 0), month2.AddDate(0, -11+i4+1, 0))
+					employee, employeereal, err := models.Getemployeevalue(v3.Nickname, month2.AddDate(0, -11+i4, 0), month2.AddDate(0, -11+i4+1, 0))
 					if err != nil {
 						beego.Error(err)
 					}
 					employeevalue = append(employeevalue, employee...)
+					employeerealvalue = append(employeerealvalue, employeereal...)
 				}
 				// beego.Info(employeevalue)
 				//排序
 				pList := graphictopics(employeevalue)
+				pListreal := graphictopics(employeerealvalue)
 				sort.Sort(pList)
+				sort.Sort(pListreal)
 				// beego.Info(pList)
 				for i5, v5 := range pList {
 					if v5.Name == usernickname.Nickname {
@@ -767,11 +994,28 @@ func (c *Achievement) Secofficeshow() {
 					}
 				}
 				employeevalue = make([]models.Employeeachievement, 0)
+				for i6, v6 := range pListreal {
+					if v6.Name == usernickname.Nickname {
+						dd := make([]float64, 1)
+						ee := make([]int, 1)
+						ff := make([]time.Month, 1)
+						dd[0] = v6.Sigma                             //工作量
+						ee[0] = i6 + 1                               //排名
+						ff[0] = month2.AddDate(0, -11+i4, 0).Month() //月份
+						slice5 = append(slice5, dd...)
+						slice6 = append(slice6, ee...)
+						slice7 = append(slice7, ff...)
+						break
+					}
+				}
+				employeerealvalue = make([]models.Employeeachievement, 0)
 			}
-			c.Data["Value1"] = slice2 //工作量
-			c.Data["Value2"] = slice3 //排名
-			c.Data["Value3"] = slice4 //月份
-
+			c.Data["Value1"] = slice2     //工作量
+			c.Data["Value2"] = slice3     //排名
+			c.Data["Value3"] = slice4     //月份
+			c.Data["realValue1"] = slice5 //实物工作量
+			c.Data["realValue2"] = slice6 //实物工作量排名
+			c.Data["realValue3"] = slice7 //月份
 			//参与的项目列表——检索、去重
 
 			//根据userid得到所有成果,时间段，在模板里，根据catalogs的类型与category匹配进行显示即可
@@ -837,136 +1081,13 @@ func (c *Achievement) Secofficeshow() {
 			// c.Redirect("/roleerr", 302)
 			return
 		}
-		//如果是本人，则显示可编辑状态
-		// if uname == user.Username {
-		// 	c.TplName = "employeeself_show.tpl"
-		// } else {
-		// 	c.TplName = "employee_show.tpl"
-		// }
-
-		// default: //默认显示个人
-		// 	usernickname := models.GetUserByUserId(secid1)
-		// 	ratios, err := models.GetRatios()
-		// 	//根据userid得到所有成果,时间段，在模板里，根据catalogs的类型与category匹配进行显示即可
-		// 	catalogs, err := models.Getcatalog2byuserid(secid, t1, t2)
-		// 	if err != nil {
-		// 		beego.Error(err)
-		// 	}
-		// 	c.Data["Starttime"] = t1
-		// 	c.Data["Endtime"] = t2
-		// 	c.Data["Ratio"] = ratios //定义的成果类型
-		// 	//下面这个catalogs用于employee_show.tpl
-		// 	c.Data["Catalogs"] = catalogs
-		// 	c.Data["Secid"] = secid
-		// 	c.Data["Level"] = "3"
-		// 	c.Data["UserNickname"] = usernickname.Nickname
-		// 	c.Data["IsMe"] = true
-		// 	c.TplName = "employee_show.tpl"
 	}
-}
-
-//用户参与的项目列表
-func (c *Achievement) Participate() {
-	//1.首先判断是否注册
-	if !checkAccount(c.Ctx) {
-		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
-		route := c.Ctx.Request.URL.String()
-		c.Data["Url"] = route
-		c.Redirect("/login?url="+route, 302)
-		// c.Redirect("/login", 302)
-		return
-	}
-	//4.取得客户端用户名
-	var uname string
-	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
-	defer sess.SessionRelease(c.Ctx.ResponseWriter)
-	v := sess.Get("uname")
-	if v != nil {
-		uname = v.(string)
-		c.Data["Uname"] = v.(string)
-	}
-	//由uname取得user
-	user, err := models.GetUserByUsername(uname)
-	if err != nil {
-		beego.Error(err)
-	}
-	secid := c.Input().Get("secid")
-	if secid == "" { //如果为空，则用登录的
-		secid = strconv.FormatInt(user.Id, 10)
-	}
-	secid1, err := strconv.ParseInt(secid, 10, 64)
-	if err != nil {
-		beego.Error(err)
-	}
-	//现在的月份
-	const MMM = "2006-01"
-	// date := time.Now()
-	//	fmt.Println(date)
-	month1 := time.Now().Format(MMM)
-	// fmt.Println(convdate)
-	month2, err := time.Parse(MMM, month1)
-	if err != nil {
-		beego.Error(err)
-	}
-	catalogs, err := models.Getparticipatebyuserid(secid, month2.AddDate(0, -11, 0), month2.AddDate(0, +1, 0))
-	if err != nil {
-		beego.Error(err)
-	}
-
-	slice1 := make([]Project, 0)
-	for _, v := range catalogs {
-		value1, value2, err := models.Getprojuserspecialty(secid1, v.ProjectNumber, v.DesignStage, v.Section, month2.AddDate(0, -11, 0), month2.AddDate(0, +1, 0))
-		if err != nil {
-			beego.Error(err)
-		}
-		aa := make([]Project, 1)
-		aa[0].Id = v.Id //没这个Id，将导致点击表格详细，无法传递项目id号
-		aa[0].ProjectNumber = v.ProjectNumber
-		aa[0].ProjectName = v.ProjectName
-		aa[0].DesignStage = v.DesignStage
-		aa[0].Value = value1                           //项目（阶段、专业）总分值
-		aa[0].Myvalue = value2                         //用户参与的分值
-		aa[0].Percent = models.Round(value2/value1, 1) //用户分值占比
-		slice1 = append(slice1, aa...)
-	}
-
-	c.Data["json"] = slice1
-	c.ServeJSON()
-}
-
-//点击个人参与的项目，弹出模态框，显示这个项目所有成果
-//没有区分时间
-//没有按时间排序！！！
-func (c *Achievement) ProjectAchievement() {
-	cid := c.Input().Get("CatalogId")
-	// var id string
-	// var cidNum int64
-	var err error
-	// cidNum, err = strconv.ParseInt(cid, 10, 64)
-	// if err != nil {
-	// 	beego.Error(err)
-	// }
-	//查出项目特性:
-	catalog, err := m.GetCatalog(cid)
-	if err != nil {
-		beego.Error(err)
-	}
-	//根据项目编号和项目阶段、专业，查出所有成果
-	achievements, err := m.GetProjectAchievement(catalog.ProjectNumber, catalog.DesignStage, catalog.Section)
-	if err != nil {
-		beego.Error(err)
-	}
-	// beego.Info(achievements)
-	c.Data["json"] = achievements
-	c.ServeJSON()
 }
 
 //自己发起的成果,还没提交
 //author=登录的人名，登录名所处制图-状态为1；设计-状态为2；校核-状态为3；审查-无
 func (c *Achievement) Myself() {
-	//1.首先判断是否注册
-
-	//4.取得客户端用户名
+	//1.取得客户端用户名
 	var uname string
 	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
 	defer sess.SessionRelease(c.Ctx.ResponseWriter)
@@ -1029,7 +1150,7 @@ func (c *Achievement) Myself() {
 	// convdate2 = t2.Format(lll)
 	// usernickname := models.GetUserByUserId(secid1)
 	//取得成果类型
-	ratios, err := models.GetRatios()
+	ratios, err := models.GetAchievcategories()
 	if err != nil {
 		beego.Error(err)
 	}
@@ -1123,7 +1244,7 @@ func (c *Achievement) Running() {
 	// convdate1 = t1.Format(lll)
 	// convdate2 = t2.Format(lll)
 	// usernickname := models.GetUserByUserId(secid1)
-	ratios, err := models.GetRatios()
+	ratios, err := models.GetAchievcategories()
 	var select2 string
 	for i, v := range ratios {
 		if i == 0 {
@@ -1214,7 +1335,7 @@ func (c *Achievement) Completed() {
 	// convdate1 = t1.Format(lll)
 	// convdate2 = t2.Format(lll)
 	// usernickname := models.GetUserByUserId(secid1)
-	ratios, err := models.GetRatios()
+	ratios, err := models.GetAchievcategories()
 	var select2 string
 	for i, v := range ratios {
 		if i == 0 {
@@ -1303,7 +1424,7 @@ func (c *Achievement) Designd() {
 	// convdate1 = t1.Format(lll)
 	// convdate2 = t2.Format(lll)
 	// usernickname := models.GetUserByUserId(secid1)
-	ratios, err := models.GetRatios()
+	ratios, err := models.GetAchievcategories()
 	var select2 string
 	for i, v := range ratios {
 		if i == 0 {
@@ -1394,7 +1515,7 @@ func (c *Achievement) Checked() {
 	// convdate1 = t1.Format(lll)
 	// convdate2 = t2.Format(lll)
 	// usernickname := models.GetUserByUserId(secid1)
-	ratios, err := models.GetRatios()
+	ratios, err := models.GetAchievcategories()
 	var select2 string
 	for i, v := range ratios {
 		if i == 0 {
@@ -1485,7 +1606,7 @@ func (c *Achievement) Examined() {
 	// convdate1 = t1.Format(lll)
 	// convdate2 = t2.Format(lll)
 	// usernickname := models.GetUserByUserId(secid1)
-	ratios, err := models.GetRatios()
+	ratios, err := models.GetAchievcategories()
 	var select2 string
 	for i, v := range ratios {
 		if i == 0 {
@@ -2320,115 +2441,115 @@ func (c *Achievement) DeleteCatalog() {
 	} else {
 		data := "ok!"
 		c.Ctx.WriteString(data)
+		logs := logs.NewLogger(1000)
+		logs.SetLogger("file", `{"filename":"log/meritlog.log"}`)
+		logs.EnableFuncCallDepth(true)
+		logs.Info(c.Ctx.Input.IP() + " " + "删除记录" + cid)
+		logs.Close()
 	}
-
-	logs := logs.NewLogger(1000)
-	logs.SetLogger("file", `{"filename":"log/meritlog.log"}`)
-	logs.EnableFuncCallDepth(true)
-	logs.Info(c.Ctx.Input.IP() + " " + "删除记录" + cid)
-	logs.Close()
 }
 
-//进入编辑ratio页面
-func (c *Achievement) Ratio() {
+//*********下面是统计分析************
+//用户参与的项目列表和自己的贡献及项目总分值
+func (c *Achievement) Participate() {
 	//1.首先判断是否注册
 	if !checkAccount(c.Ctx) {
+		// port := strconv.Itoa(c.Ctx.Input.Port())//c.Ctx.Input.Site() + ":" + port +
 		route := c.Ctx.Request.URL.String()
 		c.Data["Url"] = route
 		c.Redirect("/login?url="+route, 302)
+		// c.Redirect("/login", 302)
 		return
 	}
-	//2.取得文章的作者
-	//3.由用户id取得用户名
 	//4.取得客户端用户名
-	// var uname string
+	var uname string
 	sess, _ := globalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
 	defer sess.SessionRelease(c.Ctx.ResponseWriter)
 	v := sess.Get("uname")
 	if v != nil {
-		// uname = v.(string)
+		uname = v.(string)
 		c.Data["Uname"] = v.(string)
 	}
-	//4.取出用户的权限等级
-	role, _ := checkRole(c.Ctx) //login里的
-	//5.进行逻辑分析：
-	// rolename, err := strconv.ParseInt(role, 10, 64)
+	//由uname取得user
+	user, err := models.GetUserByUsername(uname)
+	if err != nil {
+		beego.Error(err)
+	}
+	secid := c.Input().Get("secid")
+	if secid == "" { //如果为空，则用登录的
+		secid = strconv.FormatInt(user.Id, 10)
+	}
+	secid1, err := strconv.ParseInt(secid, 10, 64)
+	if err != nil {
+		beego.Error(err)
+	}
+	//现在的月份
+	const MMM = "2006-01"
+	// date := time.Now()
+	//	fmt.Println(date)
+	month1 := time.Now().Format(MMM)
+	// fmt.Println(convdate)
+	month2, err := time.Parse(MMM, month1)
+	if err != nil {
+		beego.Error(err)
+	}
+	catalogs, err := models.Getparticipatebyuserid(secid, month2.AddDate(0, -11, 0), month2.AddDate(0, +1, 0))
+	if err != nil {
+		beego.Error(err)
+	}
+	// beego.Info(&catalogs)
+	slice1 := make([]Project, 0)
+	for _, v := range catalogs {
+		value1, value2, err := models.Getprojuserspecialty(secid1, v.ProjectNumber, v.DesignStage, v.Section, month2.AddDate(0, -11, 0), month2.AddDate(0, +1, 0))
+		if err != nil {
+			beego.Error(err)
+		}
+		aa := make([]Project, 1)
+		aa[0].Id = v.Id //没这个Id，将导致点击表格详细，无法传递项目id号
+		aa[0].ProjectNumber = v.ProjectNumber
+		aa[0].ProjectName = v.ProjectName
+		aa[0].DesignStage = v.DesignStage
+		aa[0].Section = v.Section
+		aa[0].Value = value1                           //项目（阶段、专业）总分值
+		aa[0].Myvalue = value2                         //用户参与的分值
+		aa[0].Percent = models.Round(value2/value1, 1) //用户分值占比
+		slice1 = append(slice1, aa...)
+	}
+
+	c.Data["json"] = slice1
+	c.ServeJSON()
+}
+
+//点击个人参与的项目，弹出模态框，显示这个项目所有成果
+//没有区分时间
+//没有按时间排序！！！
+func (c *Achievement) ProjectAchievement() {
+	cid := c.Input().Get("CatalogId")
+	// var id string
+	// var cidNum int64
+	var err error
+	// cidNum, err = strconv.ParseInt(cid, 10, 64)
 	// if err != nil {
 	// 	beego.Error(err)
 	// }
-	if role > 2 { //
-		route := c.Ctx.Request.URL.String()
-		c.Data["Url"] = route
-		c.Redirect("/roleerr?url="+route, 302)
-		return
-	}
-	ratio, _ := m.GetRatios()
-	c.Data["Ratio"] = ratio
-	c.TplName = "ratio.tpl"
-}
-
-func (c *Achievement) AddRatio() {
-	var ratio m.Ratio
-	ratio.Category = c.Input().Get("Category")
-	ratio.Unit = c.Input().Get("Unit")
-	ratio1, err := strconv.ParseFloat(c.Input().Get("Ratio"), 64)
+	//查出项目特性:
+	catalog, err := m.GetCatalog(cid)
 	if err != nil {
 		beego.Error(err)
 	}
-	ratio.Rationum = ratio1
-	ratio.Created = time.Now()
-	ratio.Updated = time.Now()
-	cid, err := m.SaveRatio(ratio)
-	if err != nil {
-		beego.Error(err)
-	} else {
-		data := "ok"
-		c.Ctx.WriteString(data)
-	}
-
-	logs := logs.NewLogger(1000)
-	logs.SetLogger("file", `{"filename":"log/meritlog.log"}`)
-	logs.EnableFuncCallDepth(true)
-	logs.Info(c.Ctx.Input.IP() + " " + "添加ratio" + strconv.FormatInt(cid, 10))
-	logs.Close()
-}
-
-func (c *Achievement) ModifyRatio() {
-	var ratio m.Ratio
-	ratio.Category = c.Input().Get("Category")
-	ratio.Unit = c.Input().Get("Unit")
-	ratio1, err := strconv.ParseFloat(c.Input().Get("Ratio"), 64)
+	//根据项目编号和项目阶段、专业，查出所有成果
+	achievements, err := m.GetProjectAchievement(catalog.ProjectNumber, catalog.DesignStage, catalog.Section)
 	if err != nil {
 		beego.Error(err)
 	}
-	ratio.Rationum = ratio1
-	// ratio.Created = time.Now()
-	ratio.Updated = time.Now()
-
-	cid := c.Input().Get("RatioId")
-	var id string
-	if cid != "" {
-		id = string(cid[3:len(cid)])
-		// beego.Info(id)
-	}
-	err = m.ModifyRatio(id, ratio)
-	if err != nil {
-		beego.Error(err)
-	} else {
-		data := "ok!"
-		c.Ctx.WriteString(data)
-	}
-
-	logs := logs.NewLogger(1000)
-	logs.SetLogger("file", `{"filename":"log/meritlog.log"}`)
-	logs.EnableFuncCallDepth(true)
-	logs.Info(c.Ctx.Input.IP() + " " + "修改ratio" + id)
-	logs.Close()
+	// beego.Info(achievements)
+	c.Data["json"] = achievements
+	c.ServeJSON()
 }
 
 //显示某个专业内成本分布情况
 func (c *Achievement) Specialty() {
-	ratios, err := models.GetRatios()
+	ratios, err := models.GetAchievcategories()
 	if err != nil {
 		beego.Error(err)
 	}
@@ -2502,7 +2623,7 @@ func (c *Achievement) Echarts() {
 	t2 = time.Now()
 	t1 = t2.Add(-time.Duration(720) * time.Hour) //往前一个月时间
 	slice1 := make([]m.Specialty, 0)
-	ratios, err := models.GetRatios()
+	ratios, err := models.GetAchievcategories()
 	if err != nil {
 		beego.Error(err)
 	}
@@ -2572,7 +2693,7 @@ func (c *Achievement) Echarts2() {
 	}
 
 	slice1 := make([]m.Specialty, 0)
-	ratios, err := models.GetRatios()
+	ratios, err := models.GetAchievcategories()
 	if err != nil {
 		beego.Error(err)
 	}
@@ -2611,7 +2732,7 @@ func (c *Achievement) Echarts3() {
 		beego.Error(err)
 	}
 	slice1 := make([]m.Specialty, 0)
-	ratios, err := models.GetRatios()
+	ratios, err := models.GetAchievcategories()
 	if err != nil {
 		beego.Error(err)
 	}
@@ -2625,6 +2746,178 @@ func (c *Achievement) Echarts3() {
 		aa[0].Name = v.Category
 		slice1 = append(slice1, aa...)
 	}
+	//去除空的ratio
+	c.Data["json"] = slice1
+	c.ServeJSON()
+}
+
+//展示一个项目所有参与人员的贡献率
+func (c *Achievement) ProjectUserParticipate() {
+	cid := c.Input().Get("CatalogId")
+	var err error
+	//查出项目特性:
+	catalog, err := m.GetCatalog(cid)
+	if err != nil {
+		beego.Error(err)
+	}
+	//根据项目编号和项目阶段、专业，查出所有成果
+	achievements, err := m.GetProjectAchievement(catalog.ProjectNumber, catalog.DesignStage, catalog.Section)
+	if err != nil {
+		beego.Error(err)
+	}
+	//循环成果，得到制图设计校核审查人员名单
+	//利用map的index不允许重复特性，进行名单去重
+	var name map[string]int
+	name = make(map[string]int)
+	for i, v := range achievements {
+		if v.Drawn != "" {
+			name[v.Drawn] = i
+		}
+		if v.Designd != "" {
+			name[v.Designd] = i
+		}
+		if v.Checked != "" {
+			name[v.Checked] = i
+		}
+		if v.Examined != "" {
+			name[v.Examined] = i
+		}
+	}
+	//现在的月份
+	const MMM = "2006-01"
+	month1 := time.Now().Format(MMM)
+	month2, err := time.Parse(MMM, month1)
+	if err != nil {
+		beego.Error(err)
+	}
+	//循环名单，根据项目阶段专业，查出分值
+	slice1 := make([]m.Specialty, 0)
+	for k, _ := range name {
+		value, err := models.Getprojuserspecialty1(k, catalog.ProjectNumber, catalog.DesignStage, catalog.Section, month2.AddDate(0, -11, 0), month2.AddDate(0, +1, 0))
+		if err != nil {
+			beego.Error(err)
+		}
+		aa := make([]m.Specialty, 1)
+		aa[0].Value = value
+		aa[0].Name = k
+		slice1 = append(slice1, aa...)
+	}
+	c.Data["json"] = slice1
+	c.ServeJSON()
+}
+
+//*******下面是科室统计分析
+//科室参与的项目列表和项目总分值
+func (c *Achievement) SecParticipate() {
+	//由科室id取得所有用户id
+	secid := c.Input().Get("secid")
+	// if secid == "" { //如果为空，则用登录的
+	// 	secid = strconv.FormatInt(user.Id, 10)
+	// }
+	// secid1, err := strconv.ParseInt(secid, 10, 64)
+	// if err != nil {
+	// 	beego.Error(err)
+	// }
+	//根据科室id查所有员工
+	users, _, err := models.GetUsersbySecId(secid) //得到员工姓名
+	// beego.Info(users)
+	if err != nil {
+		beego.Error(err)
+	}
+	//现在的月份
+	const MMM = "2006-01"
+	// date := time.Now()
+	//	fmt.Println(date)
+	month1 := time.Now().Format(MMM)
+	// fmt.Println(convdate)
+	month2, err := time.Parse(MMM, month1)
+	if err != nil {
+		beego.Error(err)
+	}
+
+	catalogs := make([]*models.Catalog, 0)
+	for _, w := range users { //循环用户id
+		//由用户Id取得所有成果_得到参与的项目和阶段——去重
+		userid := strconv.FormatInt(w.Id, 10)
+		aa, err := models.Getparticipatebyuserid(userid, month2.AddDate(0, -11, 0), month2.AddDate(0, +1, 0))
+		if err != nil {
+			beego.Error(err)
+		}
+		catalogs = append(catalogs, aa...)
+	}
+	//对成果进行去重
+	bb := models.Rm_duplicate(catalogs)
+
+	slice1 := make([]Project, 0)
+	for _, v := range bb {
+		//查出一个项目(阶段、专业)时间段内总分值和某个用户的总分值
+		value1, _, err := models.Getprojuserspecialty(v.Id, v.ProjectNumber, v.DesignStage, v.Section, month2.AddDate(0, -11, 0), month2.AddDate(0, +1, 0))
+		if err != nil {
+			beego.Error(err)
+		}
+		cc := make([]Project, 1)
+		cc[0].Id = v.Id //没这个Id，将导致点击表格详细，无法传递项目id号
+		cc[0].ProjectNumber = v.ProjectNumber
+		cc[0].ProjectName = v.ProjectName
+		cc[0].DesignStage = v.DesignStage
+		cc[0].Section = v.Section
+		cc[0].Value = value1 //项目（阶段、专业）总分值
+		slice1 = append(slice1, cc...)
+	}
+
+	c.Data["json"] = slice1
+	c.ServeJSON()
+}
+
+//显示科室月度全部成果
+func (c *Achievement) SecProjectAchievement() {
+	secid := c.Input().Get("secid")
+	//根据科室id查所有员工
+	users, _, err := models.GetUsersbySecId(secid) //得到员工姓名
+	// beego.Info(users)
+	if err != nil {
+		beego.Error(err)
+	}
+	//现在的月份
+	const MMM = "2006-01"
+	// date := time.Now()
+	//	fmt.Println(date)
+	month1 := time.Now().Format(MMM)
+	// fmt.Println(convdate)
+	month2, err := time.Parse(MMM, month1)
+	if err != nil {
+		beego.Error(err)
+	}
+
+	catalogs := make([]*models.Catalog, 0)
+	for _, w := range users { //循环用户id
+		//由用户Id取得所有成果_得到参与的项目和阶段——去重
+		userid := strconv.FormatInt(w.Id, 10)
+		aa, err := models.Getparticipatebyuserid(userid, month2.AddDate(0, -1, 0), month2.AddDate(0, +1, 0))
+		if err != nil {
+			beego.Error(err)
+		}
+		catalogs = append(catalogs, aa...)
+	}
+	//对成果进行去重
+	bb := models.Rm_duplicate(catalogs)
+
+	slice1 := make([]*m.Catalog, 0)
+	for _, v := range bb {
+		cid := strconv.FormatInt(v.Id, 10)
+		//查出项目特性:
+		catalog, err := m.GetCatalog(cid)
+		if err != nil {
+			beego.Error(err)
+		}
+		//根据项目编号和项目阶段、专业，查出所有成果
+		achievements, err := m.GetProjectAchievement(catalog.ProjectNumber, catalog.DesignStage, catalog.Section)
+		if err != nil {
+			beego.Error(err)
+		}
+		slice1 = append(slice1, achievements...)
+	}
+	// beego.Info(achievements)
 	c.Data["json"] = slice1
 	c.ServeJSON()
 }
