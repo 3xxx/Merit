@@ -6,17 +6,17 @@
   <title>Merit</title>
   <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
   <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
-  <script src="/static/js/bootstrap-treeview.js"></script>
+  <!-- <script src="/static/js/bootstrap-treeview.js"></script> -->
   <script type="text/javascript" src="/static/js/jquery.tablesorter.min.js"></script>
   <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
 
   <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-table.min.css"/>
-  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-editable.css"/>
+  <!-- <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-editable.css"/> -->
   
   <script type="text/javascript" src="/static/js/bootstrap-table.min.js"></script>
   <script type="text/javascript" src="/static/js/bootstrap-table-zh-CN.min.js"></script>
-  <script type="text/javascript" src="/static/js/bootstrap-table-editable.min.js"></script>
-  <script type="text/javascript" src="/static/js/bootstrap-editable.js"></script>
+  <!-- <script type="text/javascript" src="/static/js/bootstrap-table-editable.min.js"></script> -->
+  <!-- <script type="text/javascript" src="/static/js/bootstrap-editable.js"></script> -->
   <script type="text/javascript" src="/static/js/bootstrap-table-export.min.js"></script>
   
   <link rel="stylesheet" type="text/css" href="/static/font-awesome-4.7.0/css/font-awesome.min.css"/>
@@ -163,7 +163,7 @@
       }
       $.ajax({
         type:"post",
-        url:"/admin/department/deletedepart",
+        url:"/admin/department/deletedepartment",
         data: {ids:ids},
         success:function(data,status){
           alert("删除“"+data+"”成功！(status:"+status+".)");

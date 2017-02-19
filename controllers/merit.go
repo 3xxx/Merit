@@ -175,6 +175,7 @@ func (c *MeritController) GetMerit() {
 	if err != nil {
 		beego.Error(err)
 	}
+	var depcount int
 	switch role {
 	case 1: //管理员登录显示的侧栏是全部的
 		category1, err := models.GetAdminDepart(0) //得到多个分院
@@ -192,34 +193,66 @@ func (c *MeritController) GetMerit() {
 			if err != nil {
 				beego.Error(err)
 			}
-			for i2, _ := range category2 {
-				bb := make([]AchSecoffice, 1)
-				bb[0].Id = category2[i2].Id
-				bb[0].Level = "2"
-				bb[0].Pid = category1[i1].Id
-				bb[0].Title = category2[i2].Title //科室名称
-				// beego.Info(category2[i2].Title)
-				//根据分院和科室查所有员工
-				users, count, err := models.GetUsersbySec(category1[i1].Title, category2[i2].Title) //得到员工姓名
-				if err != nil {
-					beego.Error(err)
+			//如果返回科室为空，则直接取得员工
+			//这个逻辑判断不完美，如果一个部门即有科室，又有人没有科室属性怎么办，直接挂在部门下的呢？
+			//应该是反过来找出所有没有科室字段的人员，把他放在部门下
+			if len(category2) > 0 {
+				for i2, _ := range category2 {
+					bb := make([]AchSecoffice, 1)
+					bb[0].Id = category2[i2].Id
+					bb[0].Level = "2"
+					bb[0].Pid = category1[i1].Id
+					bb[0].Title = category2[i2].Title //科室名称
+					// beego.Info(category2[i2].Title)
+					//根据分院和科室查所有员工
+					users, count, err := models.GetUsersbySec(category1[i1].Title, category2[i2].Title) //得到员工姓名
+					if err != nil {
+						beego.Error(err)
+					}
+					for i3, _ := range users {
+						cc := make([]AchEmployee, 1)
+						cc[0].Id = users[i3].Id
+						cc[0].Level = "3"
+						cc[0].Pid = category2[i2].Id
+						cc[0].Nickname = users[i3].Nickname //名称
+						// beego.Info(users[i3].Nickname)
+						// cc[0].Selectable = false
+						achemployee = append(achemployee, cc...)
+					}
+					bb[0].Tags[0] = strconv.Itoa(count)
+					bb[0].Employee = achemployee
+					bb[0].Selectable = true
+					achemployee = make([]AchEmployee, 0) //再把slice置0
+					achsecoffice = append(achsecoffice, bb...)
+					depcount = depcount + count //部门人员数=科室人员数相加
 				}
-				for i3, _ := range users {
-					cc := make([]AchEmployee, 1)
-					cc[0].Id = users[i3].Id
-					cc[0].Level = "3"
-					cc[0].Pid = category2[i2].Id
-					cc[0].Nickname = users[i3].Nickname //名称
-					// beego.Info(users[i3].Nickname)
-					// cc[0].Selectable = false
-					achemployee = append(achemployee, cc...)
-				}
-				bb[0].Tags[0] = count
-				bb[0].Employee = achemployee
-				achemployee = make([]AchEmployee, 0) //再把slice置0
-				achsecoffice = append(achsecoffice, bb...)
+				// aa[0].Secoffice = achsecoffice
+				// achsecoffice = make([]AchSecoffice, 0) //再把slice置0
+				// achdepart = append(achdepart, aa...)
 			}
+			//查出所有有这个部门但科室名为空的人员
+			//根据分院查所有员工
+			// beego.Info(category1[i1].Title)
+			users, count, err := models.GetUsersbySecOnly(category1[i1].Title) //得到员工姓名
+			if err != nil {
+				beego.Error(err)
+			}
+			// beego.Info(users)
+			for i3, _ := range users {
+				dd := make([]AchSecoffice, 1)
+				dd[0].Id = users[i3].Id
+				dd[0].Level = "3"
+				// dd[0].Href = users[i3].Ip + ":" + users[i3].Port
+				dd[0].Pid = category1[i1].Id
+				dd[0].Title = users[i3].Nickname //名称——关键，把人员当作科室名
+				dd[0].Selectable = true
+				achsecoffice = append(achsecoffice, dd...)
+			}
+			aa[0].Tags[0] = count + depcount
+			// count = 0
+			depcount = 0
 			aa[0].Secoffice = achsecoffice
+			aa[0].Selectable = true                //默认是false点击展开
 			achsecoffice = make([]AchSecoffice, 0) //再把slice置0
 			achdepart = append(achdepart, aa...)
 		}
@@ -259,7 +292,7 @@ func (c *MeritController) GetMerit() {
 				// cc[0].Selectable = false
 				achemployee = append(achemployee, cc...)
 			}
-			bb[0].Tags[0] = count
+			bb[0].Tags[0] = strconv.Itoa(count)
 			bb[0].Employee = achemployee
 			achemployee = make([]AchEmployee, 0) //再把slice置0
 			achsecoffice = append(achsecoffice, bb...)
@@ -304,7 +337,7 @@ func (c *MeritController) GetMerit() {
 			// cc[0].Selectable = false
 			achemployee = append(achemployee, cc...)
 		}
-		bb[0].Tags[0] = count
+		bb[0].Tags[0] = strconv.Itoa(count)
 		bb[0].Employee = achemployee
 		achemployee = make([]AchEmployee, 0) //再把slice置0
 		achsecoffice = append(achsecoffice, bb...)
@@ -343,7 +376,7 @@ func (c *MeritController) GetMerit() {
 
 		achemployee = append(achemployee, cc...)
 
-		bb[0].Tags[0] = 1
+		bb[0].Tags[0] = "1"
 		bb[0].Employee = achemployee
 		achemployee = make([]AchEmployee, 0) //再把slice置0
 		achsecoffice = append(achsecoffice, bb...)

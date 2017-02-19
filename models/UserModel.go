@@ -208,6 +208,23 @@ func GetUsersbySec(department, secoffice string) (users []*User, count int, err 
 	return users, count, err
 }
 
+//根据分院名称查所有用户——适用于没有科室的部门
+//查出所有人员，只有分院（部门）而没科室字段的人员，只有状态1的
+func GetUsersbySecOnly(department string) (users []*User, count int, err error) {
+	o := orm.NewOrm()
+	// cates := make([]*Category, 0)
+	qs := o.QueryTable("user")
+	//这里进行过滤
+	_, err = qs.Filter("Department", department).Filter("Secoffice", "").Filter("Status", 1).OrderBy("Username").All(&users)
+	if err != nil {
+		return nil, 0, err
+	}
+	// _, err = qs.OrderBy("-created").All(&cates)
+	// _, err := qs.All(&cates)
+	count = len(users)
+	return users, count, err
+}
+
 //根据科室id查所有用户
 func GetUsersbySecId(secofficeid string) (users []*User, count int, err error) {
 	o := orm.NewOrm()

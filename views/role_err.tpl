@@ -3,10 +3,10 @@
 <html>
 <head>
  <meta charset="UTF-8">
-  <title>Merit价值管理系统</title>
+  <title>EngineerCMS</title>
 <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
  <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
- <script src="/static/js/bootstrap-treeview.js"></script>
+ <!-- <script src="/static/js/bootstrap-treeview.js"></script> -->
 <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
 </head>
 <body>
@@ -86,80 +86,6 @@
 
 </div>
 
-<!-- <div class="row">
-    <div id="content" class="col-md-8 col-md-offset-2">
-        <div class="box">
-            <div class="cell">
-                <div class="row">
-                    <div class="col-md-6 auth-page">
-                        <h3 class="title">
-                            <span class="glyphicon glyphicon-user"></span>
-                            登录
-                        </h3>
-
-                        <div class="alert alert-success">
-                            <p>成功登出</p>
-                        </div>
-
-                        <form method="POST" action="./登录 - Go友团_files/登录 - Go友团.html">
-                            <input type="hidden" name="_xsrf" value="z2rSZ3cjoR110qfJGIKVyE62pH7Brd1L">
-                            <input type="hidden" name="_once" value="dRFmv4aizZ">
-
-                            <div class="form-group">
-
-                                <label class="control-label" for="LoginForm-UserName">用户名 或 邮箱</label>
-                                <input id="LoginForm-UserName" name="UserName" type="text" value="" class="form-control"></div>
-
-                            <div class="form-group">
-
-                                <label class="control-label" for="LoginForm-Password">密码</label>
-
-                                <input id="LoginForm-Password" name="Password" type="password" value="" class="form-control"></div>
-
-                            <div class="form-group">
-
-                                <label>
-                                    <input type="hidden" name="Remember" value="false">
-                                    <button type="button" data-toggle="button" data-name="Remember" class="btn btn-default btn-xs btn-checked">
-                                        <span class="glyphicon glyphicon-ok"></span>
-                                    </button>
-                                    记住登录
-                                </label>
-
-                            </div>
-
-                            <button type="submit" class="btn btn-primary">
-                                登录&nbsp;&nbsp;
-                                <span class="glyphicon glyphicon-circle-arrow-right"></span>
-                            </button>
-                            <a href="http://golanghome.com/forgot" class="pull-right">
-                                <span class="glyphicon glyphicon-question-sign"></span>
-                                忘记密码
-                            </a>
-                        </form>
-                    </div>
-
-                    <div class="col-md-6 auth-page">
-                        <div class="auth-page">
-                            <h3 class="title">
-                                <span class="glyphicon glyphicon-question-sign"></span>
-                                帮助
-                            </h3>
-                            <p class="well">如果您还没有注册帐户的话，请先注册。</p>
-                            <p>
-                                <a href="./regist" class="btn btn-default">
-                                    立即注册&nbsp;&nbsp; <i class="icon-chevron-sign-right"></i>
-                                </a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> -->
-
-
 <script type="text/javascript">
 function checkInput(){
   var uname=document.getElementById("uname");
@@ -196,9 +122,7 @@ $(document).ready(function(){
                   });
                 }
       });
-                // $("#uname").keydown(function(){
-                //   $("option").remove();
-                // }); 
+
     }
  });
 }); 

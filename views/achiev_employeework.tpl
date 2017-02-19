@@ -6,7 +6,7 @@
     <title>待处理成果</title>
     <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
     <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
-    <script src="/static/js/bootstrap-treeview.js"></script>
+    <!-- <script src="/static/js/bootstrap-treeview.js"></script> -->
     <script type="text/javascript" src="/static/js/jquery.tablesorter.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
     <script type="text/javascript" src="/static/js/moment.min.js"></script>
@@ -205,7 +205,7 @@
       })
     </script>
   <h3>我发起，待提交</h3>
-  <div id="toolbar" class="btn-group">
+    <div id="toolbar" class="btn-group">
         <button type="button" data-name="addButton" id="addButton" class="btn btn-default"> <i class="fa fa-plus">添加</i>
         </button>
         <button type="button" data-name="editorButton" id="editorButton" class="btn btn-default"> <i class="fa fa-edit">编辑</i>
@@ -671,7 +671,7 @@ function stateFormatter(value, row, index) {
 $(function () {
     $('#table').bootstrapTable({
         idField: 'Id',
-        url: '/myself',
+        url: '/achievement/myself',
         // striped: "true",
         columns: [
           {
@@ -865,7 +865,7 @@ $(function () {
 $(function () {
     $('#table1').bootstrapTable({
         idField: 'Id',
-        url: '/designd',
+        url: '/achievement/designd',
         // striped: "true",
         columns: [
           {
@@ -991,7 +991,7 @@ $(function () {
 $(function () {
     $('#table2').bootstrapTable({
         idField: 'Id',
-        url: '/checked',
+        url: '/achievement/checked',
         // striped: "true",
         columns: [
           {
@@ -1102,7 +1102,7 @@ $(function () {
 $(function () {
     $('#table3').bootstrapTable({
         idField: 'Id',
-        url: '/examined',
+        url: '/achievement/examined',
         // striped: "true",
         columns: [
           {

@@ -199,7 +199,7 @@ color: #F5DEB3;
   </div>
 
   <div class="col-lg-6">
-    <h4>Copyright © 2016 Merit</h4>
+    <h4>Copyright © 2015~2017 Merit</h4>
     <p>
       网站由 <i class="user icon"></i>
       <a target="_blank" href="https://github.com/3xxx">@3xxx</a>

@@ -9,6 +9,7 @@
   <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
   <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
   <script src="/static/js/bootstrap-treeview.js"></script>
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-treeview.css"/>
   <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
   <style type="text/css">
 a:active{text:expression(target="_blank");}

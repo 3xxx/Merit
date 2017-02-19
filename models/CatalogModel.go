@@ -728,9 +728,9 @@ func GetcatalogMyself(id string, t1, t2 time.Time) (catalogs []*Catalog, err err
 	}
 	catalogs = append(catalogs, aa...)
 
-	cond2 := cond.And("Updated__gt", t1).And("Updated__lte", t2).And("Designd", user.Nickname).And("State", "2")
+	cond2 := cond.And("Updated__gt", t1).And("Updated__lte", t2).And("Designd", user.Nickname).And("Author", user.Username).And("State", "2")
 	qs = qs.SetCond(cond2)
-	_, err = qs.Filter("Author", user.Username).Distinct().All(&bb) //qs.Filter("Drawn", user.Nickname).All(&aa)
+	_, err = qs.Distinct().All(&bb) //qs.Filter("Drawn", user.Nickname).All(&aa)
 	if err != nil {
 		return nil, err
 	}
