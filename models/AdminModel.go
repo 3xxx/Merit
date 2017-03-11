@@ -32,12 +32,19 @@ type AdminDepartment struct {
 //价值分类
 type AdminMerit struct {
 	Id       int64     `form:"-"`
+	ParentId int64     `orm:"null"`
 	Title    string    `form:"title;text;title:",valid:"MinSize(1);MaxSize(20)"` //orm:"unique",
 	Mark     string    `orm:"null"`                                              //设置分数
 	List     string    `orm:"null"`                                              //选择项
 	ListMark string    `orm:"null"`
 	Created  time.Time `orm:"index","auto_now_add;type(datetime)"`
 	Updated  time.Time `orm:"index","auto_now_add;type(datetime)"`
+}
+
+type AdminDepartMerit struct {
+	Id          int64 `form:"-"`
+	SecofficeId int64 `orm:"null"`
+	MeritId     int64 `orm:"null"`
 }
 
 //ip地址段权限
@@ -69,9 +76,9 @@ type AdminCalenda struct {
 //   `color` varchar(20) DEFAULT NULL,
 
 func init() {
-	orm.RegisterModel(new(AdminDepartment), new(AdminMerit), new(AdminIpsegment)) //, new(Article)
+	orm.RegisterModel(new(AdminDepartment), new(AdminMerit), new(AdminIpsegment), new(AdminDepartMerit)) //, new(Article)
 	// orm.RegisterDriver("sqlite", orm.DRSqlite)
-	// orm.RegisterDataBase("default", "sqlite3", "database/engineer.db", 10)
+	orm.RegisterDataBase("default", "sqlite3", "database/merit.db", 10)
 }
 
 //添加部门
@@ -197,10 +204,11 @@ func GetAdminDepartbyidtitle(id int64, title string) (*AdminDepartment, error) {
 
 //*********价值********************
 //添加价值
-func AddAdminMerit(title, mark, list, listmark string) (id int64, err error) {
+func AddAdminMerit(pid int64, title, mark, list, listmark string) (id int64, err error) {
 	//重复性检查
 	o := orm.NewOrm()
 	cate := &AdminMerit{
+		ParentId: pid,
 		Title:    title,
 		Mark:     mark,
 		List:     list,
@@ -226,16 +234,16 @@ func GetAdminMeritbyPid(pid int64) ([]*AdminMerit, error) {
 	return cates, err
 }
 
-//取到所有的价值结构
-func GetAdminMerit() ([]*AdminMerit, error) {
+//根据父级id取到所有的价值结构
+func GetAdminMerit(pid int64) ([]*AdminMerit, error) {
 	o := orm.NewOrm()
-	merit := make([]*AdminMerit, 0)
+	merits := make([]*AdminMerit, 0)
 	qs := o.QueryTable("AdminMerit")
-	_, err := qs.All(&merit)
+	_, err := qs.Filter("parentid", pid).All(&merits)
 	if err != nil {
 		return nil, err
 	}
-	return merit, err
+	return merits, err
 }
 
 //由id取得价值
@@ -249,6 +257,52 @@ func GetAdminMeritbyId(id int64) (*AdminMerit, error) {
 		return nil, err
 	}
 	return merit, err
+}
+
+//由科室id取得所有价值分类
+//根据分院名称查所有价值——适用于没有科室的部门
+//查出所有价值，只有分院（部门）而没科室字段的价值
+func GetSecofficeMerit(id int64) (meritcates []*AdminDepartMerit, err error) {
+	o := orm.NewOrm()
+	qs := o.QueryTable("AdminDepartMerit")
+	_, err = qs.Filter("SecofficeId", id).All(&meritcates)
+	if err != nil {
+		return nil, err
+	}
+	return meritcates, err
+}
+
+//将secofficeid和meritid存入对应数据库
+//如果存在，
+func AddSecofficeMerit(sid, mid int64) error {
+	//重复性检查
+	o := orm.NewOrm()
+	secmerit := &AdminDepartMerit{
+		SecofficeId: sid,
+		MeritId:     mid,
+	}
+	_, err := o.Insert(secmerit)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteSecofficeMerit(sid, mid int64) error {
+	o := orm.NewOrm()
+	var merit AdminDepartMerit
+	qs := o.QueryTable("AdminDepartMerit")
+	_, err := qs.Filter("SecofficeId", sid).Filter("MeritId", mid).All(&merit)
+	if err != nil {
+		return err
+	}
+	// if o.Read(&merit) == nil {
+	_, err = o.Delete(&merit) //删除分院
+	if err != nil {
+		return err
+	}
+	// }
+	return err
 }
 
 //修改merit

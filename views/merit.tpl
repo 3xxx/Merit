@@ -3,7 +3,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>成果登记系统</title>
+  <title>价值管理系统</title>
   <!-- <base target=_blank>
   -->
   <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
@@ -42,17 +42,18 @@ color:#DC143C;
 
 
 <script type="text/javascript">
- function reinitIframe(){//http://caibaojian.com/frame-adjust-content-height.html
-  var iframe = document.getElementById("iframepage");
-   try{
-    var bHeight = iframe.contentWindow.document.body.scrollHeight;
-     var dHeight = iframe.contentWindow.document.documentElement.scrollHeight; var height = Math.max(bHeight, dHeight); iframe.height = height;
+  function reinitIframe(){//http://caibaojian.com/frame-adjust-content-height.html
+    var iframe = document.getElementById("iframepage");
+    try{
+      var bHeight = iframe.contentWindow.document.body.scrollHeight;
+      var dHeight = iframe.contentWindow.document.documentElement.scrollHeight;
+      var height = Math.max(bHeight, dHeight,800); iframe.height = height;
       // console.log(height);//这个显示老是在变化
-       }catch (ex){
-        } 
-        } 
-        window.setInterval("reinitIframe()", 200);
-         </script>
+    }catch (ex){
+    } 
+    } 
+      window.setInterval("reinitIframe()", 200);
+</script>
 <!--   <div class="col-lg-9">
     <table class="table table-striped">
       <thead>

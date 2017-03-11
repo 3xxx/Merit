@@ -27,8 +27,13 @@ func init() {
 	//*******价值****
 	//填充MERIT表格数据
 	beego.Router("/admin/merit", &controllers.AdminController{}, "*:Merit")
-	//根据数字id查询
+	//根据数字id查询这个分类下的价值
 	beego.Router("/admin/merit/?:id:string", &controllers.AdminController{}, "*:Merit")
+	//根据数字id查询这个科室id下的价值分类
+	beego.Router("/admin/merit/secoffice/?:id:string", &controllers.AdminController{}, "*:SecofficeMerit")
+	//向科室里添加价值分类
+	beego.Router("/admin/merit/secoffice/addsecofficemerit", &controllers.AdminController{}, "*:AddSecofficeMerit")
+
 	//添加
 	beego.Router("/admin/merit/addmerit", &controllers.AdminController{}, "*:AddMerit")
 	//修改
@@ -51,6 +56,27 @@ func init() {
 	beego.Router("/admin/achievcategory/deleteachievcategory", &controllers.Achievement{}, "post:DeleteAchievcategory")
 
 	// beego.Router("/jsoneditor", &controllers.AdminController{}, "get:Jsoneditor")
+	//如果后面不带id，则显示所有用户
+	beego.Router("/admin/user/?:id:string", &controllers.UserController{}, "*:User")
+	//添加用户
+	beego.Router("/admin/user/adduser", &controllers.UserController{}, "*:AddUser")
+	//导入用户
+	beego.Router("/admin/user/importusers", &controllers.UserController{}, "*:ImportUsers")
+
+	//修改用户
+	beego.Router("/admin/user/updateuser", &controllers.UserController{}, "*:UpdateUser")
+	//删除用户
+	beego.Router("/admin/user/deleteuser", &controllers.UserController{}, "*:DeleteUser")
+	//用户修改自己密码
+	beego.Router("/user", &controllers.UserController{}, "get:GetUserByUsername")
+	//用户登录后查看自己的资料
+	beego.Router("/user/getuserbyusername", &controllers.UserController{}, "get:GetUserByUsername")
+	//用户产看自己的table中数据填充
+	beego.Router("/usermyself", &controllers.UserController{}, "get:Usermyself")
+
+	beego.Router("/login", &controllers.LoginController{})
+	beego.Router("/loginerr", &controllers.LoginController{}, "get:Loginerr")
+	beego.Router("/roleerr", &controllers.UserController{}, "*:Roleerr") //显示权限不够
 
 	//2.2首页进入成果登记
 	beego.Router("/achievement", &controllers.Achievement{}, "get:GetAchievement")
@@ -92,8 +118,26 @@ func init() {
 	// 填充科室总体情况数据
 	beego.Router("/merit/secofficedata", &controllers.MeritController{}, "get:SecofficeData")
 
-	//2.1.1普通用户进入价值，侧栏右边的iframe
-	// beego.Router("/merit/myself", &controllers.JsonController{}, "get:Myself")
+	// 2.1.1用户进入价值，侧栏右边的iframe
+	beego.Router("/merit/myself", &controllers.MeritController{}, "get:Myself")
+	// 2.1.1用户点击左侧价值，侧栏右边的iframe显示这个价值的内容列表
+	//根据id=1,2,3分别显示准备提交，已经提交，已经完成
+	beego.Router("/merit/send/:id:int", &controllers.MeritController{}, "get:MeritSend")
+	//管理人员登录看到需要处理审核的价值内容
+	beego.Router("/merit/examined", &controllers.MeritController{}, "get:MeritExamined")
+
+	// 添加merit
+	beego.Router("/merit/addmerit", &controllers.MeritController{}, "post:AddMerit")
+	// 删除merittopic
+	beego.Router("/merit/delete", &controllers.MeritController{}, "post:Delete")
+
+	// 传递merit
+	beego.Router("/merit/sendmerit", &controllers.MeritController{}, "post:SendMerit")
+	beego.Router("/merit/downsendmerit", &controllers.MeritController{}, "post:DownSendMerit")
+
+	// 修改merit
+	beego.Router("/merit/updatemerit", &controllers.MeritController{}, "post:UpdateMerit")
+
 	//显示所有人价值排名
 	// beego.Router("/getperson", &controllers.JsonController{}, "get:GetPerson")
 	//进行价值结构编辑
@@ -151,28 +195,28 @@ func init() {
 	beego.Router("/achievement/secprojectachievement", &controllers.Achievement{}, "get:SecProjectAchievement")
 
 	//人员管理
-	beego.Router("/user/AddUser", &controllers.UserController{}, "*:AddUser")
-	beego.Router("/user/UpdateUser", &controllers.UserController{}, "*:UpdateUser")
-	beego.Router("/user/deluser", &controllers.UserController{}, "*:DelUser")
-	beego.Router("/user/index", &controllers.UserController{}, "*:Index")
-	//管理员修改用户资料
-	beego.Router("/user/view", &controllers.UserController{}, "get:View")
-	beego.Router("/user/view/*", &controllers.UserController{}, "get:View")
-	beego.Router("/user/importexcel", &controllers.UserController{}, "post:ImportExcel")
+	// beego.Router("/user/AddUser", &controllers.UserController{}, "*:AddUser")
+	// beego.Router("/user/UpdateUser", &controllers.UserController{}, "*:UpdateUser")
+	// beego.Router("/user/deluser", &controllers.UserController{}, "*:DelUser")
+	// beego.Router("/user/index", &controllers.UserController{}, "*:Index")
+	// //管理员修改用户资料
+	// beego.Router("/user/view", &controllers.UserController{}, "get:View")
+	// beego.Router("/user/view/*", &controllers.UserController{}, "get:View")
+	// beego.Router("/user/importexcel", &controllers.UserController{}, "post:ImportExcel")
 
-	//用户修改自己密码
-	beego.Router("/user", &controllers.UserController{}, "get:GetUserByUsername")
-	//用户登录后查看自己的资料
-	beego.Router("/user/getuserbyusername", &controllers.UserController{}, "get:GetUserByUsername")
+	// //用户修改自己密码
+	// beego.Router("/user", &controllers.UserController{}, "get:GetUserByUsername")
+	// //用户登录后查看自己的资料
+	// beego.Router("/user/getuserbyusername", &controllers.UserController{}, "get:GetUserByUsername")
 
-	beego.Router("/role/AddAndEdit", &controllers.RoleController{}, "*:AddAndEdit")
-	beego.Router("/role/DelRole", &controllers.RoleController{}, "*:DelRole")
-	// beego.Router("/role/AccessToNode", &controllers.RoleController{}, "*:AccessToNode")
-	// beego.Router("/role/AddAccess", &controllers.RoleController{}, "*:AddAccess")
-	beego.Router("/role/RoleToUserList", &controllers.RoleController{}, "*:RoleToUserList")
-	beego.Router("/role/AddRoleToUser", &controllers.RoleController{}, "*:AddRoleToUser")
-	beego.Router("/role/Getlist", &controllers.RoleController{}, "*:Getlist")
-	beego.Router("/role/index", &controllers.RoleController{}, "*:Index")
-	beego.Router("/roleerr", &controllers.RoleController{}, "*:Roleerr") //显示权限不够
+	// beego.Router("/role/AddAndEdit", &controllers.RoleController{}, "*:AddAndEdit")
+	// beego.Router("/role/DelRole", &controllers.RoleController{}, "*:DelRole")
+	// // beego.Router("/role/AccessToNode", &controllers.RoleController{}, "*:AccessToNode")
+	// // beego.Router("/role/AddAccess", &controllers.RoleController{}, "*:AddAccess")
+	// beego.Router("/role/RoleToUserList", &controllers.RoleController{}, "*:RoleToUserList")
+	// beego.Router("/role/AddRoleToUser", &controllers.RoleController{}, "*:AddRoleToUser")
+	// beego.Router("/role/Getlist", &controllers.RoleController{}, "*:Getlist")
+	// beego.Router("/role/index", &controllers.RoleController{}, "*:Index")
+	// beego.Router("/roleerr", &controllers.RoleController{}, "*:Roleerr") //显示权限不够
 
 }

@@ -91,3 +91,14 @@ func GetAchievementTopic(pid, uid int64) (topics []*AchievementTopic, numbers, m
 		return topics, numbers, marks, err
 	}
 }
+
+//由父级id得到所有下级
+// func GetPids(pid int64) ([]*Category, error) {
+// 	o := orm.NewOrm()
+// 	cates := make([]*Category, 0)
+// 	qs := o.QueryTable("category")
+// 	var err error
+// 	//这里进行过滤
+// 	_, err = qs.Filter("ParentId", pid).All(&cates)
+// 	return cates, err
+// }

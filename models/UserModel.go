@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 	// "github.com/astaxie/beego"
+	"crypto/md5"
+	"encoding/hex"
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
 	. "github.com/beego/admin/src/lib"
@@ -18,27 +20,25 @@ type User struct {
 	Username      string `orm:"unique"` //这个拼音的简写
 	Nickname      string //中文名，注意这里，很多都要查询中文名才行`orm:"unique;size(32)" form:"Nickname" valid:"Required;MaxSize(20);MinSize(2)"`
 	Password      string
-	Repassword    string    `orm:"-" form:"Repassword" valid:"Required"`
-	Email         string    `orm:"size(32)" form:"Email" valid:"Email"`
-	Department    string    //分院
-	Secoffice     string    //科室,这里应该用科室id，才能保证即时重名也不怕。否则，查看科室必须要上溯到分院才能避免科室名称重复问题
-	Remark        string    `orm:"null;size(200)" form:"Remark" valid:"MaxSize(200)"`
-	Ip            string    //ip地址
+	Repassword    string `orm:"-" form:"Repassword" valid:"Required"`
+	Email         string `orm:"size(32)" form:"Email" valid:"Email"`
+	Department    string //分院
+	Secoffice     string //科室,这里应该用科室id，才能保证即时重名也不怕。否则，查看科室必须要上溯到分院才能避免科室名称重复问题
+	Remark        string `orm:"null;size(200)" form:"Remark" valid:"MaxSize(200)"`
+	Ip            string //ip地址
+	Port          string
 	Status        int       `orm:"default(2)" form:"Status" valid:"Range(1,2)"`
 	Lastlogintime time.Time `orm:"null;type(datetime)" form:"-"`
 	Createtime    time.Time `orm:"type(datetime);auto_now_add" `
+	Updated       time.Time `orm:"null;type(datetime);auto_now_add" `
 	Role          int
-	// Roles         []*Role   `orm:"rel(m2m)"`
 }
-
-// Id            int64
-// Username      string    `orm:"unique;size(32)" form:"Username"  valid:"Required;MaxSize(20);MinSize(6)"`
-// Password      string    `orm:"size(32)" form:"Password" valid:"Required;MaxSize(20);MinSize(6)"`
 
 func init() {
 	orm.RegisterModel(new(User))
 }
 
+//这个是使用的，下面那个adduser不知干啥的
 func SaveUser(user User) (uid int64, err error) {
 	o := orm.NewOrm()
 	var user1 User
@@ -48,29 +48,29 @@ func SaveUser(user User) (uid int64, err error) {
 		// 没有找到记录
 		uid, err = o.Insert(&user)
 		if err != nil {
-			return 0, err
+			return uid, err
 		}
-	} else { //应该进行更新操作
-		// user1 := &User{Id: user1.Id}
-		user1.Username = user.Username
-		user1.Nickname = user.Nickname
-		user1.Password = user.Password
-		user1.Repassword = user.Repassword
-		user1.Email = user.Email
-		user1.Department = user.Department
-		user1.Secoffice = user.Secoffice
-		// user1.Remark = user.Remark
-		// user1.Ip = user.Ip
-		// user1.Status = user.Status
-		user1.Lastlogintime = user.Lastlogintime
-		user1.Createtime = time.Now()
-		user1.Role = user.Role
-		_, err = o.Update(&user1)
-		if err != nil {
-			return 0, err
-		}
-		uid = user1.Id
-	}
+	} //else { //应该进行更新操作
+	// user1 := &User{Id: user1.Id}
+	// 	user1.Username = user.Username
+	// 	user1.Nickname = user.Nickname
+	// 	user1.Password = user.Password
+	// 	user1.Repassword = user.Repassword
+	// 	user1.Email = user.Email
+	// 	user1.Department = user.Department
+	// 	user1.Secoffice = user.Secoffice
+	// 	// user1.Remark = user.Remark
+	// 	user1.Ip = user.Ip
+	// 	user1.Status = user.Status
+	// 	user1.Lastlogintime = user.Lastlogintime
+	// 	user1.Createtime = time.Now()
+	// 	user1.Role = user.Role
+	// 	_, err = o.Update(&user1)
+	// 	if err != nil {
+	// 		return 0, err
+	// 	}
+	// 	uid = user1.Id
+	// }
 	return uid, err
 }
 
@@ -160,6 +160,24 @@ func checkUser(u *User) (err error) {
 }
 
 /************************************************************/
+//取出所有用户
+func GetUsers() (users []*User, err error) {
+	o := orm.NewOrm()
+	user := new(User)
+	qs := o.QueryTable(user)
+	// var offset int64
+	// if page <= 1 {
+	// 	offset = 0
+	// } else {
+	// 	offset = (page - 1) * page_size
+	// }
+	_, err = qs.All(&users)
+	if err != nil {
+		return nil, err
+	}
+	// count, _ = qs.Count()
+	return users, err
+}
 
 //get user list
 func Getuserlist(page int64, page_size int64, sort string) (users []orm.Params, count int64) {
@@ -274,71 +292,125 @@ func AddUser(u *User) (int64, error) {
 	return id, err
 }
 
-//更新用户
-// func UpdateUser(u *User) (int64, error) {
-// 	if err := checkUser(u); err != nil {
-// 		return 0, err
-// 	}
-// 	o := orm.NewOrm()
-// 	user := make(orm.Params)
-// 	if len(u.Username) > 0 {
-// 		user["Username"] = u.Username
-// 	}
-// 	if len(u.Nickname) > 0 {
-// 		user["Nickname"] = u.Nickname
-// 	}
-// 	if len(u.Email) > 0 {
-// 		user["Email"] = u.Email
-// 	}
-// 	if len(u.Remark) > 0 {
-// 		user["Remark"] = u.Remark
-// 	}
-// 	if len(u.Password) > 0 {
-// 		user["Password"] = Strtomd5(u.Password)
-// 	}
-// 	if u.Status != 0 {
-// 		user["Status"] = u.Status
-// 	}
-// 	if len(user) == 0 {
-// 		return 0, errors.New("update field is empty")
-// 	}
-// 	var table User
-// 	num, err := o.QueryTable(table).Filter("Id", u.Id).Update(user)
-// 	return num, err
-// }
-func UpdateUser(userid, nickname, email, password string) error {
-	// if err := checkUser(&u); err != nil {
-	// 	return err
-	// }
-	id, err := strconv.ParseInt(userid, 10, 64)
+//用户修改一个用户的某个字段
+func UpdateUser(cid int64, fieldname, value string) error {
 	o := orm.NewOrm()
-	// qs := o.QueryTable("user") //不知道主键就用这个过滤操作
-	user := User{Id: id}
-	// err := qs.Filter("Username", u.Username).One(&u)
-	// if err == nil {
-	// 	return err
-	// }
-	// user := User{Username: u.Username}
-	// if err := o.Read(&user); err == nil {
-	user.Nickname = nickname
-	user.Email = email
-	if password != "" {
-		user.Password = password
-		// user1 := make(orm.Params)
-		// var table User
-		_, err = o.Update(&user, "password", "nickname", "email")
-		if err != nil {
-			return err
+	var user User
+	// user := &User{Id: cid}
+	err := o.QueryTable("user").Filter("Id", cid).One(&user)
+	// err:=o.Read(user).One()
+	if err == nil {
+		type Duration int64
+		const (
+			Nanosecond  Duration = 1
+			Microsecond          = 1000 * Nanosecond
+			Millisecond          = 1000 * Microsecond
+			Second               = 1000 * Millisecond
+			Minute               = 60 * Second
+			Hour                 = 60 * Minute
+		)
+		// hours := 8
+
+		const lll = "2006-01-02"
+		user.Updated = time.Now() //.Add(+time.Duration(hours) * time.Hour)
+		switch fieldname {
+		case "Username":
+			user.Username = value
+			_, err := o.Update(&user, "Username", "Updated")
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Nickname":
+			user.Nickname = value
+			_, err := o.Update(&user, "Nickname", "Updated")
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Password":
+			//这里要加密
+			md5Ctx := md5.New()
+			md5Ctx.Write([]byte(value))
+			cipherStr := md5Ctx.Sum(nil)
+			user.Password = hex.EncodeToString(cipherStr)
+			_, err := o.Update(&user, "Password", "Updated")
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Email":
+			user.Email = value
+			_, err := o.Update(&user, "Email", "Updated")
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Department":
+			user.Department = value
+			_, err := o.Update(&user, "Department", "Updated") //这里不能用&user
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Secoffice":
+			user.Secoffice = value
+			_, err := o.Update(&user, "Secoffice", "Updated") //这里不能用&user
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Ip":
+			user.Ip = value
+			_, err := o.Update(&user, "Ip", "Updated") //这里不能用&user
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Port":
+			user.Port = value
+			_, err := o.Update(&user, "Port", "Updated") //这里不能用&user
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Status":
+			//转成int
+			user.Status, err = strconv.Atoi(value)
+			if err != nil {
+				return err
+			}
+			_, err := o.Update(&user, "Status", "Updated") //这里不能用&user
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		case "Role":
+			user.Role, err = strconv.Atoi(value)
+			if err != nil {
+				return err
+			}
+			_, err := o.Update(&user, "Role", "Updated") //这里不能用&user
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
 		}
+		// 指定多个字段
+		// o.Update(&user, "Field1", "Field2", ...)这个试验没成功
 	} else {
-		_, err = o.Update(&user, "nickname", "email")
-		if err != nil {
-			return err
-		}
+		return o.Read(&user)
 	}
-	// } else {
-	// return err
-	// }
 	return nil
 }
 

@@ -201,7 +201,7 @@
               <div class="form-group must">
                 <label class="col-sm-3 control-label">密码</label>
                 <div class="col-sm-7">
-                  <input type="password" class="form-control" id="password" maxlength="32" placeholder="至多32个字符"></div>
+                  <input type="password" class="form-control" id="Password" maxlength="32" placeholder="至多32个字符"></div>
               </div>
               <div class="form-group must">
                 <label class="col-sm-3 control-label">确认密码</label>

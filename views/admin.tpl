@@ -79,14 +79,12 @@
     </div>
   </div>
 
-
-
   <script type="text/javascript">
     $(function () {
       var data = 
       [
         {
-          text: "欢迎您~{{.Ip}}土豪",
+          text: "欢迎您~{{.Ip}}",
           icon: "fa fa-optin-monster",
           selectable: true,
           id: '010',

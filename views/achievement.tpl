@@ -16,12 +16,12 @@
     color:#DC143C;
     }
   </style> -->
-  <script type="text/javascript">
+  <!-- <script type="text/javascript">
     var allLinks=document.getElementsByTagName("a");
     for(var i=0;i!=allLinks.length; i++){
     allLinks[i].target="_blank";
     }
-  </script>
+  </script> -->
 </head>
 
 <!-- 侧栏 -->

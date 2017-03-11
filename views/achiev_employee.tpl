@@ -586,6 +586,7 @@ function actionFormatter(value, row, index) {
 window.actionEvents = {
     'click .like': function (e, value, row, index) {
      //提交到后台
+     //*******错误！！！！直接用表格获取即可。不用ajax
        $.ajax({
        // type:"post",
        url:"/achievement/projectachievement",
