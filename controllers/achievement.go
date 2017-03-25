@@ -261,9 +261,9 @@ func (c *Achievement) GetAchievement() {
 				achsecoffice = append(achsecoffice, bb...)
 				depcount = depcount + count //部门人员数=科室人员数相加
 			}
-			aa[0].Secoffice = achsecoffice
-			achsecoffice = make([]AchSecoffice, 0) //再把slice置0
-			achdepart = append(achdepart, aa...)
+			// aa[0].Secoffice = achsecoffice
+			// achsecoffice = make([]AchSecoffice, 0) //再把slice置0
+			// achdepart = append(achdepart, aa...)
 		}
 		//查出所有有这个部门但科室名为空的人员
 		//根据分院查所有员工

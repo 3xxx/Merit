@@ -342,6 +342,7 @@ func (c *MeritController) GetMerit() {
 					meritcategory = append(meritcategory, ee...)
 				}
 				dd[0].List = meritcategory
+				meritcategory = make([]MeritCategory, 0) //再把slice置0
 				// dd[0].Title = strconv.FormatInt(meritcates[i3].Id, 10) //名称——关键，把价值分类当作科室名
 				dd[0].Selectable = false
 				meritsecoffice = append(meritsecoffice, dd...)
@@ -469,6 +470,7 @@ func (c *MeritController) GetMerit() {
 					meritcategory = append(meritcategory, ee...)
 				}
 				dd[0].List = meritcategory
+				meritcategory = make([]MeritCategory, 0) //再把slice置0
 				// dd[0].Title = strconv.FormatInt(meritcates[i3].Id, 10) //名称——关键，把价值分类当作科室名
 				dd[0].Selectable = false
 				meritsecoffice = append(meritsecoffice, dd...)
@@ -548,7 +550,7 @@ func (c *MeritController) GetMerit() {
 		// bb[0].Tags[0] = strconv.Itoa(count)
 		bb[0].List = meritcategory
 		bb[0].Selectable = true
-		// meritcategory = make([]MeritCategory, 0) //再把slice置0
+		meritcategory = make([]MeritCategory, 0) //再把slice置0
 		meritsecoffice = append(meritsecoffice, bb...)
 		// depcount = depcount + count //部门人员数=科室人员数相加
 		// }

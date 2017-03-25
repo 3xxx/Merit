@@ -622,16 +622,119 @@ func (c *AdminController) DeleteMerit() {
 // 	// c.Data["Email"] = "astaxie@gmail.com"
 // 	c.TplName = "admin.tpl"
 // }
+type List struct {
+	Name string `json:"name"`
+}
+type Listimage struct {
+	Id        int64    `json:"id"`
+	UserNo    string   `json:"userNo"`
+	DiagTime  string   `json:"diagTime"`
+	DiagDoc   string   `json:"diagDoc"`
+	Feature   string   `json:"feature"`
+	MatchList string   `json:"matchList"`
+	Result    string   `json:"result"`
+	Desc      string   `json:"desc"`
+	Images    []string `json:"images"`
+	Ctime     string   `json:"ctime"`
+	Utime     string   `json:"utime"`
+}
 
 func (c *AdminController) Test() {
 	c.Data["Website"] = "beego.me"
 	c.Data["Email"] = "astaxie@gmail.com"
 	c.TplName = "user_show.tpl"
-	c.Data["json"] = map[string]interface{}{
-		"id":    2,
-		"name":  "111",
-		"price": "demo.jpg",
+	// c.Data["json"] = map[string]interface{}{
+	// 	"id":    2,
+	// 	"name":  "111",
+	// 	"price": "demo.jpg",
+	// }
+	imagelist1 := []string{"/static/img/1.jpg", "/static/img/2.jpg", "/static/img/3.jpg"}
+	imagelist2 := []string{"/static/img/4.jpg", "/static/img/5.jpg", "/static/img/6.jpg"}
+	imagelist3 := []string{"/static/img/7.jpg", "/static/img/8.jpg", "/static/img/9.jpg"}
+	imagelist4 := []string{"/static/img/10.jpg", "/static/img/11.jpg", "/static/img/12.jpg"}
+	imagelist5 := []string{"/static/img/13.jpg", "/static/img/14.jpg", "/static/img/15.jpg"}
+	imagelist6 := []string{"/static/img/16.jpg", "/static/img/17.jpg", "/static/img/18.jpg"}
+
+	listimage1 := Listimage{
+		1,
+		"uer0001",
+		"2017/03/18",
+		"秦晓川",
+		"通过图像识别获得眼像特征",
+		"知识库自动获取的饼子",
+		"根据病症信息分析结果",
+		"\n\t对综合揭露进行\n\t\t\t 行详细描述",
+		imagelist1,
+		"2017-03-18",
+		"",
 	}
+	listimage2 := Listimage{
+		2,
+		"uer0002",
+		"2017/03/14",
+		"秦晓川2",
+		"识别技术更新",
+		"来自库",
+		"分析结果",
+		"\n\t对综合\n\t\t\t 详细描述",
+		imagelist2,
+		"2017-03-13",
+		"",
+	}
+	listimage3 := Listimage{
+		3,
+		"uer0003",
+		"2017/03/10",
+		"秦晓川3",
+		"特征",
+		"自动获取",
+		"根据结果",
+		"\n\t进行\n\t\t\t 详细描述",
+		imagelist3,
+		"2017-03-10",
+		"",
+	}
+	listimage4 := Listimage{
+		4,
+		"uer0004",
+		"2017/03/02",
+		"秦晓川4",
+		"通过特征",
+		"知识库",
+		"分析结果",
+		"\n\t综合揭露\n\t\t\t 描述",
+		imagelist4,
+		"2014-07-13",
+		"",
+	}
+	listimage5 := Listimage{
+		5,
+		"uer0005",
+		"2016/07/14",
+		"秦晓川5",
+		"通过图像识别获得眼像特征",
+		"知识库自动获取的饼子",
+		"根据病症信息分析结果",
+		"\n\t对综合揭露进行\n\t\t\t 行详细描述",
+		imagelist5,
+		"2014-07-13",
+		"",
+	}
+	listimage6 := Listimage{
+		6,
+		"uer0006",
+		"2015/07/14",
+		"秦晓川6",
+		"眼像特征",
+		"获取",
+		"信息结果",
+		"\n\t揭露进行\n\t\t\t 详细描述",
+		imagelist6,
+		"2014-07-13",
+		"",
+	}
+	listimage := []Listimage{listimage1, listimage2, listimage3, listimage4, listimage5, listimage6}
+	c.Data["json"] = listimage
 	// c.Data["json"] = catalogs
 	c.ServeJSON()
 }

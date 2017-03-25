@@ -155,7 +155,8 @@
                   type:'post', 
                   success:function(data)    
                   {    
-                    alert("导入数据："+data+"！")
+                    alert("导入数据："+data+"！");
+                    $('#table').bootstrapTable('refresh', {url:'/achievement/myself'});
                   }    
               };
              form.ajaxSubmit(options);
@@ -182,14 +183,14 @@
         var newDrawnratio = $("#Drawnratio").val();
         var newDesigndratio = $("#Designdratio").val();
         var newDate = $("#Date").val();
-        if(confirm("确定提交该行吗？")){    
+        if(confirm("确定添加该成果吗？")){    
           $.ajax({
           type:"post",//这里是否一定要用post？？？
           url:"/achievement/addcatalog",
           data: {Pnumber:newPnumber,Pname:newPname,Stage:newStage,Section:newSection,Tnumber:newTnumber,Name:newName,Category:newCategory,Count:newCount,Drawn:newDrawn,Designd:newDesignd,Checked:newChecked,Examined:newExamined,Drawnratio:newDrawnratio,Designdratio:newDesigndratio,Date:newDate},
             success:function(data,status){//数据提交成功时返回数据
               alert("添加“"+data+"”(status:"+status+".)");
-              $('#table').bootstrapTable('refresh', {url:'/myself'});
+              $('#table').bootstrapTable('refresh', {url:'/achievement/myself'});
             } 
           });
         }
@@ -668,7 +669,7 @@ function stateFormatter(value, row, index) {
 // });
 //待选择的修改*******不要删除
 //我发起
-$(function () {
+  $(function () {
     $('#table').bootstrapTable({
         idField: 'Id',
         url: '/achievement/myself',

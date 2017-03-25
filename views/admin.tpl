@@ -3,7 +3,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>EngineerCMS</title>
+  <title>MeritMS</title>
 
   <script type="text/javascript" src="/static/js/jquery-2.1.3.min.js"></script>
   <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
@@ -110,7 +110,13 @@
               icon: "fa fa-cog",
               text: "基本设置",
               id: '011',
-              nodeId: '011'
+              nodeId: '011',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             },
             { 
               icon: "fa fa-align-right",
@@ -135,7 +141,13 @@
             { 
               icon: "fa fa-cny",
               text: "科室成果类型",
-              id: '016'
+              id: '016',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             }
           ] 
         },
@@ -147,22 +159,34 @@
           selectable: true,
           id: '02',
           selectable: false,
-          // state: {
+          state: {
             // checked: true,
-            // disabled: true,
+            disabled: true,
             // expanded: true,
             // selected: true
-          // },
+          },
           tags: ['available'],
           nodes: 
           [
             { icon: "fa fa-safari",
               text: '系统权限',
-              id: '021'
+              id: '021',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             },
             { icon: "fa fa-navicon",
               text: '项目权限',
-              id: '022'
+              id: '022',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             }
           ]
         },
@@ -193,7 +217,13 @@
             },
             { icon: "fa fa-group",
               text: '用户组',
-              id: '033'
+              id: '033',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             },
           ]
         }, 
@@ -205,28 +235,58 @@
           selectable: true,
           id: '04',
           selectable: false,
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    },
           tags: ['available'],
           nodes: 
           [
             { 
               icon: "fa fa-edit",
               text: "本周成果",
-              id: '041'
+              id: '041',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             },
             { 
               icon: "fa fa-copy",
               text: "本月成果",
-              id: '042'
+              id: '042',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             },
             { 
               icon: "fa fa-lock",
               text: "前月成果",
-              id: '043'
+              id: '043',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             },
             { 
               icon: "fa fa-lock",
               text: "当年成果",
-              id: '044'
+              id: '044',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             }
           ]
         },{
@@ -238,27 +298,57 @@
           id: '05',
           selectable: false,
           tags: ['available'],
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    },
           nodes: 
           [
             { 
               icon: "fa fa-edit",
               text: "当年价值",
-              id: '051'
+              id: '051',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             },
             { 
               icon: "fa fa-copy",
               text: "去年价值",
-              id: '052'
+              id: '052',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             },
             { 
               icon: "fa fa-lock",
               text: "近5年价值",
-              id: '053'
+              id: '053',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             },
             { 
               icon: "fa fa-lock",
               text: "所有价值",
-              id: '054'
+              id: '054',
+                    state: {
+                      // checked: true,
+                      disabled: true,
+                      // expanded: true,
+                      // selected: true
+                    }
             }
           ]
         } 
