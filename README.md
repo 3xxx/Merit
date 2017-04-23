@@ -1,3 +1,5 @@
+See https://github.com/3xxx/MeritMS
+
 ## meritms
 ——————工程师价值和成果管理系统
 
